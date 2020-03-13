@@ -1,9 +1,14 @@
 package main
 
 import (
-	another "anothergo"
 	"fmt"
+
+	_ "example.com/m/v2/src/himompkg"
 )
+
+var a int = c
+var b int = a
+var c int = 1
 
 type Page struct {
 	pageNum int
@@ -11,14 +16,16 @@ type Page struct {
 	data    []byte
 }
 
-func main() {
-	himom()
+func init() {
+	fmt.Println("hi mom i'm in init")
+}
+
+func pratice() {
 
 	var pref *Page //like cpp, go separate reference and value by '*' symbol, it very similar to cpp by the way it initialize
 	pref = new(Page)
 	pref.pageNum = 2
 	pref.title = "hi mom reference"
-	another.GoodDay()
 	var pvalue Page //create value for p, we do not need any constructor
 
 	pvalue.pageNum = 1
@@ -37,4 +44,9 @@ func main() {
 	fmt.Println(pref.title)
 	fmt.Println(pvalue.title)
 
+}
+
+func main() {
+	fmt.Println("hi mom i'm in main")
+	pratice()
 }
