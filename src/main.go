@@ -2,8 +2,9 @@ package main
 
 import (
 	"fmt"
+	"net/http"
 
-	_ "example.com/m/v2/src/himompkg"
+	_ "example.com/m/v2/himompkg"
 )
 
 var a int = c
@@ -46,7 +47,29 @@ func pratice() {
 
 }
 
+func hifive(w http.ResponseWriter, req *http.Request) {
+	fmt.Println("Hi five")
+	w.Write([]byte("hi fiveeeee"))
+}
+
+func http_practive() {
+	var m meomeo
+	http.HandleFunc("/hifive", hifive)
+	http.ListenAndServe(":9000", m)
+}
+
+type meomeo struct {
+}
+
+func (m meomeo) ServeHTTP(w http.ResponseWriter, req *http.Request) {
+	fmt.Println("meomeo")
+}
+
+func chandler(w http.ResponseWriter, req *http.Request) {
+	fmt.Println(req.URL)
+}
 func main() {
 	fmt.Println("hi mom i'm in main")
 	pratice()
+	http_practive()
 }
