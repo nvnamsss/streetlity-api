@@ -68,8 +68,23 @@ func (m meomeo) ServeHTTP(w http.ResponseWriter, req *http.Request) {
 func chandler(w http.ResponseWriter, req *http.Request) {
 	fmt.Println(req.URL)
 }
+
+func emptyInterface() {
+	var i struct {
+		a int
+	}
+	i.a = 16
+
+	fmt.Println(i.a)
+}
+
+func try() {
+
+}
+
 func main() {
 	fmt.Println("hi mom i'm in main")
+	emptyInterface()
 	pratice()
-	http_practive()
+	// http_practive()
 }
