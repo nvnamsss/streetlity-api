@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	_ "example.com/m/v2/Astar"
 	_ "example.com/m/v2/himompkg"
 )
 
