@@ -13,7 +13,7 @@ var openList []Node
 
 /*
 openlist: The open list is a collection of all generated Nodes.
-This means that those are Nodes that were neighbors of expanded Nodes.
+This means that those are Nodes that were Neighbors of expanded Nodes.
 As mentioned above, the open list is often implemented as a priority queue
 so the search can simply dequeue the nest best Node.
 
@@ -26,17 +26,28 @@ This prevents the search from visiting Nodes again and again
 */
 type Node struct {
 	Id        int
-	location  r2.Point
-	neighbors []Node
+	Location  r2.Point
+	Neighbors []Node
+	Data      NodeData
+}
+
+type NodeData struct {
+	G float64
+	H float64
+	F float64
+}
+
+func d(from r2.Point, to r2.Point) (value float64) {
+	return math.Sqrt(math.Pow(from.X-to.X, 2) + math.Pow(from.Y-to.Y, 2))
 }
 
 /*distance from current Node to start Node*/
-func g(from r2.Point, to r2.Point) (h float64) {
+func g(from r2.Point, to r2.Point) (value float64) {
 	return 0
 }
 
 /*estimate distance from current Node to end Node*/
-func h_euclid(from r2.Point, to r2.Point) (h float64) {
+func h(from r2.Point, to r2.Point) (value float64) {
 	var p r2.Point
 	p.X = 1
 	p.Y = 2
@@ -77,9 +88,22 @@ func route(from Node, to Node, h float32) []Node {
 		//remove current out openList
 		RemoveItem(openList, current)
 		//iterate neighbor
-		for index, element := range current.neighbors {
-			var eG float64 = g(element.location, start.location) + h_euclid(current.location, element.location)
+		for index, element := range current.Neighbors {
+			var eG float64 = g(element.Location, from.Location) + d(current.Location, element.Location)
+			var eH float64 = h(current.Location, to.Location)
+			var eF float64 = eG + eH
 
+			if eF < current.Data.F {
+				var pos = IndexOf(len(openList), func(i int) bool { return openList[i].Id == element.Id })
+				//do task
+				if pos == -1 {
+					openList = append(openList, element)
+					element.Data.G = eG
+					element.Data.H = eH
+					element.Data.F = eF
+				}
+
+			}
 			// index is the index where we are
 			// element is the element from someSlice for where we are
 			fmt.Println(eG)
@@ -130,5 +154,5 @@ func init() {
 	var p1 r2.Point = r2.Point{X: 1, Y: 2}
 	var p2 r2.Point = r2.Point{X: 3, Y: 4}
 
-	fmt.Println("[AStar]", h_euclid(p1, p2))
+	fmt.Println("[AStar]", h(p1, p2))
 }
