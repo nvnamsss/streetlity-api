@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"example.com/m/v2/Astar"
 	_ "example.com/m/v2/himompkg"
 )
 
@@ -86,5 +87,7 @@ func main() {
 	fmt.Println("hi mom i'm in main")
 	emptyInterface()
 	pratice()
+
+	Astar.Himom()
 	// http_practive()
 }
