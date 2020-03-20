@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 
-	"example.com/m/v2/Astar"
 	_ "example.com/m/v2/himompkg"
 )
 
@@ -85,9 +84,16 @@ func try() {
 
 func main() {
 	fmt.Println("hi mom i'm in main")
-	emptyInterface()
-	pratice()
+	// emptyInterface()
+	// pratice()
 
-	Astar.Himom()
+	// var i int64 = 0
+	// var loop int = 2
+	// for loop = 2; loop <= 10; loop++ {
+	// 	i += int64(math.Pow10(loop)*9/10) * int64(loop-1)
+	// }
+
+	// fmt.Println("i:", i)
+	PrepareData()
 	// http_practive()
 }
