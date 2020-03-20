@@ -74,13 +74,13 @@ func RemoveItem(s []Node, item Node) []Node {
 }
 
 /*find the shortest path*/
-func route(from Node, to Node, h float32) []Node {
+func route(from Node, to Node, newH float32) []Node {
 	var path []Node
 	var current Node = from
 	openList = append(openList, from)
 
 	for len(openList) > 0 {
-		var nearestNode Node //nearest Node
+		//var nearestNode Node //nearest Node
 		if current.Id == to.Id {
 			return path
 		}
