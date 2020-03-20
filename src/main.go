@@ -3,8 +3,9 @@ package main
 import (
 	"fmt"
 	"net/http"
-	//_ "example.com/m/v2/himompkg"
-	//astar "./Astar"
+
+	"example.com/m/v2/Astar"
+	_ "example.com/m/v2/himompkg"
 )
 
 var a int = c
@@ -86,8 +87,7 @@ func main() {
 	fmt.Println("hi mom i'm in main")
 	emptyInterface()
 	pratice()
-	PrepareData()
-	
 
+	Astar.Himom()
 	// http_practive()
 }
