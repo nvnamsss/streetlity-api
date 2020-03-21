@@ -7,7 +7,7 @@ type Node struct {
 	Location  r2.Point
 	Neighbors []Node
 	Data      NodeData /*Data perspective with neightbors*/
-	StreetId  int64
+	StreetId  []int64
 }
 
 type NodeData struct {
@@ -56,4 +56,8 @@ func NewStreet(id int64, nodeIds []int64) *Street {
 	s.NodeIds = nodeIds
 
 	return s
+}
+
+func (s *Street) Nullable() (nullable, ok bool) {
+	return nullable, true
 }

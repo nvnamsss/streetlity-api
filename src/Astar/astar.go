@@ -89,29 +89,37 @@ func route(from Node, to Node) ([]Node, bool) {
 		openList = RemoveItem(openList, current)
 		fmt.Println("[Astar]", "Current", current)
 
-		for _, element := range current.Neighbors {
-			var eG float64 = current.Data.G + d(current.Location, element.Location)
-			var eH float64 = h_euclid(element.Location, to.Location)
-			var eF float64 = eG + eH
+		for _, item := range current.StreetId {
+			var street Street = Streets[item]
 
-			if _, ok := closeList[element.Id]; !ok {
-				closeList[element.Id] = false
-			}
+			for _, item2 := range street.NodeIds {
+				var eG float64 = current.Data.G + d(current.Location, Nodes[item2].Location)
+				var eH float64 = h_euclid(Nodes[item2].Location, to.Location)
+				var eF float64 = eG + eH
 
-			fmt.Println("[Astar]", "Compare", current.Data.F, eF)
-			if eF <= current.Data.F || !closeList[element.Id] {
-				if !closeList[element.Id] {
-					element.Data.G = eG
-					element.Data.H = eH
-					element.Data.F = eF
-					openList = append(openList, element)
-
-					var s SortNode = openList
-					sort.Stable(s)
+				if _, ok := closeList[item2]; !ok {
+					closeList[item2] = false
 				}
 
+				if eF <= current.Data.F || !closeList[item2] {
+					if !closeList[item2] {
+						data := Nodes[item2]
+						data.Data.G = eG
+						data.Data.H = eH
+						data.Data.F = eF
+						Nodes[item2] = data
+
+						openList = append(openList, Nodes[item2])
+
+						var s SortNode = openList
+						sort.Stable(s)
+					}
+
+				}
 			}
+
 		}
+
 	}
 
 	return nil, false

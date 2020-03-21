@@ -2,7 +2,9 @@ package main
 
 import (
 	"database/sql"
+	"encoding/json"
 	"fmt"
+	"os"
 	"regexp"
 	"strconv"
 
@@ -11,12 +13,24 @@ import (
 	r2 "github.com/golang/geo/r2"
 )
 
+type Configuration struct {
+	Server   string
+	Database string
+	Username string
+	Password string
+}
+
+var Config Configuration
 var Db *sql.DB
 
 func connect() {
-	db, err := sql.Open("mysql", "ixPwflxQAF:3satzXbjYd@tcp(remotemysql.com)/ixPwflxQAF")
+	connectionString := fmt.Sprintf("%s=%s@tcp(%s)/%s",
+		Config.Username, Config.Password, Config.Server, Config.Database)
+	fmt.Println(connectionString)
+	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
-		fmt.Println("[Database]", "Error occurred", err)
+		panic(err.Error())
+		// fmt.Println("[Database]", "Error occurred", err)
 	}
 
 	Db = db
@@ -34,16 +48,20 @@ func PrepareData() {
 
 	for results.Next() {
 		var id int64
+		var generic_info string
 		var nodesData string
 		var nodeIds []int64
 		var cost float64
-		err = results.Scan(&id, nil, nil, &nodesData, &cost, nil, nil)
+		var oneway bool
+		var direction string
+		err = results.Scan(&id, &generic_info, &nodesData, &cost, &oneway, &direction)
 		if err != nil {
-			panic(err.Error()) // proper error handling instead of panic in your app
+			// panic(err.Error()) // proper error handling instead of panic in your app
 		}
+		fmt.Println(id)
+		fmt.Println(nodesData)
 
 		splits := sspRegex.Split(nodesData, -1)
-
 		for _, e := range splits {
 			i, err := strconv.ParseInt(e, 10, 64)
 
@@ -66,8 +84,19 @@ func PrepareData() {
 		var id int64
 		var lat float64
 		var lon float64
-		var streetId int64
+		var street string
+		var streetId []int64 = []int64{}
 
+		splits := sspRegex.Split(street, -1)
+		for _, e := range splits {
+			i, err := strconv.ParseInt(e, 10, 64)
+
+			if err != nil {
+				panic(err)
+			}
+
+			streetId = append(streetId, i)
+		}
 		err = results.Scan(&id, &lat, &lon, &streetId)
 		if err != nil {
 			panic(err.Error()) // proper error handling instead of panic in your app
@@ -88,4 +117,20 @@ func PrepareData() {
 	}
 
 	fmt.Println(results)
+}
+
+func init() {
+	file, _ := os.Open("config/config.json")
+
+	defer file.Close()
+	decoder := json.NewDecoder(file)
+	Config = Configuration{}
+
+	err := decoder.Decode(&Config)
+	fmt.Println("[Config]", Config)
+
+	if err != nil {
+		panic(err)
+	}
+
 }
