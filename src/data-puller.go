@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log"
 	"os"
 	"regexp"
 	"strconv"
@@ -48,30 +49,28 @@ func PrepareData() {
 	for results.Next() {
 		var id int64
 		var generic_info string
-		var nodesData string
-		var nodeIds []int64
+		// var nodesData string
+		// var nodeIds []int64
 		var cost float64
 		var oneway bool
 		var direction string
-		err = results.Scan(&id, &generic_info, &nodesData, &cost, &oneway, &direction)
+		err = results.Scan(&id, &generic_info, &cost, &oneway, &direction)
 		if err != nil {
-			// panic(err.Error()) // proper error handling instead of panic in your app
-		}
-		fmt.Println(id)
-		fmt.Println(nodesData)
-
-		splits := sspRegex.Split(nodesData, -1)
-		for _, e := range splits {
-			i, err := strconv.ParseInt(e, 10, 64)
-
-			if err != nil {
-				panic(err)
-			}
-
-			nodeIds = append(nodeIds, i)
+			panic(err.Error()) // proper error handling instead of panic in your app
 		}
 
-		Astar.Streets[id] = *Astar.NewStreet(id, nodeIds)
+		// splits := sspRegex.Split(nodesData, -1)
+		// for _, e := range splits {
+		// 	i, err := strconv.ParseInt(e, 10, 64)
+
+		// 	if err != nil {
+		// 		panic(err)
+		// 	}
+
+		// 	nodeIds = append(nodeIds, i)
+		// }
+
+		Astar.Streets[id] = *Astar.NewStreet(id, []int64{})
 	}
 
 	results, err = Db.Query("SELECT * FROM  nodes")
@@ -84,30 +83,39 @@ func PrepareData() {
 		var lat float64
 		var lon float64
 		var street string
-		var streetId []int64 = []int64{}
+		var streetIds []int64 = []int64{}
+		err = results.Scan(&id, &lat, &lon, &street)
+		if err != nil {
+			panic(err.Error()) // proper error handling instead of panic in your app
+		}
 
 		splits := sspRegex.Split(street, -1)
 		for _, e := range splits {
 			i, err := strconv.ParseInt(e, 10, 64)
 
 			if err != nil {
-				panic(err)
+				log.Print("[Data Puller] ", id, " is not belong to any street, it will be by passed")
+				continue
 			}
 
-			streetId = append(streetId, i)
+			streetIds = append(streetIds, i)
 		}
-		err = results.Scan(&id, &lat, &lon, &streetId)
-		if err != nil {
-			panic(err.Error()) // proper error handling instead of panic in your app
-		}
+
 		// and then print out the tag's Name attribute
-		fmt.Println(id)
-		fmt.Println(lat)
-		fmt.Println(lon)
-		fmt.Println(streetId)
+		// fmt.Println(id)
+		// fmt.Println(lat)
+		// fmt.Println(lon)
+		// fmt.Println(streetIds)
 
-		Astar.Nodes[id] = Astar.Node{Id: id, Location: r2.Point{X: lat, Y: lon}, StreetId: streetId}
+		Astar.Nodes[id] = Astar.Node{Id: id, Location: r2.Point{X: lat, Y: lon}, StreetId: streetIds}
 
+		for _, e := range streetIds {
+			str := Astar.Streets[e]
+			str.NodeIds = append(str.NodeIds, id)
+			Astar.Streets[e] = str
+		}
+
+		fmt.Println(Astar.Nodes[id])
 		//how to make neighbor?
 		//nodes on the same street are neighbors
 		//the reference are n^2, too much
@@ -115,7 +123,7 @@ func PrepareData() {
 		//better performance, better memory
 	}
 
-	fmt.Println(results)
+	fmt.Println(Astar.Streets)
 }
 
 func init() {
