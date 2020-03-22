@@ -24,7 +24,7 @@ var Config Configuration
 var Db *sql.DB
 
 func connect() {
-	connectionString := fmt.Sprintf("%s=%s@tcp(%s)/%s",
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s)/%s",
 		Config.Username, Config.Password, Config.Server, Config.Database)
 	fmt.Println(connectionString)
 	db, err := sql.Open("mysql", connectionString)
@@ -38,7 +38,6 @@ func connect() {
 
 func PrepareData() {
 	connect()
-
 	results, err := Db.Query("SELECT * FROM streets")
 	sspRegex := regexp.MustCompile(`;`)
 
