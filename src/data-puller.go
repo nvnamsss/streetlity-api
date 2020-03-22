@@ -101,7 +101,6 @@ func PrepareData() {
 			streetIds = append(streetIds, i)
 		}
 
-		// and then print out the tag's Name attribute
 		// fmt.Println(id)
 		// fmt.Println(lat)
 		// fmt.Println(lon)
@@ -115,15 +114,13 @@ func PrepareData() {
 			Astar.Streets[e] = str
 		}
 
-		fmt.Println(Astar.Nodes[id])
 		//how to make neighbor?
 		//nodes on the same street are neighbors
 		//the reference are n^2, too much
-		//instead we can go into street and get the nodes out
-		//better performance, better memory
+		//instead go into street and get the nodes out
+		//for better performance, better memory
 	}
 
-	fmt.Println(Astar.Streets)
 }
 
 func init() {

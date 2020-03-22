@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"net/http"
 
+	"example.com/m/v2/Astar"
 	_ "example.com/m/v2/himompkg"
 )
 
@@ -95,5 +96,9 @@ func main() {
 
 	// fmt.Println("i:", i)
 	PrepareData()
+	path, ok := Astar.Route(Astar.Nodes[6972965259], Astar.Nodes[6972965899])
+	if ok {
+		fmt.Println(path)
+	}
 	// http_practive()
 }

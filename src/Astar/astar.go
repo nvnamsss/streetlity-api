@@ -10,8 +10,6 @@ import (
 
 var Streets map[int64]Street = make(map[int64]Street)
 var Nodes map[int64]Node = make(map[int64]Node)
-var openList []Node
-var closeList map[int64]bool
 
 func d(from r2.Point, to r2.Point) (value float64) {
 	return math.Sqrt(math.Pow(from.X-to.X, 2) + math.Pow(from.Y-to.Y, 2))
@@ -62,46 +60,52 @@ func reconstruct_path(path *Path) []Node {
 }
 
 /*find the shortest path*/
-func route(from Node, to Node) ([]Node, bool) {
+func Route(from Node, to Node) ([]Node, bool) {
+	fmt.Println(from, to)
+	var openList []Node = []Node{}
+	var closeList map[int64]bool = make(map[int64]bool)
 	var path *Path = NewPath(nil, from)
 	var current Node = from
 	var paths map[int64]*Path = make(map[int64]*Path)
 
 	current.Data.G = 0
 	current.Data.H = h_euclid(current.Location, to.Location)
-	current.Data.F = current.Data.H
+	current.Data.F = math.MaxFloat64
 
 	openList = append(openList, current)
 	closeList = make(map[int64]bool)
 
-	fmt.Println("[Astar]", "First node F", current.Data.F)
-
 	for len(openList) > 0 {
 		current = getNextNode(openList)
 		closeList[current.Id] = true
+		fmt.Println("[Astar]", "Current", current)
+		path = NewPath(path, current)
+		paths[current.Id] = path
 
 		if current.Id == to.Id {
+			fmt.Println("[Astar]", "Path is found")
 			return reconstruct_path(path), true
 		}
 
-		path = NewPath(path, current)
-		paths[current.Id] = path
 		openList = RemoveItem(openList, current)
-		fmt.Println("[Astar]", "Current", current)
 
 		for _, item := range current.StreetId {
 			var street Street = Streets[item]
 
 			for _, item2 := range street.NodeIds {
-				var eG float64 = current.Data.G + d(current.Location, Nodes[item2].Location)
+				if closeList[item2] {
+					continue
+				}
+
+				var eG float64 = d(current.Location, Nodes[item2].Location)
 				var eH float64 = h_euclid(Nodes[item2].Location, to.Location)
 				var eF float64 = eG + eH
-
+				// fmt.Println("[Astar]", "Compare F", current.Data.F, eF)
 				if _, ok := closeList[item2]; !ok {
 					closeList[item2] = false
 				}
 
-				if eF <= current.Data.F || !closeList[item2] {
+				if eF <= current.Data.F {
 					if !closeList[item2] {
 						data := Nodes[item2]
 						data.Data.G = eG
@@ -114,7 +118,6 @@ func route(from Node, to Node) ([]Node, bool) {
 						var s SortNode = openList
 						sort.Stable(s)
 					}
-
 				}
 			}
 
@@ -122,6 +125,7 @@ func route(from Node, to Node) ([]Node, bool) {
 
 	}
 
+	fmt.Println("[Astar]", "Cannot find any path")
 	return nil, false
 }
 
@@ -146,7 +150,7 @@ func Test() {
 	n2.Neighbors = []Node{*n3, *n4}
 	n1.Neighbors = []Node{*n2}
 
-	var path, result = route(*n1, *n4)
+	var path, result = Route(*n1, *n4)
 
 	if result {
 		fmt.Println("[AStar]", "Success")
