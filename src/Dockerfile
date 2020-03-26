@@ -1,3 +1,7 @@
 FROM golang:latest
 
-RUN go run 
+ADD . /server
+WORKDIR /server
+RUN echo "Asia/Ho_Chi_Minh" > /etc/timezone
+
+CMD ["go", "run", "./main.go"]

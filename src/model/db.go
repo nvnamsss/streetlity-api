@@ -13,7 +13,7 @@ import (
 
 type Configuration struct {
 	Server   string
-	Database string
+	Database string `json:"dbname"`
 	Username string
 	Password string
 }
@@ -47,6 +47,7 @@ func init() {
 
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s)/%s",
 		Config.Username, Config.Password, Config.Server, Config.Database)
+	log.Println(connectionString)
 	db, err := gorm.Open("mysql", connectionString)
 	Db = db
 	log.Println(reflect.TypeOf(db))
