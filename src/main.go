@@ -9,7 +9,6 @@ import (
 	"os/signal"
 	"time"
 
-	_ "example.com/m/v2/himompkg"
 	"example.com/m/v2/router"
 	"github.com/gorilla/mux"
 )

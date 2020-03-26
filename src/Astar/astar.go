@@ -1,3 +1,4 @@
+//Deprecated: this package is no longer using for map development
 package Astar
 
 import (

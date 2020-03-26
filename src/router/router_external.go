@@ -8,11 +8,12 @@ import (
 
 func external(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("External"))
-
 }
 
 func Handle(router *mux.Router) {
 	s := router.PathPrefix("/external").Subrouter()
 	s.HandleFunc("/", external).
 		Methods("GET", "POST")
+
+	HandleFuel(router)
 }
