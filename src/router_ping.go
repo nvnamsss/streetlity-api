@@ -6,8 +6,8 @@ import (
 )
 
 func ping(w http.ResponseWriter, req *http.Request) {
-	log.Println("Test is called")
-	w.Write([]byte("test is called"))
+	log.Println("Ping")
+	w.Write([]byte("Ping"))
 
 }
 
