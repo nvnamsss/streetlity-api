@@ -16,7 +16,7 @@ import (
 
 type Configuration struct {
 	Server   string
-	Database string
+	DbName   string
 	Username string
 	Password string
 }
@@ -26,7 +26,7 @@ var Db *sql.DB
 
 func connect() {
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s)/%s",
-		Config.Username, Config.Password, Config.Server, Config.Database)
+		Config.Username, Config.Password, Config.Server, Config.DbName)
 	fmt.Println(connectionString)
 	db, err := sql.Open("mysql", connectionString)
 	if err != nil {
