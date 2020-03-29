@@ -11,3 +11,17 @@ type Fuel struct {
 func (Fuel) TableName() string {
 	return "fuel"
 }
+
+func AllFuels() []Fuel {
+	var services []Fuel
+	Db.Find(&services)
+
+	return services
+}
+
+func FuelById(id int64) Fuel {
+	var service Fuel
+	Db.Find(&service, id)
+
+	return service
+}

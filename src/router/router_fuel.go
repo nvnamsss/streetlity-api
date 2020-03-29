@@ -20,11 +20,9 @@ func getFuels(w http.ResponseWriter, req *http.Request) {
 	}
 	result.Status = true
 
-	var f []model.Fuel
-	model.Db.Find(&f)
-	result.Fuels = f
+	result.Fuels = model.AllFuels()
 
-	log.Println("[GetFuels]", f)
+	log.Println("[GetFuels]", result.Fuels)
 
 	jsonData, jsonErr := json.Marshal(result)
 
@@ -38,11 +36,11 @@ func getFuels(w http.ResponseWriter, req *http.Request) {
 func getFuel(w http.ResponseWriter, req *http.Request) {
 	var result struct {
 		Status  bool
-		Fuels   []model.Fuel
+		Fuel    model.Fuel
 		Message []string
 	}
+
 	result.Status = true
-	result.Fuels = []model.Fuel{}
 	result.Message = []string{}
 	query := req.URL.Query()
 
@@ -62,10 +60,8 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if result.Status {
-		var f []model.Fuel
-		model.Db.Find(&f, id)
-		result.Fuels = f	
-		log.Println("[GetFuel]", f)
+		result.Fuel = model.FuelById(id)
+		log.Println("[GetFuel]", result.Fuel)
 	} else {
 		log.Println("[GetFuel]", "Request failed")
 	}
@@ -129,7 +125,7 @@ func update(w http.ResponseWriter, req *http.Request) {
 func HandleFuel(router *mux.Router) {
 	log.Println("[Router]", "Handling fuel")
 	s := router.PathPrefix("/fuel").Subrouter()
-	s.HandleFunc("/getFuels", getFuels).Methods("GET")
+	s.HandleFunc("/all", getFuels).Methods("GET")
 	s.HandleFunc("/update", update).Methods("POST")
-	s.HandleFunc("/getFuel", getFuel).Methods("GET")
+	s.HandleFunc("/id", getFuel).Methods("GET")
 }

@@ -5,11 +5,25 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-type ATM struct {
+type Atm struct {
 	gorm.Model
 	Location r2.Point
 }
 
-func (ATM) TableName() string {
+func (Atm) TableName() string {
 	return "atm"
+}
+
+func AllAtm() []Fuel {
+	var services []Fuel
+	Db.Find(&services)
+
+	return services
+}
+
+func AtmById(id int64) Atm {
+	var service Atm
+	Db.Find(&service, id)
+
+	return service
 }
