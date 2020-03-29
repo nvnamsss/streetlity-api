@@ -64,7 +64,7 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 	if result.Status {
 		var f []model.Fuel
 		model.Db.Find(&f, id)
-		result.Fuels = f
+		result.Fuels = f	
 		log.Println("[GetFuel]", f)
 	} else {
 		log.Println("[GetFuel]", "Request failed")
