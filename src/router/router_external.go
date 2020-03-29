@@ -16,4 +16,5 @@ func Handle(router *mux.Router) {
 		Methods("GET", "POST")
 
 	HandleFuel(router)
+	HandlePing(router)
 }

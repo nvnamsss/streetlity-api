@@ -1,8 +1,10 @@
-package main
+package router
 
 import (
 	"log"
 	"net/http"
+
+	"github.com/gorilla/mux"
 )
 
 func ping(w http.ResponseWriter, req *http.Request) {
@@ -11,9 +13,9 @@ func ping(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func init() {
-	log.Println("init test")
-	s := Router.PathPrefix("/ping").Subrouter()
+func HandlePing(router *mux.Router) {
+	log.Println("[Router]", "Handling ping")
+	s := router.PathPrefix("/ping").Subrouter()
 	s.HandleFunc("/", ping).
 		Methods("GET", "POST")
 }
