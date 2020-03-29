@@ -1,8 +1,7 @@
 FROM golang:latest
 
-ADD . /server
-WORKDIR /server/src
+ADD ./src /server
+WORKDIR /server
 RUN echo "Asia/Ho_Chi_Minh" > /etc/timezone
-
-
+RUN ls
 CMD ["go", "run", "main.go"]
