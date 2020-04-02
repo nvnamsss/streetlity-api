@@ -1,4 +1,4 @@
-API Server written by Golang for Streetlity Project, aims to high performance in massive processing
+API Server written by Golang for Streetlity Project, aims to high performance in massive processing.
 
 # API
 `API Server` providing required function for working with services.

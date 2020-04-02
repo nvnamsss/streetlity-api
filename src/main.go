@@ -7,9 +7,9 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"streelity/v1/router"
 	"time"
 
-	"example.com/m/v2/router"
 	"github.com/gorilla/mux"
 )
 

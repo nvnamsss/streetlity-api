@@ -6,8 +6,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-
-	"example.com/m/v2/model"
+	"streelity/v1/model"
 
 	"github.com/gorilla/mux"
 )

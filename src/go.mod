@@ -1,9 +1,11 @@
-module example.com/m/v2
+module streelity/v1
 
 go 1.14
 
 require (
 	github.com/go-sql-driver/mysql v1.5.0
+	github.com/gojektech/heimdall v5.0.2+incompatible
+	github.com/gojektech/valkyrie v0.0.0-20190210220504-8f62c1e7ba45 // indirect
 	github.com/golang/geo v0.0.0-20190916061304-5b978397cfec
 	github.com/gorilla/mux v1.7.4
 	github.com/jinzhu/gorm v1.9.12

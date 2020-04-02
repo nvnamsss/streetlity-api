@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"path/filepath"
 	"reflect"
+	"runtime"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -24,10 +26,10 @@ type Service interface {
 var Db *gorm.DB
 var Config Configuration
 
-func loadConfig() {
-	file, fileErr := os.Open("config/config.json")
+func loadConfig(path string) {
+	file, fileErr := os.Open(path)
 	if fileErr != nil {
-		
+
 		log.Panic(fileErr)
 	}
 
@@ -44,7 +46,11 @@ func loadConfig() {
 }
 
 func init() {
-	loadConfig()
+	_, b, _, _ := runtime.Caller(0)
+	basepath := filepath.Dir(b)
+	configPath := filepath.Join(filepath.Dir(basepath), "config", "config.json")
+
+	loadConfig(configPath)
 
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s)/%s",
 		Config.Username, Config.Password, Config.Server, Config.Database)

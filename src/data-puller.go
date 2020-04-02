@@ -8,8 +8,8 @@ import (
 	"os"
 	"regexp"
 	"strconv"
+	"streelity/v1/Astar"
 
-	"example.com/m/v2/Astar"
 	_ "github.com/go-sql-driver/mysql"
 	r2 "github.com/golang/geo/r2"
 )
