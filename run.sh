@@ -13,4 +13,4 @@ docker run --name ${name}_api_container -d\
             -p 9000:9000 \
             api_container
 
-    
+docker cp config.json ${name}_api_container:/server/config/config.json    

@@ -27,6 +27,7 @@ var Config Configuration
 func loadConfig() {
 	file, fileErr := os.Open("config/config.json")
 	if fileErr != nil {
+		
 		log.Panic(fileErr)
 	}
 
@@ -53,7 +54,8 @@ func init() {
 	log.Println(reflect.TypeOf(db))
 
 	if err != nil {
-		panic(err)
+		log.Println(err.Error())
+		//panic(err)
 	}
 	log.Println("Hi mom init db")
 }

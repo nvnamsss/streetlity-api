@@ -2,5 +2,6 @@
     "server" : "mysql_container:3306",
     "dbname" : "map",
     "username" : "root",
-    "password" : "streetlity"
+    "password" : "streetlity",
+    "testna" :"na"
 }
