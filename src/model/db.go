@@ -6,8 +6,9 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"reflect"
 	"runtime"
+	"streelity/v1/event"
+	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
@@ -25,6 +26,7 @@ type Service interface {
 
 var Db *gorm.DB
 var Config Configuration
+var OnDisconnect *event.Event = event.NewEvent()
 
 func loadConfig(path string) {
 	file, fileErr := os.Open(path)
@@ -45,23 +47,39 @@ func loadConfig(path string) {
 
 }
 
+func connect() {
+	connectionString := fmt.Sprintf("%s:%s@tcp(%s)/%s",
+		Config.Username, Config.Password, Config.Server, Config.Database)
+	db, err := gorm.Open("mysql", connectionString)
+	Db = db
+
+	if err != nil {
+		OnDisconnect.Invoke()
+		log.Println(err.Error())
+		// reconnect()
+	}
+}
+
+func reconnect() {
+	timer := time.NewTimer(10 * time.Second)
+	<-timer.C
+
+	connect()
+}
+
+func himom() {
+	fmt.Println("Hi mom I'm subscriber")
+}
 func init() {
 	_, b, _, _ := runtime.Caller(0)
 	basepath := filepath.Dir(b)
 	configPath := filepath.Join(filepath.Dir(basepath), "config", "config.json")
 
 	loadConfig(configPath)
+	OnDisconnect.Subscribe(reconnect)
+	OnDisconnect.Subscribe(himom)
+	OnDisconnect.Unsubscribe(himom)
+	go connect()
 
-	connectionString := fmt.Sprintf("%s:%s@tcp(%s)/%s",
-		Config.Username, Config.Password, Config.Server, Config.Database)
-	log.Println(connectionString)
-	db, err := gorm.Open("mysql", connectionString)
-	Db = db
-	log.Println(reflect.TypeOf(db))
-
-	if err != nil {
-		log.Println(err.Error())
-		//panic(err)
-	}
 	log.Println("Hi mom init db")
 }
