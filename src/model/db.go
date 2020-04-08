@@ -77,8 +77,7 @@ func init() {
 
 	loadConfig(configPath)
 	OnDisconnect.Subscribe(reconnect)
-	OnDisconnect.Subscribe(himom)
-	OnDisconnect.Unsubscribe(himom)
+
 	go connect()
 
 	log.Println("Hi mom init db")

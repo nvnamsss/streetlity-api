@@ -1,5 +1,7 @@
 package model
 
+import "streelity/v1/spatial"
+
 type Fuel struct {
 	Id  int64
 	Lat float32 `gorm:"column:lat"`
@@ -24,4 +26,8 @@ func FuelById(id int64) Fuel {
 	Db.Find(&service, id)
 
 	return service
+}
+
+func FuelsInRange(circle spatial.Circle) []Fuel {
+	return nil
 }

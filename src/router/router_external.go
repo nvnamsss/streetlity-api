@@ -15,6 +15,7 @@ func Handle(router *mux.Router) {
 	s.HandleFunc("/", external).
 		Methods("GET", "POST")
 
+	HandleAuth(router)
 	HandleFuel(router)
 	HandlePing(router)
 }

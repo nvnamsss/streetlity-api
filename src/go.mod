@@ -3,6 +3,7 @@ module streelity/v1
 go 1.14
 
 require (
+	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ethereum/go-ethereum v1.9.12
 	github.com/go-sql-driver/mysql v1.5.0
 	github.com/gojektech/heimdall v5.0.2+incompatible
