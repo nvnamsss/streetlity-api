@@ -1,6 +1,10 @@
 package model
 
-import "streelity/v1/spatial"
+import (
+	"streelity/v1/spatial"
+
+	"github.com/golang/geo/r2"
+)
 
 type Fuel struct {
 	Id  int64
@@ -14,6 +18,10 @@ func (Fuel) TableName() string {
 	return "fuel"
 }
 
+func (f Fuel) GetLocation() r2.Point {
+	var p r2.Point = Point{X: f.Lat, Y: f.Lon}
+	return p
+}
 func AllFuels() []Fuel {
 	var services []Fuel
 	Db.Find(&services)
