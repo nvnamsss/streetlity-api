@@ -153,6 +153,10 @@ func chandler(w http.ResponseWriter, req *http.Request) {
 	fmt.Println(req.URL)
 }
 
+func multipleReturn() (bool, int) {
+	return true, 1
+}
+
 func emptyInterface() {
 	var i struct {
 		a int

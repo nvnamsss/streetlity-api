@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 	"github.com/gorilla/mux"
@@ -15,7 +16,7 @@ func confirm(w http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
 	tokenString := query["token"]
 
-	status := model.Auth(tokenString[0])
+	status, _ := model.Auth(tokenString[0])
 
 	w.Write([]byte(strconv.FormatBool(status)))
 }
@@ -41,10 +42,10 @@ func auth(w http.ResponseWriter, req *http.Request) {
 	if result.Status {
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"id":  id,
-			"exp": 60,
+			"exp": time.Now().Add(time.Minute*10 + time.Second*30).Unix(),
 		})
 
-		tokenString, err := token.SignedString([]byte("secret-key"))
+		tokenString, err := token.SignedString([]byte("secret-key-0985399536aA"))
 
 		result.Token = tokenString
 		if err != nil {

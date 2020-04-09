@@ -43,6 +43,14 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 	result.Message = []string{}
 	query := req.URL.Query()
 
+	status, err := model.Auth(query["token"][0])
+	if !status {
+		result.Status = false
+		result.Message = append(result.Message, err.Error())
+		data, _ := json.Marshal(result)
+		w.Write(data)
+	}
+
 	var id int64
 	var idErr error
 	log.Println("[GetFuel]", query)
@@ -73,7 +81,7 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 	w.Write(jsonData)
 }
 
-func update(w http.ResponseWriter, req *http.Request) {
+func updateFuel(w http.ResponseWriter, req *http.Request) {
 	var result struct {
 		Status  bool
 		Message []string
@@ -125,6 +133,6 @@ func HandleFuel(router *mux.Router) {
 	log.Println("[Router]", "Handling fuel")
 	s := router.PathPrefix("/fuel").Subrouter()
 	s.HandleFunc("/all", getFuels).Methods("GET")
-	s.HandleFunc("/update", update).Methods("POST")
+	s.HandleFunc("/update", updateFuel).Methods("POST")
 	s.HandleFunc("/id", getFuel).Methods("GET")
 }

@@ -2,12 +2,13 @@ package model
 
 import (
 	"fmt"
-	"log"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
-func Auth(tokenString string) bool {
+const RoleAdmin = 10
+
+func Auth(tokenString string) (bool, error) {
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -15,21 +16,14 @@ func Auth(tokenString string) bool {
 		}
 
 		// hmacSampleSecret is a []byte containing your secret, e.g. []byte("my_secret_key")
-		return []byte("secret-key"), nil
+		return []byte("secret-key-0985399536aA"), nil
 	})
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		err = claims.Valid()
-
-		if err != nil {
-			/** refresh logic **/
-			log.Println("expired")
-		}
-
 		fmt.Println(claims)
-		return true
+		return true, nil
 	} else {
 		fmt.Println(err)
-		return false
+		return false, err
 	}
 }

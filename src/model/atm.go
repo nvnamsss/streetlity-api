@@ -1,6 +1,8 @@
 package model
 
 import (
+	"streelity/v1/spatial"
+
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
 )
@@ -14,7 +16,7 @@ func (Atm) TableName() string {
 	return "atm"
 }
 
-func AllAtm() []Fuel {
+func AllAtms() []Fuel {
 	var services []Fuel
 	Db.Find(&services)
 
@@ -26,4 +28,11 @@ func AtmById(id int64) Atm {
 	Db.Find(&service, id)
 
 	return service
+}
+
+func AllAtmsInRange(circle spatial.Circle) []Fuel {
+	var services []Fuel
+	Db.Find(&services)
+
+	return services
 }

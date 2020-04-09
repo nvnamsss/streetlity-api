@@ -6,6 +6,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
+///1 lat = 111km
 func external(w http.ResponseWriter, req *http.Request) {
 	w.Write([]byte("External"))
 }
