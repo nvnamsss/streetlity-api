@@ -21,12 +21,10 @@ type Configuration struct {
 	Password string
 }
 
-type Service interface {
-}
-
 var Db *gorm.DB
 var Config Configuration
 var OnDisconnect *event.Event = event.NewEvent()
+var OnConnected *event.Event = event.NewEvent()
 
 func loadConfig(path string) {
 	file, fileErr := os.Open(path)
@@ -56,8 +54,10 @@ func connect() {
 	if err != nil {
 		OnDisconnect.Invoke()
 		log.Println(err.Error())
-		// reconnect()
+	} else {
+		OnConnected.Invoke()
 	}
+
 }
 
 func reconnect() {
@@ -77,7 +77,7 @@ func init() {
 
 	loadConfig(configPath)
 	OnDisconnect.Subscribe(reconnect)
-
+	OnConnected.Subscribe(LoadService)
 	go connect()
 
 	log.Println("Hi mom init db")

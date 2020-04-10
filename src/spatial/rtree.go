@@ -2,26 +2,27 @@ package spatial
 
 import (
 	"errors"
-	"fmt"
 	"math"
 
 	"github.com/golang/geo/r2"
 )
 
+//RTree repesentation a tree for spatial indexing which improve the time for searching a location in space
 type RTree struct {
 	Ancestor   *RTree
 	Descendant []*RTree
-	Items      []*Item
+	Items      []Item
 	Rect       r2.Rect
 	MaxItem    int
+	level      int
 }
 
 type Item interface {
 	GetLocation() r2.Point
 }
 
-//Add new cell to current cell
-func (r *RTree) Add(l *RTree) error {
+//AddTree new RTree to current RTree
+func (r *RTree) AddTree(l *RTree) error {
 	if l == nil {
 		return errors.New("Additional RTree is nil")
 	}
@@ -37,20 +38,74 @@ func (r *RTree) Add(l *RTree) error {
 
 	r.Descendant = append(r.Descendant, l)
 	l.Ancestor = r
-
+	l.level = r.level + 1
 	return nil
 }
 
-//Add new item to tree, new node will be added if required node is not exist
+//The AddItem add new item to the tree, new node will be added if required node is not exist
 func (r *RTree) AddItem(item Item) error {
-	location := item.GetLocation()
-	fmt.Println(location)
+	tree := r.Contains(item)
+
+	if tree == nil {
+		tree = NewRTree()
+		tree.Items = append(tree.Items, item)
+		r.AddTree(tree)
+		location := item.GetLocation()
+		tree.Rect.X.Lo = location.X - 0.5
+		tree.Rect.Y.Lo = location.Y - 0.5
+		tree.Rect.X.Hi = location.X + 0.5
+		tree.Rect.Y.Hi = location.X + 0.5
+	} else {
+		tree.Items = append(tree.Items, item)
+	}
 
 	return nil
 }
-func (r *RTree) Find(location r2.Point) *RTree {
 
-	return nil
+//Find the Tree which is holding finding item
+//The smallest tree will be returned if found
+//otherwise the return value will be nil
+func (r *RTree) Contains(item Item) *RTree {
+	location := item.GetLocation()
+	var result *RTree = nil
+
+	for _, element := range r.Descendant {
+		if element.Rect.ContainsPoint(location) {
+			small := element.Contains(item)
+			if small != nil {
+				result = small
+			} else {
+				result = element
+			}
+		}
+	}
+
+	return result
+}
+
+func (r RTree) Level() int {
+	level := 0
+
+	for r.Ancestor != nil {
+		level += 1
+		r = *r.Ancestor
+	}
+
+	return level
+}
+
+//Find all RTree which are matched with the function
+func (r *RTree) Find(match func(tree *RTree) bool) []RTree {
+	var result []RTree
+	if match(r) {
+		result = append(result, *r)
+
+		for _, item := range r.Descendant {
+			result = append(result, item.Find(match)...)
+		}
+	}
+
+	return result
 }
 
 //Get the distance between two RTree
@@ -66,6 +121,7 @@ func (r RTree) Distance(l RTree) float64 {
 func NewRTree() *RTree {
 	qt := new(RTree)
 	qt.Ancestor = nil
+	qt.level = 0
 
 	return qt
 }

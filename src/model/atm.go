@@ -4,20 +4,25 @@ import (
 	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
-	"github.com/jinzhu/gorm"
 )
 
 type Atm struct {
-	gorm.Model
-	Location r2.Point
+	Id  int64
+	Lat float32 `gorm:"column:lat"`
+	Lon float32 `gorm:"column:lon"`
 }
 
 func (Atm) TableName() string {
 	return "atm"
 }
 
-func AllAtms() []Fuel {
-	var services []Fuel
+func (s Atm) GetLocation() r2.Point {
+	var p r2.Point = r2.Point{X: float64(s.Lat), Y: float64(s.Lon)}
+	return p
+}
+
+func AllAtms() []Atm {
+	var services []Atm
 	Db.Find(&services)
 
 	return services
@@ -30,8 +35,8 @@ func AtmById(id int64) Atm {
 	return service
 }
 
-func AllAtmsInRange(circle spatial.Circle) []Fuel {
-	var services []Fuel
+func AllAtmsInRange(circle spatial.Circle) []Atm {
+	var services []Atm
 	Db.Find(&services)
 
 	return services

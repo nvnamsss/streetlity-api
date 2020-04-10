@@ -81,6 +81,21 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 	w.Write(jsonData)
 }
 
+func getFuelInRange(w http.ResponseWriter, req *http.Request) {
+	var result struct {
+		Status  bool
+		Fuels   []model.Fuel
+		Message string
+	}
+
+	jsonData, jsonErr := json.Marshal(result)
+	if jsonErr != nil {
+		log.Println(jsonErr)
+	}
+	fmt.Println(string(jsonData))
+	w.Write(jsonData)
+}
+
 func updateFuel(w http.ResponseWriter, req *http.Request) {
 	var result struct {
 		Status  bool
@@ -135,4 +150,5 @@ func HandleFuel(router *mux.Router) {
 	s.HandleFunc("/all", getFuels).Methods("GET")
 	s.HandleFunc("/update", updateFuel).Methods("POST")
 	s.HandleFunc("/id", getFuel).Methods("GET")
+	s.HandleFunc("/range", getFuelInRange).Methods("GET")
 }

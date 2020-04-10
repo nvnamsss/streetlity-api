@@ -1,6 +1,6 @@
 {
-    "server" : "mysql_container:3306",
+    "server" : "localhost:3306",
     "dbname" : "map",
     "username" : "root",
-    "password" : "streetlity"
+    "password" : "manager"
 }

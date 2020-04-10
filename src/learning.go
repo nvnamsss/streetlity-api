@@ -65,6 +65,13 @@ func multiple_dimension_array() {
 	fmt.Println("[Multiple Dimension Array]", len(a))
 }
 
+func while() {
+	sum := 1
+
+	for sum < 1000 {
+		sum += sum
+	}
+}
 func foreach() {
 
 	var a []int = []int{7, 2, 3, 4, 5}
