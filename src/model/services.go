@@ -12,13 +12,6 @@ type Service interface {
 
 var services spatial.RTree
 
-func meomeo() {
-	var f *Fuel = new(Fuel)
-	item := spatial.Item(f)
-	services.Items = append(services.Items, item)
-
-}
-
 func ServicesInRange() {
 	p := r2.Point{X: 5, Y: 5}
 	services.Find(func(rtree *spatial.RTree) bool {

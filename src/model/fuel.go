@@ -18,7 +18,7 @@ func (Fuel) TableName() string {
 	return "fuel"
 }
 
-func (s Fuel) GetLocation() r2.Point {
+func (s Fuel) Location() r2.Point {
 	var p r2.Point = r2.Point{X: float64(s.Lat), Y: float64(s.Lon)}
 	return p
 }

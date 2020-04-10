@@ -4,6 +4,7 @@ import (
 	"errors"
 	"math"
 
+	"github.com/golang/geo/r1"
 	"github.com/golang/geo/r2"
 )
 
@@ -18,7 +19,7 @@ type RTree struct {
 }
 
 type Item interface {
-	GetLocation() r2.Point
+	Location() r2.Point
 }
 
 //AddTree new RTree to current RTree
@@ -43,33 +44,75 @@ func (r *RTree) AddTree(l *RTree) error {
 }
 
 //The AddItem add new item to the tree, new node will be added if required node is not exist
-func (r *RTree) AddItem(item Item) error {
-	tree := r.Contains(item)
+func (rt *RTree) AddItem(item Item) error {
+	tree := rt.Nearest(item.Location(), 20)
 
 	if tree == nil {
 		tree = NewRTree()
-		tree.Items = append(tree.Items, item)
-		r.AddTree(tree)
-		location := item.GetLocation()
+		rt.AddTree(tree)
+		location := item.Location()
 		tree.Rect.X.Lo = location.X - 0.5
 		tree.Rect.Y.Lo = location.Y - 0.5
 		tree.Rect.X.Hi = location.X + 0.5
 		tree.Rect.Y.Hi = location.X + 0.5
-	} else {
-		tree.Items = append(tree.Items, item)
 	}
 
+	tree.Items = append(tree.Items, item)
+	tree.UpdateRect()
+
 	return nil
+}
+
+//UpdateRect modify the Rect size and affect to the Rect of Ancestor
+//UpdateRect should be used for automatically updating size of Rect
+func (rt *RTree) UpdateRect() {
+	if len(rt.Items) == 0 {
+		return
+	}
+
+	location := rt.Items[0].Location()
+	var x r1.Interval = r1.Interval{Lo: location.X, Hi: location.X}
+	var y r1.Interval = r1.Interval{Lo: location.Y, Hi: location.Y}
+
+	for _, item := range rt.Items {
+		p := item.Location()
+
+		x.Lo = math.Min(x.Lo, p.X)
+		x.Hi = math.Max(x.Hi, p.X)
+
+		y.Lo = math.Min(y.Lo, p.Y)
+		y.Hi = math.Max(y.Hi, p.Y)
+	}
+
+	rt.Rect.X = x
+	rt.Rect.Y = y
+}
+
+//Nearest find the nearest RTree in Descendant which is in max_range from the location
+//nil will be return if there are no RTree
+func (rt *RTree) Nearest(location r2.Point, max_range float64) *RTree {
+	var min float64 = math.MaxFloat64
+	var result *RTree = nil
+	for _, tree := range rt.Descendant {
+		d := tree.Distance(location)
+
+		if d < min {
+			d = min
+			result = tree
+		}
+	}
+
+	return result
 }
 
 //Find the Tree which is holding finding item
 //The smallest tree will be returned if found
 //otherwise the return value will be nil
-func (r *RTree) Contains(item Item) *RTree {
-	location := item.GetLocation()
+func (rt *RTree) Contains(item Item) *RTree {
+	location := item.Location()
 	var result *RTree = nil
 
-	for _, element := range r.Descendant {
+	for _, element := range rt.Descendant {
 		if element.Rect.ContainsPoint(location) {
 			small := element.Contains(item)
 			if small != nil {
@@ -83,24 +126,24 @@ func (r *RTree) Contains(item Item) *RTree {
 	return result
 }
 
-func (r RTree) Level() int {
+func (rt RTree) Level() int {
 	level := 0
 
-	for r.Ancestor != nil {
+	for rt.Ancestor != nil {
 		level += 1
-		r = *r.Ancestor
+		rt = *rt.Ancestor
 	}
 
 	return level
 }
 
 //Find all RTree which are matched with the function
-func (r *RTree) Find(match func(tree *RTree) bool) []RTree {
+func (rt *RTree) Find(match func(tree *RTree) bool) []RTree {
 	var result []RTree
-	if match(r) {
-		result = append(result, *r)
+	if match(rt) {
+		result = append(result, *rt)
 
-		for _, item := range r.Descendant {
+		for _, item := range rt.Descendant {
 			result = append(result, item.Find(match)...)
 		}
 	}
@@ -110,11 +153,12 @@ func (r *RTree) Find(match func(tree *RTree) bool) []RTree {
 
 //Get the distance between two RTree
 //Location is measure by center of two RTree
-func (r RTree) Distance(l RTree) float64 {
-	var p1 r2.Point = r2.Point{X: r.Rect.X.Lo, Y: r.Rect.Y.Lo}
-	var p2 r2.Point = r2.Point{X: r.Rect.X.Hi, Y: r.Rect.Y.Hi}
+func (r RTree) Distance(p r2.Point) float64 {
+	center := r.Rect.Center()
+	x := math.Pow(center.X-p.X, 2)
+	y := math.Pow(center.Y-p.Y, 2)
 
-	return math.Sqrt(math.Pow(p1.X-p2.X, 2) + math.Pow(p1.Y-p2.Y, 2))
+	return math.Sqrt(x + y)
 }
 
 //Create new pointer RTree
