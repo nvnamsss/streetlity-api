@@ -12,7 +12,7 @@ func (Toilet) TableName() string {
 	return "toilet"
 }
 
-func (s Toilet) GetLocation() r2.Point {
+func (s Toilet) Location() r2.Point {
 	var p r2.Point = r2.Point{X: float64(s.Lat), Y: float64(s.Lon)}
 	return p
 }

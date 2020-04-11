@@ -1,8 +1,6 @@
 package model
 
 import (
-	"streelity/v1/spatial"
-
 	"github.com/golang/geo/r2"
 )
 
@@ -37,6 +35,6 @@ func FuelById(id int64) Fuel {
 	return service
 }
 
-func FuelsInRange(circle spatial.Circle) []Fuel {
+func FuelsInRange(p r2.Point, max_range float64) []Fuel {
 	return nil
 }

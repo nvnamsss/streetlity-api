@@ -8,7 +8,7 @@ import (
 	"github.com/golang/geo/r2"
 )
 
-//RTree repesentation a tree for spatial indexing which improve the time for searching a location in space
+//RTree representation a tree for spatial indexing which improve the time for searching a location in space
 type RTree struct {
 	Ancestor   *RTree
 	Descendant []*RTree
@@ -22,7 +22,9 @@ type Item interface {
 	Location() r2.Point
 }
 
-//AddTree new RTree to current RTree
+//AddTree new RTree to current Tree,
+//the left tree will be descendant of the right tree and the right tree will be the ancestor of the left tree.
+//An error will be returned in case the left tree is nil or the left tree is already been the descendant of the right.
 func (r *RTree) AddTree(l *RTree) error {
 	if l == nil {
 		return errors.New("Additional RTree is nil")
@@ -43,18 +45,15 @@ func (r *RTree) AddTree(l *RTree) error {
 	return nil
 }
 
-//The AddItem add new item to the tree, new node will be added if required node is not exist
+//The AddItem adds a new item to the tree.
+//automatically create new RTree to hold this item if these are no RTree near the item
+//AddItem helps to automatically scale the tree and find the right tree for grouping
 func (rt *RTree) AddItem(item Item) error {
 	tree := rt.Nearest(item.Location(), 20)
 
 	if tree == nil {
 		tree = NewRTree()
 		rt.AddTree(tree)
-		location := item.Location()
-		tree.Rect.X.Lo = location.X - 0.5
-		tree.Rect.Y.Lo = location.Y - 0.5
-		tree.Rect.X.Hi = location.X + 0.5
-		tree.Rect.Y.Hi = location.X + 0.5
 	}
 
 	tree.Items = append(tree.Items, item)
@@ -63,7 +62,7 @@ func (rt *RTree) AddItem(item Item) error {
 	return nil
 }
 
-//UpdateRect modify the Rect size and affect to the Rect of Ancestor
+//UpdateRect modify the Rect the size and affect to the Rect of Ancestor
 //UpdateRect should be used for automatically updating size of Rect
 func (rt *RTree) UpdateRect() {
 	if len(rt.Items) == 0 {
@@ -88,10 +87,25 @@ func (rt *RTree) UpdateRect() {
 	rt.Rect.Y = y
 }
 
+//InRange find trees which are not further than the max range with the location
+//Items in the tree are potential to be the item in the range
+func (rt *RTree) InRange(location r2.Point, max_range float64) []RTree {
+	var result []RTree = []RTree{}
+	for _, tree := range rt.Descendant {
+		d := tree.Distance(location)
+
+		if d <= max_range {
+			result = append(result, *tree)
+		}
+	}
+
+	return result
+}
+
 //Nearest find the nearest RTree in Descendant which is in max_range from the location
-//nil will be return if there are no RTree
+//nil will be returned if there are no RTree
 func (rt *RTree) Nearest(location r2.Point, max_range float64) *RTree {
-	var min float64 = math.MaxFloat64
+	var min float64 = max_range
 	var result *RTree = nil
 	for _, tree := range rt.Descendant {
 		d := tree.Distance(location)
