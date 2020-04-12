@@ -18,6 +18,5 @@ func Handle(router *mux.Router) {
 
 	HandleService(router)
 	HandleAuth(router)
-	HandleFuel(router)
 	HandlePing(router)
 }

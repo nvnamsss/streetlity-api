@@ -1,6 +1,8 @@
 package model
 
 import (
+	"log"
+
 	"github.com/golang/geo/r2"
 )
 
@@ -26,6 +28,19 @@ func AllFuels() []Fuel {
 	Db.Find(&services)
 
 	return services
+}
+
+func AddFuel(f Fuel) error {
+	Db.Create(&f)
+
+	var last Fuel
+	Db.Last(&last)
+
+	if last.Lat == f.Lat && last.Lon == f.Lon {
+		log.Println("Create new fuel is succeed")
+	}
+
+	return nil
 }
 
 func FuelById(id int64) Fuel {

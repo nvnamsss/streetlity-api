@@ -56,6 +56,7 @@ func connect() {
 		log.Println(err.Error())
 	} else {
 		OnConnected.Invoke()
+		log.Println("[Database] connect success")
 	}
 
 }

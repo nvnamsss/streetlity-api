@@ -10,6 +10,7 @@ import (
 	"streelity/v1/router"
 	"time"
 
+	"github.com/gorilla/handlers"
 	"github.com/gorilla/mux"
 )
 
@@ -29,7 +30,8 @@ func main() {
 	flag.DurationVar(&wait, "graceful-timeout", time.Second*15, "the duration for which the server gracefully wait for existing connections to finish - e.g. 15s or 1m")
 	flag.Parse()
 
-	Router.HandleFunc("/himom", himom)
+	loggedRouter := handlers.LoggingHandler(os.Stdout, Router)
+
 	router.Handle(Router)
 
 	Server := &http.Server{
@@ -37,7 +39,7 @@ func main() {
 		WriteTimeout: time.Second * 30,
 		ReadTimeout:  time.Second * 30,
 		IdleTimeout:  time.Second * 60,
-		Handler:      Router,
+		Handler:      loggedRouter,
 	}
 
 	go func() {

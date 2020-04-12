@@ -10,6 +10,7 @@ require (
 	github.com/gojektech/valkyrie v0.0.0-20190210220504-8f62c1e7ba45 // indirect
 	github.com/golang/geo v0.0.0-20190916061304-5b978397cfec
 	github.com/gookit/event v1.0.3
+	github.com/gorilla/handlers v1.4.2 // indirect
 	github.com/gorilla/mux v1.7.4
 	github.com/jinzhu/gorm v1.9.12
 	github.com/lukehoban/go-outline v0.0.0-20161011150102-e78556874252 // indirect

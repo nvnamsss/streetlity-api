@@ -18,15 +18,15 @@ func (e *Event) Subscribe(callback func()) {
 	e.callbacks[id] = callback
 }
 
-//Unsubscribe the callback function if it been subsribed
-func (e *Event) Unsubscribe(callback interface{}) {
+//Unsubscribe the callback function if it been subscribed
+func (e *Event) Unsubscribe(callback func()) {
 	id := runtime.FuncForPC(reflect.ValueOf(callback).Pointer()).Name()
 	delete(e.callbacks, id)
 }
 
 //Trigger all subscribed callbacks
 //If trigger type is async, all subscribed callback will run by goroutine
-//Other whise
+//Other whise it will be sequentially runned
 func (e *Event) Invoke() {
 	for _, item := range e.callbacks {
 		if e.Async {

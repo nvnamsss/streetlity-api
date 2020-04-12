@@ -2,11 +2,13 @@ package router
 
 import (
 	"encoding/json"
+	"errors"
 	"fmt"
 	"log"
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
+	"streelity/v1/pipeline"
 
 	"github.com/gorilla/mux"
 )
@@ -140,7 +142,80 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 	if jsonErr != nil {
 		log.Println(jsonErr)
 	}
-	fmt.Println(string(jsonData))
+	w.Write(jsonData)
+}
+
+func addFuel(w http.ResponseWriter, req *http.Request) {
+	var result struct {
+		Status  bool
+		Message string
+	}
+
+	result.Status = true
+	req.ParseForm()
+	form := req.PostForm
+
+	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
+	validateParamsStage := pipeline.NewStage(func() error {
+		location, locationOk := form["location"]
+		if !locationOk {
+			return errors.New("location param is missing")
+		} else {
+			if len(location) < 2 {
+				return errors.New("location param must have 2 values")
+			}
+		}
+
+		return nil
+	})
+
+	parseValueStage := pipeline.NewStage(func() error {
+		_, latErr := strconv.ParseFloat(form["location"][0], 64)
+
+		_, lonErr := strconv.ParseFloat(form["location"][1], 64)
+
+		if latErr != nil {
+			return errors.New("cannot parse location[0] to float")
+		}
+
+		if lonErr != nil {
+			return errors.New("cannot parse location[1] to float")
+		}
+
+		return nil
+	})
+
+	validateParamsStage.Next(parseValueStage)
+	pipe.First = validateParamsStage
+
+	err := pipe.Run()
+
+	if err != nil {
+		result.Status = false
+		result.Message = err.Error()
+	}
+
+	if result.Status {
+		var f model.Fuel
+		lat, _ := strconv.ParseFloat(form["location"][0], 64)
+		lon, _ := strconv.ParseFloat(form["location"][1], 64)
+		f.Lat = float32(lat)
+		f.Lon = float32(lon)
+
+		err := model.AddFuel(f)
+
+		if err != nil {
+			result.Status = false
+			result.Message = err.Error()
+		} else {
+			result.Message = "Create new fuel is succeed"
+		}
+	}
+
+	jsonData, jsonErr := json.Marshal(result)
+	if jsonErr != nil {
+		log.Println(jsonErr)
+	}
 	w.Write(jsonData)
 }
 
@@ -151,4 +226,5 @@ func HandleFuel(router *mux.Router) {
 	s.HandleFunc("/update", updateFuel).Methods("POST")
 	s.HandleFunc("/id", getFuel).Methods("GET")
 	s.HandleFunc("/range", getFuelInRange).Methods("GET")
+	s.HandleFunc("/add", addFuel).Methods("POSt")
 }

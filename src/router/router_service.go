@@ -30,13 +30,18 @@ func serviceInRange(w http.ResponseWriter, res *http.Request) {
 	query := res.URL.Query()
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
 	validateParamsStage := pipeline.NewStage(func() error {
-		location, ok := query["location"]
-		if !ok {
-			return errors.New("location param is not found")
+		location, locationOk := query["location"]
+		if !locationOk {
+			return errors.New("location param is missing")
 		} else {
 			if len(location) < 2 {
 				return errors.New("location param must have 2 values")
 			}
+		}
+
+		_, rangeOk := query["range"]
+		if !rangeOk {
+			return errors.New("range param is missing")
 		}
 
 		return nil
@@ -49,15 +54,15 @@ func serviceInRange(w http.ResponseWriter, res *http.Request) {
 		_, rangeErr := strconv.ParseFloat(query["range"][0], 64)
 
 		if latErr != nil {
-			return latErr
+			return errors.New("cannot parse location[0] to float")
 		}
 
 		if lonErr != nil {
-			return lonErr
+			return errors.New("cannot parse location[1] to float")
 		}
 
 		if rangeErr != nil {
-			return rangeErr
+			return errors.New("cannot parse range to float")
 		}
 
 		return nil
@@ -104,9 +109,10 @@ func serviceInRange(w http.ResponseWriter, res *http.Request) {
 }
 
 func HandleService(router *mux.Router) {
-	log.Println("[Router]", "Handling fuel")
+	log.Println("[Router]", "Handling service")
 
 	s := router.PathPrefix("/service").Subrouter()
 	s.HandleFunc("/all", allService).Methods("GET")
 	s.HandleFunc("/range", serviceInRange).Methods("GET")
+	HandleFuel(s)
 }

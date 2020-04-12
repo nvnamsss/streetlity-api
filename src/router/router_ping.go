@@ -15,6 +15,5 @@ func ping(w http.ResponseWriter, req *http.Request) {
 
 func HandlePing(router *mux.Router) {
 	log.Println("[Router]", "Handling ping")
-	s := router.PathPrefix("/ping").Subrouter()
-	s.HandleFunc("/", ping).Methods("GET", "POST")
+	router.HandleFunc("/ping", ping).Methods("GET", "POST")
 }
