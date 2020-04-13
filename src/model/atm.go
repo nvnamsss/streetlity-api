@@ -1,6 +1,8 @@
 package model
 
 import (
+	"log"
+
 	"github.com/golang/geo/r2"
 )
 
@@ -31,6 +33,19 @@ func AtmById(id int64) Atm {
 	Db.Find(&service, id)
 
 	return service
+}
+
+func AddAtm(s Atm) error {
+	Db.Create(&s)
+
+	var last Atm
+	Db.Last(&last)
+
+	if last.Lat == s.Lat && last.Lon == s.Lon {
+		log.Println("Create new atm is succeed")
+	}
+
+	return nil
 }
 
 func AllAtmsInRange(p r2.Point, max_range float64) []Atm {

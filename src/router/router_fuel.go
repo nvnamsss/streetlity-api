@@ -5,6 +5,7 @@ import (
 	"errors"
 	"log"
 	"net/http"
+	"reflect"
 	"strconv"
 	"streelity/v1/model"
 	"streelity/v1/pipeline"
@@ -243,6 +244,10 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	form := req.PostForm
 
+	//expectation
+	//pipe.add(validate("field1", "field2", "field3"))
+	//pipe.aadd(validatetype("field1", "field2", "field3"))
+	//
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
 	validateParamsStage := pipeline.NewStage(func() error {
 		location, locationOk := form["location"]
@@ -273,9 +278,9 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
+	reflect.ValueOf(parseValueStage).Type()
 	validateParamsStage.Next(parseValueStage)
 	pipe.First = validateParamsStage
-
 	err := pipe.Run()
 
 	if err != nil {
