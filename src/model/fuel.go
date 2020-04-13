@@ -51,5 +51,20 @@ func FuelById(id int64) Fuel {
 }
 
 func FuelsInRange(p r2.Point, max_range float64) []Fuel {
-	return nil
+	var result []Fuel = []Fuel{}
+	trees := services.InRange(p, max_range)
+
+	for _, tree := range trees {
+		for _, item := range tree.Items {
+			location := item.Location()
+
+			d := distance(location, p)
+			s, isFuel := item.(Fuel)
+			if isFuel && d < max_range {
+				result = append(result, s)
+			}
+		}
+	}
+	return result
+
 }

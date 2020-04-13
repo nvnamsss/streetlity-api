@@ -1,8 +1,6 @@
 package model
 
 import (
-	"streelity/v1/spatial"
-
 	"github.com/golang/geo/r2"
 )
 
@@ -35,9 +33,20 @@ func AtmById(id int64) Atm {
 	return service
 }
 
-func AllAtmsInRange(circle spatial.Circle) []Atm {
-	var services []Atm
-	Db.Find(&services)
+func AllAtmsInRange(p r2.Point, max_range float64) []Atm {
+	var result []Atm = []Atm{}
+	trees := services.InRange(p, max_range)
 
-	return services
+	for _, tree := range trees {
+		for _, item := range tree.Items {
+			location := item.Location()
+
+			d := distance(location, p)
+			s, isFuel := item.(Atm)
+			if isFuel && d < max_range {
+				result = append(result, s)
+			}
+		}
+	}
+	return result
 }
