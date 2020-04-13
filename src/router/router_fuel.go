@@ -101,39 +101,68 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 func updateFuel(w http.ResponseWriter, req *http.Request) {
 	var result struct {
 		Status  bool
-		Message []string
+		Message string
 	}
 	result.Status = true
-	result.Message = []string{}
 	req.ParseForm()
-	id, idErr := strconv.ParseInt(req.PostFormValue("id"), 10, 64)
-	lat, latErr := strconv.ParseFloat(req.PostFormValue("lat"), 64)
-	lon, lonErr := strconv.ParseFloat(req.PostFormValue("lon"), 64)
+	form := req.PostForm
 
-	if idErr != nil {
+	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
+	validateParamsStage := pipeline.NewStage(func() error {
+		_, idOk := form["id"]
+		location, locationOk := form["location"]
+
+		if !idOk {
+			return errors.New("id param is missing")
+		}
+
+		if !locationOk {
+			return errors.New("location param is missing")
+		} else {
+			if len(location) < 2 {
+				return errors.New("location param must have 2 values")
+			}
+		}
+
+		return nil
+	})
+
+	parseValueStage := pipeline.NewStage(func() error {
+		_, idErr := strconv.ParseInt(form["id"][0], 10, 64)
+		_, latErr := strconv.ParseFloat(form["location"][0], 64)
+		_, lonErr := strconv.ParseFloat(form["location"][1], 64)
+
+		if idErr != nil {
+			return errors.New("cannot parse id to int")
+		}
+
+		if latErr != nil {
+			return errors.New("cannot parse location[0] to float")
+		}
+
+		if lonErr != nil {
+			return errors.New("cannot parse location[1] to float")
+		}
+
+		return nil
+	})
+
+	validateParamsStage.Next(parseValueStage)
+	pipe.First = validateParamsStage
+
+	err := pipe.Run()
+
+	if err != nil {
 		result.Status = false
-		result.Message = append(result.Message, "Id is invalid")
+		result.Message = err.Error()
 	}
-
-	if latErr != nil {
-		result.Status = false
-		result.Message = append(result.Message, "Lat is invalid")
-	}
-
-	if lonErr != nil {
-		result.Status = false
-		result.Message = append(result.Message, "Lon is invalid")
-	}
-
-	fmt.Println(id, lat, lon)
-
-	fmt.Println(result)
 
 	if result.Status {
 		var f model.Fuel
+		id, _ := strconv.ParseInt(form["id"][0], 10, 64)
 		if err := model.Db.Where(&model.Fuel{Id: id}).First(&f).Error; err != nil {
 			result.Status = false
-			result.Message = append(result.Message, err.Error())
+			result.Message = err.Error()
 		}
 
 	}

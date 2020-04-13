@@ -2,10 +2,12 @@ package router
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
+	"streelity/v1/pipeline"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -29,17 +31,42 @@ func auth(w http.ResponseWriter, req *http.Request) {
 	}
 
 	result.Status = true
-	result.Message = "Success"
-
 	query := req.URL.Query()
-	id, idReady := query["id"]
 
-	if !idReady {
+	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
+	validateParamsStage := pipeline.NewStage(func() error {
+		_, idOk := query["id"]
+
+		if !idOk {
+			return errors.New("id param is missing")
+		}
+
+		return nil
+	})
+
+	parseValueStage := pipeline.NewStage(func() error {
+		_, idErr := strconv.ParseInt(query["id"][0], 10, 64)
+
+		if idErr != nil {
+			return errors.New("cannot parse id to int")
+		}
+
+		return nil
+	})
+
+	validateParamsStage.Next(parseValueStage)
+	pipe.First = validateParamsStage
+
+	err := pipe.Run()
+
+	if err != nil {
 		result.Status = false
-		result.Message = "Id is missing"
+		result.Message = err.Error()
 	}
 
 	if result.Status {
+		id, _ := strconv.ParseInt(query["id"][0], 10, 64)
+
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"id":  id,
 			"exp": time.Now().Add(time.Minute*10 + time.Second*30).Unix(),

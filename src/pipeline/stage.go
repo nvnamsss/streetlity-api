@@ -1,7 +1,7 @@
 package pipeline
 
 //Stage representation a step in the Pipeline, a Stage will lead to another Stage.
-//If there is no Stage, this Stage will be end of Pipeline
+//If there is no Stage, this Stage will be the end of Pipeline
 type Stage struct {
 	Stages *Stage
 	Func   func() error
