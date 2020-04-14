@@ -16,10 +16,10 @@ import (
 
 func getFuels(w http.ResponseWriter, req *http.Request) {
 	var result struct {
-		Status  bool
-		Fuels   []model.Fuel
-		Message []string
+		Response
+		Fuels []model.Fuel
 	}
+
 	result.Status = true
 
 	result.Fuels = model.AllFuels()
@@ -36,61 +36,55 @@ func getFuels(w http.ResponseWriter, req *http.Request) {
 }
 
 func getFuel(w http.ResponseWriter, req *http.Request) {
-	var result struct {
-		Status  bool
-		Fuel    model.Fuel
-		Message []string
+	var res struct {
+		Response
+		Fuel model.Fuel
 	}
 
-	result.Status = true
-	result.Message = []string{}
+	res.Status = true
 	query := req.URL.Query()
 
-	status, err := model.Auth(query["token"][0])
-	if !status {
-		result.Status = false
-		result.Message = append(result.Message, err.Error())
-		data, _ := json.Marshal(result)
-		w.Write(data)
-	}
-
-	var id int64
-	var idErr error
-	log.Println("[GetFuel]", query)
-	_, idReady := query["id"]
-	if !idReady {
-		result.Status = false
-		result.Message = append(result.Message, "Id is missing")
-	} else {
-		id, idErr = strconv.ParseInt(query["id"][0], 10, 64)
-		if idErr != nil {
-			result.Status = false
-			result.Message = append(result.Message, "Id is invalid")
+	pipe := pipeline.NewPipeline()
+	validateParams := pipeline.NewStage(func() (str struct{ Id int64 }, e error) {
+		ids, ok := query["id"]
+		if ok {
+			return str, errors.New("id param is missing")
 		}
+		var err error
+		str.Id, err = strconv.ParseInt(ids[0], 10, 64)
+
+		if err != nil {
+			return str, errors.New("cannot parse id to int")
+		}
+
+		return str, nil
+	})
+
+	pipe.First = validateParams
+
+	res.Error(pipe.Run())
+
+	if res.Status {
+		id := pipe.GetInt("Id")[0]
+		res.Fuel = model.FuelById(id)
 	}
 
-	if result.Status {
-		result.Fuel = model.FuelById(id)
-		log.Println("[GetFuel]", result.Fuel)
-	} else {
-		log.Println("[GetFuel]", "Request failed")
-	}
-
-	jsonData, jsonErr := json.Marshal(result)
-
-	if jsonErr != nil {
-		log.Println(jsonErr)
-	}
-	w.Write(jsonData)
+	res.Write(w)
 }
 
+//getFuelInRange process the in-range query. the request must provide there
+//
+// Parameters:
+// 	- `location`: X and Y coordinator
+// 	- `range` : range to find
+//
 func getFuelInRange(w http.ResponseWriter, req *http.Request) {
-	var result struct {
-		Status  bool
-		Fuels   []model.Fuel
-		Message string
+	var res struct {
+		Response
+		Fuels []model.Fuel
 	}
-	result.Status = false
+
+	res.Status = false
 	query := req.URL.Query()
 
 	fmt.Println(req.Header.Get("Auth"))
@@ -114,59 +108,53 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
-	parseValueStage := pipeline.NewStage(func() error {
-		_, latErr := strconv.ParseFloat(query["location"][0], 64)
+	parseValueStage := pipeline.NewStage(func() (str struct {
+		Lat   float64
+		Lon   float64
+		Range float64
+	}, e error) {
+		var (
+			latErr   error
+			lonErr   error
+			rangeErr error
+		)
 
-		_, lonErr := strconv.ParseFloat(query["location"][1], 64)
-		_, rangeErr := strconv.ParseFloat(query["range"][0], 64)
-
+		str.Lat, latErr = strconv.ParseFloat(query["location"][0], 64)
+		str.Lon, lonErr = strconv.ParseFloat(query["location"][1], 64)
+		str.Range, rangeErr = strconv.ParseFloat(query["range"][0], 64)
 		if latErr != nil {
-			return errors.New("cannot parse location[0] to float")
+			return str, errors.New("cannot parse location[0] to float")
 		}
-
 		if lonErr != nil {
-			return errors.New("cannot parse location[1] to float")
+			return str, errors.New("cannot parse location[1] to float")
 		}
-
 		if rangeErr != nil {
-			return errors.New("cannot parse range to float")
+			return str, errors.New("cannot parse range to float")
 		}
-
-		return nil
+		return str, nil
 	})
 
 	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 
-	err := pipe.Run()
+	res.Error(pipe.Run())
 
-	if err != nil {
-		result.Status = false
-		result.Message = err.Error()
-	}
-
-	if result.Status {
-		lat, _ := strconv.ParseFloat(query["location"][0], 64)
-		lon, _ := strconv.ParseFloat(query["location"][1], 64)
-		max_range, _ := strconv.ParseFloat(query["range"][0], 64)
+	if res.Status {
+		lat := pipe.GetFloat("Lat")[0]
+		lon := pipe.GetFloat("Lon")[0]
+		max_range := pipe.GetFloat("Range")[0]
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		result.Fuels = model.FuelsInRange(location, max_range)
+		res.Fuels = model.FuelsInRange(location, max_range)
 	}
 
-	jsonData, jsonErr := json.Marshal(result)
-	if jsonErr != nil {
-		log.Println(jsonErr)
-	}
-	w.Write(jsonData)
+	res.Write(w)
 }
 
 func updateFuel(w http.ResponseWriter, req *http.Request) {
-	var result struct {
-		Status  bool
-		Message string
-	}
-	result.Status = true
+	var res Response
+
+	res.Status = true
 	req.ParseForm()
 	form := req.PostForm
 
@@ -212,38 +200,25 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 
 	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
+	res.Error(pipe.Run())
 
-	err := pipe.Run()
-
-	if err != nil {
-		result.Status = false
-		result.Message = err.Error()
-	}
-
-	if result.Status {
+	if res.Status {
 		var f model.Fuel
 		id, _ := strconv.ParseInt(form["id"][0], 10, 64)
 		if err := model.Db.Where(&model.Fuel{Id: id}).First(&f).Error; err != nil {
-			result.Status = false
-			result.Message = err.Error()
+			res.Status = false
+			res.Message = err.Error()
 		}
 
 	}
 
-	jsonData, jsonErr := json.Marshal(result)
-	if jsonErr != nil {
-		log.Println(jsonErr)
-	}
-	w.Write(jsonData)
+	res.Write(w)
 }
 
 func addFuel(w http.ResponseWriter, req *http.Request) {
-	var result struct {
-		Status  bool
-		Message string
-	}
+	var res Response
 
-	result.Status = true
+	res.Status = true
 	req.ParseForm()
 	form := req.PostForm
 
@@ -261,40 +236,31 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
-	parseValueStage := pipeline.NewStage(func() (struct {
+	parseValueStage := pipeline.NewStage(func() (str struct {
 		Lat float64
 		Lon float64
-	}, error) {
-		lat, latErr := strconv.ParseFloat(form["location"][0], 64)
-		lon, lonErr := strconv.ParseFloat(form["location"][1], 64)
+	}, e error) {
+		var (
+			latErr error
+			lonErr error
+		)
+
+		str.Lat, latErr = strconv.ParseFloat(form["location"][0], 64)
+		str.Lon, lonErr = strconv.ParseFloat(form["location"][1], 64)
 		if latErr != nil {
-			return struct {
-				Lat float64
-				Lon float64
-			}{}, errors.New("cannot parse location[0] to float")
+			return str, errors.New("cannot parse location[0] to float")
 		}
 		if lonErr != nil {
-			return struct {
-				Lat float64
-				Lon float64
-			}{}, errors.New("cannot parse location[1] to float")
+			return str, errors.New("cannot parse location[1] to float")
 		}
-		return struct {
-			Lat float64
-			Lon float64
-		}{Lat: lat, Lon: lon}, nil
+		return str, nil
 	})
 
 	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
-	err := pipe.Run()
+	res.Error(pipe.Run())
 
-	if err != nil {
-		result.Status = false
-		result.Message = err.Error()
-	}
-
-	if result.Status {
+	if res.Status {
 		var f model.Fuel
 		lat := pipe.GetFloat("Lat")[0]
 		lon := pipe.GetFloat("Lon")[0]
@@ -304,18 +270,14 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 		err := model.AddFuel(f)
 
 		if err != nil {
-			result.Status = false
-			result.Message = err.Error()
+			res.Status = false
+			res.Message = err.Error()
 		} else {
-			result.Message = "Create new fuel is succeed"
+			res.Message = "Create new fuel is succeed"
 		}
 	}
 
-	jsonData, jsonErr := json.Marshal(result)
-	if jsonErr != nil {
-		log.Println(jsonErr)
-	}
-	w.Write(jsonData)
+	res.Write(w)
 }
 
 func HandleFuel(router *mux.Router) {

@@ -24,13 +24,12 @@ func confirm(w http.ResponseWriter, req *http.Request) {
 }
 
 func auth(w http.ResponseWriter, req *http.Request) {
-	var result struct {
-		Status  bool
-		Token   string
-		Message string
+	var res struct {
+		Response
+		Token string
 	}
 
-	result.Status = true
+	res.Status = true
 	query := req.URL.Query()
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
@@ -56,15 +55,9 @@ func auth(w http.ResponseWriter, req *http.Request) {
 
 	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
+	res.Error(pipe.Run())
 
-	err := pipe.Run()
-
-	if err != nil {
-		result.Status = false
-		result.Message = err.Error()
-	}
-
-	if result.Status {
+	if res.Status {
 		id := pipe.GetInt("Id")[0]
 
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
@@ -74,13 +67,13 @@ func auth(w http.ResponseWriter, req *http.Request) {
 
 		tokenString, err := token.SignedString([]byte("secret-key-0985399536aA"))
 
-		result.Token = tokenString
+		res.Token = tokenString
 		if err != nil {
 			log.Println(err.Error())
 		}
 	}
 
-	jsonData, jsonErr := json.Marshal(result)
+	jsonData, jsonErr := json.Marshal(res)
 
 	if jsonErr != nil {
 		log.Println(jsonErr)
