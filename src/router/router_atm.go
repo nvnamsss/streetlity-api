@@ -72,7 +72,7 @@ func getAtmInRange(w http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
-	validateParamsStage.Next(parseValueStage)
+	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 
 	err := pipe.Run()
@@ -138,7 +138,7 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
-	validateParamsStage.Next(parseValueStage)
+	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 
 	err := pipe.Run()

@@ -1,31 +1,37 @@
 package pipeline
 
 import (
-	"fmt"
 	"reflect"
 )
 
 //Stage representation a step in the Pipeline, a Stage will lead to another Stage.
 //If there is no Stage, this Stage will be the end of Pipeline
 type Stage struct {
-	Stages  *Stage
-	task    func() error
-	taskalt reflect.Value
+	Stages *Stage
+	task   reflect.Value
 }
 
-//Next set the left Stage as the next stage of right Stage
+//NextStage set the left Stage as the next stage of right Stage
 //In the Pipeline, left Stage will run when the right is done
-func (r *Stage) Next(l *Stage) {
+func (r *Stage) NextStage(l *Stage) {
 	r.Stages = l
 }
 
-func (r *Stage) NextStage(task interface{}) {
+//Next create new stage which is run the task. New stage will be appended to the current stage
+func (r *Stage) Next(task interface{}) {
+	stage := NewStage(task)
+
+	r.Stages = stage
+}
+
+//Set using to set the task of stage, when the pipeline run the task of stage will be called
+func (r *Stage) Set(task interface{}) {
 	t := reflect.ValueOf(task).Type()
 	olen := t.NumOut()
 	if olen == 1 {
 		var fn func() (struct{}, error)
 
-		r.taskalt = reflect.MakeFunc(reflect.ValueOf(fn).Type(), func(args []reflect.Value) (results []reflect.Value) {
+		r.task = reflect.MakeFunc(reflect.ValueOf(fn).Type(), func(args []reflect.Value) (results []reflect.Value) {
 			result := reflect.ValueOf(task).Call(nil)
 			result = append([]reflect.Value{reflect.ValueOf(struct{}{})}, result...)
 
@@ -39,38 +45,16 @@ func (r *Stage) NextStage(task interface{}) {
 			panic("The first return type must be struct")
 		}
 
-		r.taskalt = reflect.ValueOf(task)
+		if t.Out(1).Kind() != reflect.Interface {
+			panic("The second return type must be interface")
+		}
+		r.task = reflect.ValueOf(task)
 	}
 }
 
-func (s *Stage) Run() error {
-	return s.task()
-}
-
-func NewStage(process func() error) *Stage {
+func NewStage(task interface{}) *Stage {
 	var stage *Stage = new(Stage)
-	stage.task = process
+	stage.Set(task)
+
 	return stage
-}
-
-func init() {
-	stage := NewStage(nil)
-	fn := func() (struct {
-		Field string
-		Meo   int
-	}, error) {
-
-		return struct {
-			Field string
-			Meo   int
-		}{"meomeocute", 1}, nil
-	}
-
-	var p *Pipeline = NewPipeline()
-	stage.NextStage(fn)
-	p.First = stage
-	p.Run()
-
-	fmt.Println(p.GetString("Field"))
-	fmt.Println(p.GetFloat("Meo"))
 }

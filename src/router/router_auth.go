@@ -44,17 +44,17 @@ func auth(w http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
-	parseValueStage := pipeline.NewStage(func() error {
-		_, idErr := strconv.ParseInt(query["id"][0], 10, 64)
+	parseValueStage := pipeline.NewStage(func() (struct{ Id int64 }, error) {
+		id, idErr := strconv.ParseInt(query["id"][0], 10, 64)
 
 		if idErr != nil {
-			return errors.New("cannot parse id to int")
+			return struct{ Id int64 }{}, errors.New("cannot parse id to int")
 		}
 
-		return nil
+		return struct{ Id int64 }{Id: id}, nil
 	})
 
-	validateParamsStage.Next(parseValueStage)
+	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 
 	err := pipe.Run()
@@ -65,7 +65,7 @@ func auth(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if result.Status {
-		id, _ := strconv.ParseInt(query["id"][0], 10, 64)
+		id := pipe.GetInt("Id")[0]
 
 		token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 			"id":  id,

@@ -3,9 +3,9 @@ package router
 import (
 	"encoding/json"
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
-	"reflect"
 	"strconv"
 	"streelity/v1/model"
 	"streelity/v1/pipeline"
@@ -92,6 +92,9 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 	}
 	result.Status = false
 	query := req.URL.Query()
+
+	fmt.Println(req.Header.Get("Auth"))
+
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
 	validateParamsStage := pipeline.NewStage(func() error {
 		location, locationOk := query["location"]
@@ -132,7 +135,7 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
-	validateParamsStage.Next(parseValueStage)
+	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 
 	err := pipe.Run()
@@ -207,7 +210,7 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
-	validateParamsStage.Next(parseValueStage)
+	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 
 	err := pipe.Run()
@@ -244,10 +247,6 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	form := req.PostForm
 
-	//expectation
-	//pipe.add(validate("field1", "field2", "field3"))
-	//pipe.aadd(validatetype("field1", "field2", "field3"))
-	//
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
 	validateParamsStage := pipeline.NewStage(func() error {
 		location, locationOk := form["location"]
@@ -262,24 +261,31 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
-	parseValueStage := pipeline.NewStage(func() error {
-		_, latErr := strconv.ParseFloat(form["location"][0], 64)
-
-		_, lonErr := strconv.ParseFloat(form["location"][1], 64)
-
+	parseValueStage := pipeline.NewStage(func() (struct {
+		Lat float64
+		Lon float64
+	}, error) {
+		lat, latErr := strconv.ParseFloat(form["location"][0], 64)
+		lon, lonErr := strconv.ParseFloat(form["location"][1], 64)
 		if latErr != nil {
-			return errors.New("cannot parse location[0] to float")
+			return struct {
+				Lat float64
+				Lon float64
+			}{}, errors.New("cannot parse location[0] to float")
 		}
-
 		if lonErr != nil {
-			return errors.New("cannot parse location[1] to float")
+			return struct {
+				Lat float64
+				Lon float64
+			}{}, errors.New("cannot parse location[1] to float")
 		}
-
-		return nil
+		return struct {
+			Lat float64
+			Lon float64
+		}{Lat: lat, Lon: lon}, nil
 	})
 
-	reflect.ValueOf(parseValueStage).Type()
-	validateParamsStage.Next(parseValueStage)
+	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 	err := pipe.Run()
 
@@ -290,8 +296,8 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 
 	if result.Status {
 		var f model.Fuel
-		lat, _ := strconv.ParseFloat(form["location"][0], 64)
-		lon, _ := strconv.ParseFloat(form["location"][1], 64)
+		lat := pipe.GetFloat("Lat")[0]
+		lon := pipe.GetFloat("Lon")[0]
 		f.Lat = float32(lat)
 		f.Lon = float32(lon)
 

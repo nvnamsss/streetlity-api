@@ -15,8 +15,10 @@ type Pipeline struct {
 func (p *Pipeline) Run() error {
 	var current *Stage = p.First
 	p.IsPassed = false
+	p.values = make(map[string][]reflect.Value)
+
 	for current != nil {
-		result := current.taskalt.Call(nil)
+		result := current.task.Call(nil)
 
 		// err := error(result[1].Interface())
 		// err := current.Run()
@@ -95,6 +97,19 @@ func (p Pipeline) GetInt(field string) []int64 {
 	var result []int64 = []int64{}
 	for _, value := range p.values[field] {
 		result = append(result, value.Int())
+	}
+
+	return result
+}
+
+func (p Pipeline) GetBool(field string) []bool {
+	if !p.IsPassed {
+		return nil
+	}
+
+	var result []bool = []bool{}
+	for _, value := range p.values[field] {
+		result = append(result, value.Bool())
 	}
 
 	return result
