@@ -1,8 +1,12 @@
 package pipeline
 
-import "fmt"
+import (
+	"fmt"
+	"testing"
+)
 
-func NextStage_Test() {
+func TestNextStage(t *testing.T) {
+
 	stage := NewStage(nil)
 	fn := func() (struct {
 		Field string

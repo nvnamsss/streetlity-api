@@ -36,6 +36,6 @@ jobs:
     - name: Build
       working-directory: ${{env.working-directory}}
       run: go build -v .
-    - name: Run
+    - name: Test
       working-directory: ${{env.working-directory}}
-      run: go run ./main.go
+      run: go test .\router\ |
