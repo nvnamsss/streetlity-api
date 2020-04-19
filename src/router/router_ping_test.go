@@ -29,7 +29,7 @@ func TestPingNa(t *testing.T) {
 
 	result := rr.Body.String()
 	expect := "Ping"
-
+	
 	if result != expect {
 		t.Errorf("Hi mom failed, expected %v, got %v", expect, result)
 	} else {

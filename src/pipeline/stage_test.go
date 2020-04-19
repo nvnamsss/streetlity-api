@@ -16,7 +16,7 @@ func NextStage_Test() {
 	}
 
 	var p *Pipeline = NewPipeline()
-	stage.NextStage(fn)
+	stage.Next(fn)
 	p.First = stage
 	p.Run()
 

@@ -8,6 +8,11 @@ import (
 	"net/url"
 )
 
+//Response representing the data for a response, include
+//
+// - `Status` : determine request is success or not
+// - `Message` : description for an issue or state of response
+//
 type Response struct {
 	Status  bool
 	Message string
@@ -23,6 +28,16 @@ func (res *Response) Error(err error) {
 
 func (res *Response) Write(w http.ResponseWriter) {
 	jsonData, jsonErr := json.Marshal(res)
+
+	if jsonErr != nil {
+		log.Println(jsonErr)
+	}
+
+	w.Write(jsonData)
+}
+
+func Write(w http.ResponseWriter, data interface{}) {
+	jsonData, jsonErr := json.Marshal(data)
 
 	if jsonErr != nil {
 		log.Println(jsonErr)

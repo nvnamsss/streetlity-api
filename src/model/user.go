@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 
 	"github.com/dgrijalva/jwt-go"
@@ -8,7 +9,12 @@ import (
 
 const RoleAdmin = 10
 
-func Auth(tokenString string) (bool, error) {
+func Auth(tokenString string) error {
+	fmt.Println("[Auth]", tokenString)
+	if tokenString == "" {
+		return errors.New("Token is empty")
+	}
+
 	token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 		// Don't forget to validate the alg is what you expect:
 		if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
@@ -21,9 +27,9 @@ func Auth(tokenString string) (bool, error) {
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
 		fmt.Println(claims)
-		return true, nil
+		return nil
 	} else {
 		fmt.Println(err)
-		return false, err
+		return err
 	}
 }

@@ -1,7 +1,6 @@
 package router
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -18,9 +17,9 @@ func confirm(w http.ResponseWriter, req *http.Request) {
 	query := req.URL.Query()
 	tokenString := query["token"]
 
-	status, _ := model.Auth(tokenString[0])
+	err := model.Auth(tokenString[0])
 
-	w.Write([]byte(strconv.FormatBool(status)))
+	w.Write([]byte(err.Error()))
 }
 
 func auth(w http.ResponseWriter, req *http.Request) {
@@ -73,13 +72,7 @@ func auth(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	jsonData, jsonErr := json.Marshal(res)
-
-	if jsonErr != nil {
-		log.Println(jsonErr)
-	}
-
-	w.Write(jsonData)
+	Write(w, res)
 }
 
 func HandleAuth(router *mux.Router) {

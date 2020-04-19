@@ -68,7 +68,7 @@ func serviceInRange(w http.ResponseWriter, res *http.Request) {
 		return nil
 	})
 
-	validateParamsStage.Next(parseValueStage)
+	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 
 	err := pipe.Run()

@@ -11,6 +11,8 @@ jobs:
   build:
     name: Build
     runs-on: ubuntu-latest
+    env: 
+      working-directory: ./src
     steps:
 
     - name: Set up Go 1.14
@@ -23,7 +25,8 @@ jobs:
       uses: actions/checkout@v2
 
     - name: Get dependencies
-      run: |
+      working-directory: ${{env.working-directory}}
+      run: cd src |
         go get -v -t -d ./...
         if [ -f Gopkg.toml ]; then
             curl https://raw.githubusercontent.com/golang/dep/master/install.sh | sh
@@ -31,4 +34,8 @@ jobs:
         fi
 
     - name: Build
+      working-directory: ${{env.working-directory}}
       run: go build -v .
+    - name: Run
+      working-directory: ${{env.working-directory}}
+      run: go run ./main.go

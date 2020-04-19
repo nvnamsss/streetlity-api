@@ -94,7 +94,7 @@ func cast_interface() {
 	var s str
 
 	// var io i1 = s
-	// var it i2 = s
+	// var it i2 = sz
 
 	i1(s).m1()
 	i2(s).m2()

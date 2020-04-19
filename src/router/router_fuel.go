@@ -1,9 +1,7 @@
 package router
 
 import (
-	"encoding/json"
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"strconv"
@@ -15,24 +13,24 @@ import (
 )
 
 func getFuels(w http.ResponseWriter, req *http.Request) {
-	var result struct {
+	var res struct {
 		Response
 		Fuels []model.Fuel
 	}
 
-	result.Status = true
-
-	result.Fuels = model.AllFuels()
-
-	log.Println("[GetFuels]", result.Fuels)
-
-	jsonData, jsonErr := json.Marshal(result)
-
-	if jsonErr != nil {
-		log.Println(jsonErr)
+	res.Error(model.Auth(req.Header.Get("Auth")))
+	if !res.Status {
+		res.Write(w)
+		return
 	}
 
-	w.Write(jsonData)
+	res.Status = true
+
+	res.Fuels = model.AllFuels()
+
+	log.Println("[GetFuels]", res.Fuels)
+
+	Write(w, res)
 }
 
 func getFuel(w http.ResponseWriter, req *http.Request) {
@@ -43,6 +41,12 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 
 	res.Status = true
 	query := req.URL.Query()
+
+	res.Error(model.Auth(req.Header.Get("Auth")))
+	if !res.Status {
+		res.Write(w)
+		return
+	}
 
 	pipe := pipeline.NewPipeline()
 	validateParams := pipeline.NewStage(func() (str struct{ Id int64 }, e error) {
@@ -69,7 +73,7 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 		res.Fuel = model.FuelById(id)
 	}
 
-	res.Write(w)
+	Write(w, res)
 }
 
 //getFuelInRange process the in-range query. the request must provide there
@@ -84,10 +88,14 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 		Fuels []model.Fuel
 	}
 
-	res.Status = false
+	res.Status = true
 	query := req.URL.Query()
 
-	fmt.Println(req.Header.Get("Auth"))
+	res.Error(model.Auth(req.Header.Get("Auth")))
+	if !res.Status {
+		res.Write(w)
+		return
+	}
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
 	validateParamsStage := pipeline.NewStage(func() error {
@@ -148,7 +156,7 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 		res.Fuels = model.FuelsInRange(location, max_range)
 	}
 
-	res.Write(w)
+	Write(w, res)
 }
 
 func updateFuel(w http.ResponseWriter, req *http.Request) {
@@ -212,7 +220,7 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 
 	}
 
-	res.Write(w)
+	Write(w, res)
 }
 
 func addFuel(w http.ResponseWriter, req *http.Request) {
@@ -277,7 +285,7 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	res.Write(w)
+	Write(w, res)
 }
 
 func HandleFuel(router *mux.Router) {
