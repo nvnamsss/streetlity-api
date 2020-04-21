@@ -40,7 +40,7 @@ func AddFuel(s Fuel) error {
 	return nil
 }
 
-//FuelById query the fuel service which specific id
+//FuelById query the fuel service by specific id
 func FuelById(id int64) Fuel {
 	var service Fuel
 	Db.Find(&service, id)

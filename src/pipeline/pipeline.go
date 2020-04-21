@@ -36,7 +36,7 @@ func (p *Pipeline) Run() error {
 			p.values[name] = append(p.values[name], value)
 		}
 
-		current = current.Stages
+		current = current.stages
 	}
 
 	p.IsPassed = true

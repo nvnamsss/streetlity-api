@@ -14,7 +14,23 @@ import (
 )
 
 func getAtms(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		Response
+		Atms []model.Atm
+	}
+	res.Status = true
 
+	res.Error(model.Auth(req.Header.Get("Auth")))
+	if !res.Status {
+		res.Write(w)
+		return
+	}
+
+	if res.Status {
+		res.Atms = model.AllAtms()
+	}
+
+	Write(w, res)
 }
 
 func updateAtm(w http.ResponseWriter, req *http.Request) {
@@ -136,12 +152,7 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 
-	err := pipe.Run()
-
-	if err != nil {
-		res.Status = false
-		res.Message = err.Error()
-	}
+	res.Error(pipe.Run())
 
 	if res.Status {
 		var s model.Atm
@@ -167,6 +178,56 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 	w.Write(jsonData)
 }
 
+func getBanks(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		Response
+		Banks []model.Bank
+	}
+
+	if res.Status {
+		res.Banks = model.AllBanks()
+	}
+
+	Write(w, res)
+}
+
+func addBank(w http.ResponseWriter, req *http.Request) {
+	var res Response
+	res.Status = true
+	req.ParseForm()
+	form := req.PostForm
+
+	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
+	validateParamsStage := pipeline.NewStage(func() (str struct{ Name string }, e error) {
+		name, nameOk := form["name"]
+		if !nameOk {
+			e = errors.New("name param is missing")
+		} else {
+			str.Name = name[0]
+		}
+
+		return
+	})
+
+	pipe.First = validateParamsStage
+	res.Error(pipe.Run())
+
+	if res.Status {
+		var s model.Bank
+		s.Name = pipe.GetString("Name")[0]
+		err := model.AddBank(s)
+
+		if err != nil {
+			res.Status = false
+			res.Message = err.Error()
+		} else {
+			res.Message = "Add new bank successfully"
+		}
+	}
+
+	Write(w, res)
+}
+
 func HandleAtm(router *mux.Router) {
 	log.Println("[Router]", "Handling Atm")
 	s := router.PathPrefix("/atm").Subrouter()
@@ -175,4 +236,6 @@ func HandleAtm(router *mux.Router) {
 	s.HandleFunc("/id", getFuel).Methods("GET")
 	s.HandleFunc("/range", getAtmInRange).Methods("GET")
 	s.HandleFunc("/add", addAtm).Methods("POST")
+	s.HandleFunc("/bank/all", getBanks).Methods("GET")
+	s.HandleFunc("/bank/add", addBank).Methods("POST")
 }

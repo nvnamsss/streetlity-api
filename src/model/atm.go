@@ -5,14 +5,24 @@ import (
 )
 
 type Atm struct {
-	Id  int64
-	Lat float32 `gorm:"column:lat"`
-	Lon float32 `gorm:"column:lon"`
+	Id     int64
+	Lat    float32 `gorm:"column:lat"`
+	Lon    float32 `gorm:"column:lon"`
+	BankId int64   `gorm:"column:bank_id"`
+}
+
+type Bank struct {
+	Id   int64
+	Name string `gorm:"column:name"`
 }
 
 //TableName determine the table name in database which is using for gorm
 func (Atm) TableName() string {
 	return "atm"
+}
+
+func (Bank) TableName() string {
+	return "bank"
 }
 
 //Location determine the location of service as r2.Point
@@ -65,4 +75,19 @@ func AtmsInRange(p r2.Point, max_range float64) []Atm {
 		}
 	}
 	return result
+}
+
+func AllBanks() []Bank {
+	var banks []Bank
+	Db.Find(&banks)
+
+	return banks
+}
+
+func AddBank(s Bank) error {
+	if dbc := Db.Create(&s); dbc.Error != nil {
+		return dbc.Error
+	}
+
+	return nil
 }

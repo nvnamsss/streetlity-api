@@ -115,4 +115,6 @@ func HandleService(router *mux.Router) {
 	s.HandleFunc("/all", allService).Methods("GET")
 	s.HandleFunc("/range", serviceInRange).Methods("GET")
 	HandleFuel(s)
+	HandleAtm(s)
+	HandleToilet(s)
 }

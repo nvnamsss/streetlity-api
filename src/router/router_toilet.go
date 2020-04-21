@@ -77,8 +77,24 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 	Write(w, res)
 }
 
-func getAllToilet(w http.ResponseWriter, req *http.Request) {
+func getAllToilets(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		Response
+		Toilets []model.Toilet
+	}
+	res.Status = true
 
+	res.Error(model.Auth(req.Header.Get("Auth")))
+	if !res.Status {
+		res.Write(w)
+		return
+	}
+
+	if res.Status {
+		res.Toilets = model.AllToilets()
+	}
+
+	Write(w, res)
 }
 
 func updateToilet(w http.ResponseWriter, req *http.Request) {
@@ -159,7 +175,7 @@ func getToiletInRange(w http.ResponseWriter, req *http.Request) {
 func HandleToilet(router *mux.Router) {
 	log.Println("[Router]", "Handling Toilet")
 	s := router.PathPrefix("/toilet").Subrouter()
-	s.HandleFunc("/all", getAllToilet).Methods("GET")
+	s.HandleFunc("/all", getAllToilets).Methods("GET")
 	s.HandleFunc("/add", addToilet).Methods("POST")
 	s.HandleFunc("/update", updateToilet).Methods("POST")
 	s.HandleFunc("/range", getToiletInRange).Methods("GET")
