@@ -6,6 +6,7 @@ import (
 	"runtime"
 )
 
+//Event presentation a state which is call the subscriber everytime it's trigger
 type Event struct {
 	Async     bool
 	callbacks map[string]func()
