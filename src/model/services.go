@@ -45,9 +45,13 @@ func ServicesInRange(p r2.Point, max_range float64) []Service {
 	return result
 }
 
+//LoadService loading all kind of service in Database and storage it into spatial tree.
+//
+//The functions which are using spatial tree need LoadService ran before to work as expectation.
 func LoadService() {
 	fuels := AllFuels()
 	atms := AllAtms()
+	toilets := AllToilets()
 
 	for _, fuel := range fuels {
 		services.AddItem(fuel)
@@ -56,5 +60,8 @@ func LoadService() {
 	for _, atm := range atms {
 		services.AddItem(atm)
 	}
-	// ServicesInRange(r2.Point{X: 5, Y: 5}, 3)
+
+	for _, toilet := range toilets {
+		services.AddItem(toilet)
+	}
 }

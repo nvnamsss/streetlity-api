@@ -38,4 +38,4 @@ jobs:
       run: go build -v .
     - name: Test
       working-directory: ${{env.working-directory}}
-      run: go test .\router\ |
+      run: go test .\router\

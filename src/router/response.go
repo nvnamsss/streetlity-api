@@ -10,8 +10,8 @@ import (
 
 //Response representing the data for a response, include
 //
-// - `Status` : determine request is success or not
-// - `Message` : description for an issue or state of response
+//  - `Status` : determine request is success or not
+//  - `Message` : description for an issue or state of response
 //
 type Response struct {
 	Status  bool

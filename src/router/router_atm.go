@@ -24,15 +24,17 @@ func updateAtm(w http.ResponseWriter, req *http.Request) {
 func getAtmById(w http.ResponseWriter, req *http.Request) {
 
 }
+
 func getAtmInRange(w http.ResponseWriter, req *http.Request) {
-	var result struct {
-		Status  bool
-		Atms    []model.Atm
-		Message string
+	var res struct {
+		Response
+		Atms []model.Atm
 	}
-	result.Status = false
+
+	res.Status = true
 	query := req.URL.Query()
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
+
 	validateParamsStage := pipeline.NewStage(func() error {
 		location, locationOk := query["location"]
 		if !locationOk {
@@ -51,60 +53,53 @@ func getAtmInRange(w http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
-	parseValueStage := pipeline.NewStage(func() error {
-		_, latErr := strconv.ParseFloat(query["location"][0], 64)
+	parseValueStage := pipeline.NewStage(func() (str struct {
+		Lat   float64
+		Lon   float64
+		Range float64
+	}, e error) {
+		var (
+			latErr   error
+			lonErr   error
+			rangeErr error
+		)
 
-		_, lonErr := strconv.ParseFloat(query["location"][1], 64)
-		_, rangeErr := strconv.ParseFloat(query["range"][0], 64)
-
+		str.Lat, latErr = strconv.ParseFloat(query["location"][0], 64)
+		str.Lon, lonErr = strconv.ParseFloat(query["location"][1], 64)
+		str.Range, rangeErr = strconv.ParseFloat(query["range"][0], 64)
 		if latErr != nil {
-			return errors.New("cannot parse location[0] to float")
+			return str, errors.New("cannot parse location[0] to float")
 		}
-
 		if lonErr != nil {
-			return errors.New("cannot parse location[1] to float")
+			return str, errors.New("cannot parse location[1] to float")
 		}
-
 		if rangeErr != nil {
-			return errors.New("cannot parse range to float")
+			return str, errors.New("cannot parse range to float")
 		}
-
-		return nil
+		return str, nil
 	})
 
 	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 
-	err := pipe.Run()
+	res.Error(pipe.Run())
 
-	if err != nil {
-		result.Status = false
-		result.Message = err.Error()
-	}
-
-	if result.Status {
-		lat, _ := strconv.ParseFloat(query["location"][0], 64)
-		lon, _ := strconv.ParseFloat(query["location"][1], 64)
-		max_range, _ := strconv.ParseFloat(query["range"][0], 64)
+	if res.Status {
+		lat := pipe.GetFloat("Lat")[0]
+		lon := pipe.GetFloat("Lon")[0]
+		max_range := pipe.GetFloat("Range")[0]
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		result.Atms = model.AllAtmsInRange(location, max_range)
+		res.Atms = model.AtmsInRange(location, max_range)
 	}
 
-	jsonData, jsonErr := json.Marshal(result)
-	if jsonErr != nil {
-		log.Println(jsonErr)
-	}
-	w.Write(jsonData)
+	Write(w, res)
 }
 
 func addAtm(w http.ResponseWriter, req *http.Request) {
-	var result struct {
-		Status  bool
-		Message string
-	}
+	var res Response
 
-	result.Status = true
+	res.Status = true
 	req.ParseForm()
 	form := req.PostForm
 
@@ -144,11 +139,11 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 	err := pipe.Run()
 
 	if err != nil {
-		result.Status = false
-		result.Message = err.Error()
+		res.Status = false
+		res.Message = err.Error()
 	}
 
-	if result.Status {
+	if res.Status {
 		var s model.Atm
 		lat, _ := strconv.ParseFloat(form["location"][0], 64)
 		lon, _ := strconv.ParseFloat(form["location"][1], 64)
@@ -158,14 +153,14 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 		err := model.AddAtm(s)
 
 		if err != nil {
-			result.Status = false
-			result.Message = err.Error()
+			res.Status = false
+			res.Message = err.Error()
 		} else {
-			result.Message = "Create new atm is succeed"
+			res.Message = "Create new atm is succeed"
 		}
 	}
 
-	jsonData, jsonErr := json.Marshal(result)
+	jsonData, jsonErr := json.Marshal(res)
 	if jsonErr != nil {
 		log.Println(jsonErr)
 	}

@@ -1,8 +1,6 @@
 package model
 
 import (
-	"log"
-
 	"github.com/golang/geo/r2"
 )
 
@@ -23,6 +21,7 @@ func (s Fuel) Location() r2.Point {
 	return p
 }
 
+//AllFuels query all fuel services
 func AllFuels() []Fuel {
 	var services []Fuel
 	Db.Find(&services)
@@ -30,19 +29,18 @@ func AllFuels() []Fuel {
 	return services
 }
 
-func AddFuel(f Fuel) error {
-	Db.Create(&f)
-
-	var last Fuel
-	Db.Last(&last)
-
-	if last.Lat == f.Lat && last.Lon == f.Lon {
-		log.Println("Create new fuel is succeed")
+//AddFuel add new fuel service to the database
+//
+//return error if there is something wrong when doing transaction
+func AddFuel(s Fuel) error {
+	if dbc := Db.Create(&s); dbc.Error != nil {
+		return dbc.Error
 	}
 
 	return nil
 }
 
+//FuelById query the fuel service which specific id
 func FuelById(id int64) Fuel {
 	var service Fuel
 	Db.Find(&service, id)
@@ -50,6 +48,7 @@ func FuelById(id int64) Fuel {
 	return service
 }
 
+//FuelsInRange query the fuel services which is in the radius of a location
 func FuelsInRange(p r2.Point, max_range float64) []Fuel {
 	var result []Fuel = []Fuel{}
 	trees := services.InRange(p, max_range)
@@ -66,5 +65,4 @@ func FuelsInRange(p r2.Point, max_range float64) []Fuel {
 		}
 	}
 	return result
-
 }

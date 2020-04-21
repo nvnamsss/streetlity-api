@@ -1,8 +1,6 @@
 package model
 
 import (
-	"log"
-
 	"github.com/golang/geo/r2"
 )
 
@@ -12,15 +10,18 @@ type Atm struct {
 	Lon float32 `gorm:"column:lon"`
 }
 
+//TableName determine the table name in database which is using for gorm
 func (Atm) TableName() string {
 	return "atm"
 }
 
+//Location determine the location of service as r2.Point
 func (s Atm) Location() r2.Point {
 	var p r2.Point = r2.Point{X: float64(s.Lat), Y: float64(s.Lon)}
 	return p
 }
 
+//AllAtms query all the atm serivces
 func AllAtms() []Atm {
 	var services []Atm
 	Db.Find(&services)
@@ -28,6 +29,7 @@ func AllAtms() []Atm {
 	return services
 }
 
+//AtmById query the atm service by specific id
 func AtmById(id int64) Atm {
 	var service Atm
 	Db.Find(&service, id)
@@ -35,20 +37,19 @@ func AtmById(id int64) Atm {
 	return service
 }
 
+//AddAtm add new atm service to the database
+//
+//return error if there is something wrong when doing transaction
 func AddAtm(s Atm) error {
-	Db.Create(&s)
-
-	var last Atm
-	Db.Last(&last)
-
-	if last.Lat == s.Lat && last.Lon == s.Lon {
-		log.Println("Create new atm is succeed")
+	if dbc := Db.Create(&s); dbc.Error != nil {
+		return dbc.Error
 	}
 
 	return nil
 }
 
-func AllAtmsInRange(p r2.Point, max_range float64) []Atm {
+//AtmsInRange query the atm services which is in the radius of a location
+func AtmsInRange(p r2.Point, max_range float64) []Atm {
 	var result []Atm = []Atm{}
 	trees := services.InRange(p, max_range)
 

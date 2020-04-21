@@ -68,9 +68,6 @@ func reconnect() {
 	connect()
 }
 
-func himom() {
-	fmt.Println("Hi mom I'm subscriber")
-}
 func init() {
 	_, b, _, _ := runtime.Caller(0)
 	basepath := filepath.Dir(b)
