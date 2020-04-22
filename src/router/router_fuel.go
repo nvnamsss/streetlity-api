@@ -18,12 +18,6 @@ func getFuels(w http.ResponseWriter, req *http.Request) {
 		Fuels []model.Fuel
 	}
 
-	res.Error(model.Auth(req.Header.Get("Auth")))
-	if !res.Status {
-		res.Write(w)
-		return
-	}
-
 	res.Status = true
 
 	res.Fuels = model.AllFuels()
@@ -41,12 +35,6 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 
 	res.Status = true
 	query := req.URL.Query()
-
-	res.Error(model.Auth(req.Header.Get("Auth")))
-	if !res.Status {
-		res.Write(w)
-		return
-	}
 
 	pipe := pipeline.NewPipeline()
 	validateParams := pipeline.NewStage(func() (str struct{ Id int64 }, e error) {
@@ -90,12 +78,6 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 
 	res.Status = true
 	query := req.URL.Query()
-
-	res.Error(model.Auth(req.Header.Get("Auth")))
-	if !res.Status {
-		res.Write(w)
-		return
-	}
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
 	validateParamsStage := pipeline.NewStage(func() error {
@@ -161,8 +143,14 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 
 func updateFuel(w http.ResponseWriter, req *http.Request) {
 	var res Response
-
 	res.Status = true
+
+	res.Error(model.Auth(req.Header.Get("Auth")))
+	if !res.Status {
+		res.Write(w)
+		return
+	}
+
 	req.ParseForm()
 	form := req.PostForm
 
@@ -225,8 +213,14 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 
 func addFuel(w http.ResponseWriter, req *http.Request) {
 	var res Response
-
 	res.Status = true
+
+	res.Error(model.Auth(req.Header.Get("Auth")))
+	if !res.Status {
+		res.Write(w)
+		return
+	}
+
 	req.ParseForm()
 	form := req.PostForm
 

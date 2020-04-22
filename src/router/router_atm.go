@@ -115,7 +115,12 @@ func getAtmInRange(w http.ResponseWriter, req *http.Request) {
 func addAtm(w http.ResponseWriter, req *http.Request) {
 	var res Response
 
-	res.Status = true
+	// res.Status = true
+	// res.Error(model.Auth(req.Header.Get("Auth")))
+	// if !res.Status {
+	// 	res.Write(w)
+	// 	return
+	// }
 	req.ParseForm()
 	form := req.PostForm
 
@@ -194,10 +199,12 @@ func getBanks(w http.ResponseWriter, req *http.Request) {
 func addBank(w http.ResponseWriter, req *http.Request) {
 	var res Response
 	res.Status = true
+
 	req.ParseForm()
 	form := req.PostForm
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
+	// authStage := AuthStage(req)
 	validateParamsStage := pipeline.NewStage(func() (str struct{ Name string }, e error) {
 		name, nameOk := form["name"]
 		if !nameOk {
@@ -209,6 +216,7 @@ func addBank(w http.ResponseWriter, req *http.Request) {
 		return
 	})
 
+	// authStage.NextStage(validateParamsStage)
 	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
 

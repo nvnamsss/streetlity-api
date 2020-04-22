@@ -6,6 +6,8 @@ import (
 	"log"
 	"net/http"
 	"net/url"
+	"streelity/v1/model"
+	"streelity/v1/pipeline"
 )
 
 //Response representing the data for a response, include
@@ -55,4 +57,12 @@ func ValidateParams(data url.Values, fields ...string) error {
 		}
 	}
 	return nil
+}
+
+func AuthStage(req *http.Request) *pipeline.Stage {
+	s := pipeline.NewStage(func() error {
+		return model.Auth(req.Header.Get("Auth"))
+	})
+
+	return s
 }

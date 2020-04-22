@@ -16,6 +16,11 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 	var res Response
 
 	res.Status = true
+	res.Error(model.Auth(req.Header.Get("Auth")))
+	if !res.Status {
+		res.Write(w)
+		return
+	}
 	req.ParseForm()
 	form := req.PostForm
 
