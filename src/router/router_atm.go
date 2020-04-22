@@ -13,6 +13,120 @@ import (
 	"github.com/gorilla/mux"
 )
 
+/*AUTH REQUIRED*/
+func updateAtm(w http.ResponseWriter, req *http.Request) {
+
+}
+
+func addAtm(w http.ResponseWriter, req *http.Request) {
+	var res Response
+
+	req.ParseForm()
+	form := req.PostForm
+
+	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
+	authStage := AuthStage(req)
+	validateParamsStage := pipeline.NewStage(func() error {
+		location, locationOk := form["location"]
+		if !locationOk {
+			return errors.New("location param is missing")
+		} else {
+			if len(location) < 2 {
+				return errors.New("location param must have 2 values")
+			}
+		}
+
+		return nil
+	})
+
+	parseValueStage := pipeline.NewStage(func() error {
+		_, latErr := strconv.ParseFloat(form["location"][0], 64)
+
+		_, lonErr := strconv.ParseFloat(form["location"][1], 64)
+
+		if latErr != nil {
+			return errors.New("cannot parse location[0] to float")
+		}
+
+		if lonErr != nil {
+			return errors.New("cannot parse location[1] to float")
+		}
+
+		return nil
+	})
+
+	authStage.NextStage(validateParamsStage)
+	validateParamsStage.NextStage(parseValueStage)
+	pipe.First = authStage
+
+	res.Error(pipe.Run())
+
+	if res.Status {
+		var s model.Atm
+		lat, _ := strconv.ParseFloat(form["location"][0], 64)
+		lon, _ := strconv.ParseFloat(form["location"][1], 64)
+		s.Lat = float32(lat)
+		s.Lon = float32(lon)
+
+		err := model.AddAtm(s)
+
+		if err != nil {
+			res.Status = false
+			res.Message = err.Error()
+		} else {
+			res.Message = "Create new atm is succeed"
+		}
+	}
+
+	jsonData, jsonErr := json.Marshal(res)
+	if jsonErr != nil {
+		log.Println(jsonErr)
+	}
+	w.Write(jsonData)
+}
+
+func addBank(w http.ResponseWriter, req *http.Request) {
+	var res Response
+	res.Status = true
+
+	req.ParseForm()
+	form := req.PostForm
+
+	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
+	authStage := AuthStage(req)
+	validateParamsStage := pipeline.NewStage(func() (str struct{ Name string }, e error) {
+		name, nameOk := form["name"]
+		if !nameOk {
+			e = errors.New("name param is missing")
+		} else {
+			str.Name = name[0]
+		}
+
+		return
+	})
+
+	authStage.NextStage(validateParamsStage)
+	pipe.First = authStage
+	res.Error(pipe.Run())
+
+	if res.Status {
+		var s model.Bank
+		s.Name = pipe.GetString("Name")[0]
+		err := model.AddBank(s)
+
+		if err != nil {
+			res.Status = false
+			res.Message = err.Error()
+		} else {
+			res.Message = "Add new bank successfully"
+		}
+	}
+
+	Write(w, res)
+}
+
+/*NON-AUTH REQUIRED*/
+
 func getAtms(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		Response
@@ -31,10 +145,6 @@ func getAtms(w http.ResponseWriter, req *http.Request) {
 	}
 
 	Write(w, res)
-}
-
-func updateAtm(w http.ResponseWriter, req *http.Request) {
-
 }
 
 func getAtmById(w http.ResponseWriter, req *http.Request) {
@@ -112,77 +222,6 @@ func getAtmInRange(w http.ResponseWriter, req *http.Request) {
 	Write(w, res)
 }
 
-func addAtm(w http.ResponseWriter, req *http.Request) {
-	var res Response
-
-	// res.Status = true
-	// res.Error(model.Auth(req.Header.Get("Auth")))
-	// if !res.Status {
-	// 	res.Write(w)
-	// 	return
-	// }
-	req.ParseForm()
-	form := req.PostForm
-
-	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	validateParamsStage := pipeline.NewStage(func() error {
-		location, locationOk := form["location"]
-		if !locationOk {
-			return errors.New("location param is missing")
-		} else {
-			if len(location) < 2 {
-				return errors.New("location param must have 2 values")
-			}
-		}
-
-		return nil
-	})
-
-	parseValueStage := pipeline.NewStage(func() error {
-		_, latErr := strconv.ParseFloat(form["location"][0], 64)
-
-		_, lonErr := strconv.ParseFloat(form["location"][1], 64)
-
-		if latErr != nil {
-			return errors.New("cannot parse location[0] to float")
-		}
-
-		if lonErr != nil {
-			return errors.New("cannot parse location[1] to float")
-		}
-
-		return nil
-	})
-
-	validateParamsStage.NextStage(parseValueStage)
-	pipe.First = validateParamsStage
-
-	res.Error(pipe.Run())
-
-	if res.Status {
-		var s model.Atm
-		lat, _ := strconv.ParseFloat(form["location"][0], 64)
-		lon, _ := strconv.ParseFloat(form["location"][1], 64)
-		s.Lat = float32(lat)
-		s.Lon = float32(lon)
-
-		err := model.AddAtm(s)
-
-		if err != nil {
-			res.Status = false
-			res.Message = err.Error()
-		} else {
-			res.Message = "Create new atm is succeed"
-		}
-	}
-
-	jsonData, jsonErr := json.Marshal(res)
-	if jsonErr != nil {
-		log.Println(jsonErr)
-	}
-	w.Write(jsonData)
-}
-
 func getBanks(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		Response
@@ -191,46 +230,6 @@ func getBanks(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		res.Banks = model.AllBanks()
-	}
-
-	Write(w, res)
-}
-
-func addBank(w http.ResponseWriter, req *http.Request) {
-	var res Response
-	res.Status = true
-
-	req.ParseForm()
-	form := req.PostForm
-
-	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	// authStage := AuthStage(req)
-	validateParamsStage := pipeline.NewStage(func() (str struct{ Name string }, e error) {
-		name, nameOk := form["name"]
-		if !nameOk {
-			e = errors.New("name param is missing")
-		} else {
-			str.Name = name[0]
-		}
-
-		return
-	})
-
-	// authStage.NextStage(validateParamsStage)
-	pipe.First = validateParamsStage
-	res.Error(pipe.Run())
-
-	if res.Status {
-		var s model.Bank
-		s.Name = pipe.GetString("Name")[0]
-		err := model.AddBank(s)
-
-		if err != nil {
-			res.Status = false
-			res.Message = err.Error()
-		} else {
-			res.Message = "Add new bank successfully"
-		}
 	}
 
 	Write(w, res)

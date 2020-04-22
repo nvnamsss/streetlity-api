@@ -12,19 +12,17 @@ import (
 	"github.com/gorilla/mux"
 )
 
+/*AUTH REQUIRED*/
+
 func addToilet(w http.ResponseWriter, req *http.Request) {
 	var res Response
-
 	res.Status = true
-	res.Error(model.Auth(req.Header.Get("Auth")))
-	if !res.Status {
-		res.Write(w)
-		return
-	}
+
 	req.ParseForm()
 	form := req.PostForm
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
+	authStage := AuthStage(req)
 	validateParamsStage := pipeline.NewStage(func() error {
 		location, locationOk := form["location"]
 		if !locationOk {
@@ -58,8 +56,9 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 		return str, nil
 	})
 
+	authStage.NextStage(validateParamsStage)
 	validateParamsStage.NextStage(parseValueStage)
-	pipe.First = validateParamsStage
+	pipe.First = authStage
 	res.Error(pipe.Run())
 
 	if res.Status {
@@ -82,18 +81,14 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 	Write(w, res)
 }
 
+/*NON-AUTH REQUIRED*/
+
 func getAllToilets(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		Response
 		Toilets []model.Toilet
 	}
 	res.Status = true
-
-	res.Error(model.Auth(req.Header.Get("Auth")))
-	if !res.Status {
-		res.Write(w)
-		return
-	}
 
 	if res.Status {
 		res.Toilets = model.AllToilets()

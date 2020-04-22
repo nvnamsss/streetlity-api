@@ -3,11 +3,27 @@ package model
 import (
 	"errors"
 	"fmt"
+	"time"
 
 	"github.com/dgrijalva/jwt-go"
 )
 
+type User struct {
+	Id int64
+}
+
 const RoleAdmin = 10
+
+func CreateToken(id int64) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"id":  id,
+		"exp": time.Now().Add(time.Minute*10 + time.Second*30).Unix(),
+	})
+
+	tokenString, err := token.SignedString([]byte("secret-key-0985399536aA"))
+
+	return tokenString, err
+}
 
 func Auth(tokenString string) error {
 	fmt.Println("[Auth]", tokenString)
@@ -26,7 +42,14 @@ func Auth(tokenString string) error {
 	})
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		fmt.Println(claims)
+		id, ok := claims["id"]
+		var u User
+		dbc := Db.Find(&u, id)
+
+		if !ok || dbc.Error != nil {
+			return errors.New("Invalid token")
+		}
+
 		return nil
 	} else {
 		fmt.Println(err)

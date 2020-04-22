@@ -13,7 +13,7 @@ import (
 )
 
 /*AUTH REQUIRED*/
-func updateFuel(w http.ResponseWriter, req *http.Request) {
+func updateMaintainer(w http.ResponseWriter, req *http.Request) {
 	var res Response
 	res.Status = true
 
@@ -67,9 +67,9 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var f model.Fuel
+		var m model.Maintainer
 		id, _ := strconv.ParseInt(form["id"][0], 10, 64)
-		if err := model.Db.Where(&model.Fuel{Id: id}).First(&f).Error; err != nil {
+		if err := model.Db.Where(&model.Maintainer{Id: id}).First(&m).Error; err != nil {
 			res.Status = false
 			res.Message = err.Error()
 		}
@@ -79,7 +79,7 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 	Write(w, res)
 }
 
-func addFuel(w http.ResponseWriter, req *http.Request) {
+func addMaintainer(w http.ResponseWriter, req *http.Request) {
 	var res Response
 	res.Status = true
 
@@ -127,19 +127,19 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var f model.Fuel
+		var m model.Maintainer
 		lat := pipe.GetFloat("Lat")[0]
 		lon := pipe.GetFloat("Lon")[0]
-		f.Lat = float32(lat)
-		f.Lon = float32(lon)
+		m.Lat = float32(lat)
+		m.Lon = float32(lon)
 
-		err := model.AddFuel(f)
+		err := model.AddMaintainer(m)
 
 		if err != nil {
 			res.Status = false
 			res.Message = err.Error()
 		} else {
-			res.Message = "Create new fuel is succeed"
+			res.Message = "Create new Maintainer is succeed"
 		}
 	}
 
@@ -148,22 +148,22 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 
 /*NON-AUTH REQUIRED*/
 
-func getFuels(w http.ResponseWriter, req *http.Request) {
+func getMaintainers(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		Response
-		Fuels []model.Fuel
+		Maintainer []model.Maintainer
 	}
 
 	res.Status = true
 
-	res.Fuels = model.AllFuels()
+	res.Maintainer = model.AllMaintainers()
 
-	log.Println("[GetFuels]", res.Fuels)
+	log.Println("[GetFuels]", res.Maintainer)
 
 	Write(w, res)
 }
 
-func getFuel(w http.ResponseWriter, req *http.Request) {
+func getMaintainer(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		Response
 		Fuel model.Fuel
@@ -206,10 +206,10 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 // 	- `location`: X and Y coordinator
 // 	- `range` : range to find
 //
-func getFuelInRange(w http.ResponseWriter, req *http.Request) {
+func getMaintainerInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		Response
-		Fuels []model.Fuel
+		Maintainers []model.Maintainer
 	}
 
 	res.Status = true
@@ -271,18 +271,18 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 		max_range := pipe.GetFloat("Range")[0]
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		res.Fuels = model.FuelsInRange(location, max_range)
+		res.Maintainers = model.MaintainersInRange(location, max_range)
 	}
 
 	Write(w, res)
 }
 
-func HandleFuel(router *mux.Router) {
+func HandleMaintainer(router *mux.Router) {
 	log.Println("[Router]", "Handling fuel")
-	s := router.PathPrefix("/fuel").Subrouter()
-	s.HandleFunc("/all", getFuels).Methods("GET")
-	s.HandleFunc("/update", updateFuel).Methods("POST")
-	s.HandleFunc("/id", getFuel).Methods("GET")
-	s.HandleFunc("/range", getFuelInRange).Methods("GET")
-	s.HandleFunc("/add", addFuel).Methods("POSt")
+	s := router.PathPrefix("/maintain").Subrouter()
+	s.HandleFunc("/all", getMaintainers).Methods("GET")
+	s.HandleFunc("/update", updateMaintainer).Methods("POST")
+	s.HandleFunc("/id", getMaintainer).Methods("GET")
+	s.HandleFunc("/range", getMaintainerInRange).Methods("GET")
+	s.HandleFunc("/add", addMaintainer).Methods("POSt")
 }
