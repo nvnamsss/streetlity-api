@@ -17,13 +17,6 @@ import (
 var Router *mux.Router = mux.NewRouter()
 var Server http.Server
 
-func init() {
-}
-func himom(w http.ResponseWriter, req *http.Request) {
-	log.Println("Hi mom")
-	w.Write([]byte("Hi mom"))
-
-}
 func main() {
 	var wait time.Duration
 

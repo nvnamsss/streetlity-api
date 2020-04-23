@@ -4,6 +4,7 @@ import (
 	"github.com/golang/geo/r2"
 )
 
+//FuelUcf representation the Fuel service which is confirmed
 type Fuel struct {
 	Id  int64
 	Lat float32 `gorm:"column:lat"`
@@ -43,6 +44,14 @@ func AddFuel(s Fuel) error {
 //FuelById query the fuel service by specific id
 func FuelById(id int64) Fuel {
 	var service Fuel
+	Db.Find(&service, id)
+
+	return service
+}
+
+//FuelUcfById query the fuel service by specific id
+func FuelUcfById(id int64) FuelUcf {
+	var service FuelUcf
 	Db.Find(&service, id)
 
 	return service

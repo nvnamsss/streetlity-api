@@ -76,7 +76,7 @@ func updateMaintainer(w http.ResponseWriter, req *http.Request) {
 
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 func addMaintainer(w http.ResponseWriter, req *http.Request) {
@@ -127,23 +127,23 @@ func addMaintainer(w http.ResponseWriter, req *http.Request) {
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var m model.Maintainer
+		var m model.MaintainerUcf
 		lat := pipe.GetFloat("Lat")[0]
 		lon := pipe.GetFloat("Lon")[0]
 		m.Lat = float32(lat)
 		m.Lon = float32(lon)
 
-		err := model.AddMaintainer(m)
+		err := model.AddMaintainerUcf(m)
 
 		if err != nil {
 			res.Status = false
 			res.Message = err.Error()
 		} else {
-			res.Message = "Create new Maintainer is succeed"
+			res.Message = "Create new Maintainer successfully"
 		}
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 /*NON-AUTH REQUIRED*/
@@ -160,7 +160,7 @@ func getMaintainers(w http.ResponseWriter, req *http.Request) {
 
 	log.Println("[GetFuels]", res.Maintainer)
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 func getMaintainer(w http.ResponseWriter, req *http.Request) {
@@ -197,7 +197,7 @@ func getMaintainer(w http.ResponseWriter, req *http.Request) {
 		res.Fuel = model.FuelById(id)
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 //getFuelInRange process the in-range query. the request must provide there
@@ -274,7 +274,7 @@ func getMaintainerInRange(w http.ResponseWriter, req *http.Request) {
 		res.Maintainers = model.MaintainersInRange(location, max_range)
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 func HandleMaintainer(router *mux.Router) {

@@ -11,6 +11,13 @@ type Atm struct {
 	BankId int64   `gorm:"column:bank_id"`
 }
 
+type AtmUcf struct {
+	Id     int64
+	Lat    float32 `gorm:"column:lat"`
+	Lon    float32 `gorm:"column:lon"`
+	BankId int64   `gorm:"column:bank_id"`
+}
+
 type Bank struct {
 	Id   int64
 	Name string `gorm:"column:name"`
@@ -19,6 +26,10 @@ type Bank struct {
 //TableName determine the table name in database which is using for gorm
 func (Atm) TableName() string {
 	return "atm"
+}
+
+func (AtmUcf) TableName() string {
+	return "atm_ucf"
 }
 
 func (Bank) TableName() string {
@@ -51,6 +62,17 @@ func AtmById(id int64) Atm {
 //
 //return error if there is something wrong when doing transaction
 func AddAtm(s Atm) error {
+	if dbc := Db.Create(&s); dbc.Error != nil {
+		return dbc.Error
+	}
+
+	return nil
+}
+
+//AddAtm add new atm service to the database
+//
+//return error if there is something wrong when doing transaction
+func AddUcfAtm(s AtmUcf) error {
 	if dbc := Db.Create(&s); dbc.Error != nil {
 		return dbc.Error
 	}

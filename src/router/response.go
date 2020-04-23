@@ -38,7 +38,7 @@ func (res *Response) Write(w http.ResponseWriter) {
 	w.Write(jsonData)
 }
 
-func Write(w http.ResponseWriter, data interface{}) {
+func WriteJson(w http.ResponseWriter, data interface{}) {
 	jsonData, jsonErr := json.Marshal(data)
 
 	if jsonErr != nil {

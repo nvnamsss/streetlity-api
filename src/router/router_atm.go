@@ -1,7 +1,6 @@
 package router
 
 import (
-	"encoding/json"
 	"errors"
 	"log"
 	"net/http"
@@ -62,13 +61,13 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var s model.Atm
+		var s model.AtmUcf
 		lat, _ := strconv.ParseFloat(form["location"][0], 64)
 		lon, _ := strconv.ParseFloat(form["location"][1], 64)
 		s.Lat = float32(lat)
 		s.Lon = float32(lon)
 
-		err := model.AddAtm(s)
+		err := model.AddAtmUcf(s)
 
 		if err != nil {
 			res.Status = false
@@ -78,11 +77,7 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	jsonData, jsonErr := json.Marshal(res)
-	if jsonErr != nil {
-		log.Println(jsonErr)
-	}
-	w.Write(jsonData)
+	Write(w, res)
 }
 
 func addBank(w http.ResponseWriter, req *http.Request) {

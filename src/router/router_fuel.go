@@ -127,13 +127,13 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var f model.Fuel
+		var f model.FuelUcf
 		lat := pipe.GetFloat("Lat")[0]
 		lon := pipe.GetFloat("Lon")[0]
 		f.Lat = float32(lat)
 		f.Lon = float32(lon)
 
-		err := model.AddFuel(f)
+		err := model.AddFuelUcf(f)
 
 		if err != nil {
 			res.Status = false
