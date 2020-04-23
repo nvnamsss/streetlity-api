@@ -45,11 +45,8 @@ func AddFuel(s Fuel) error {
 func FuelById(id int64) Fuel {
 	var service Fuel
 	Db.Find(&service, id)
-
 	return service
 }
-
-
 
 //FuelsInRange query the fuel services which is in the radius of a location
 func FuelsInRange(p r2.Point, max_range float64) []Fuel {
