@@ -77,7 +77,7 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 func addBank(w http.ResponseWriter, req *http.Request) {
@@ -117,7 +117,7 @@ func addBank(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 /*NON-AUTH REQUIRED*/
@@ -139,7 +139,7 @@ func getAtms(w http.ResponseWriter, req *http.Request) {
 		res.Atms = model.AllAtms()
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 func getAtmById(w http.ResponseWriter, req *http.Request) {
@@ -214,7 +214,7 @@ func getAtmInRange(w http.ResponseWriter, req *http.Request) {
 		res.Atms = model.AtmsInRange(location, max_range)
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 func getBanks(w http.ResponseWriter, req *http.Request) {
@@ -227,7 +227,7 @@ func getBanks(w http.ResponseWriter, req *http.Request) {
 		res.Banks = model.AllBanks()
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 func HandleAtm(router *mux.Router) {

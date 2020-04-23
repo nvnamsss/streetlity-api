@@ -49,13 +49,7 @@ func FuelById(id int64) Fuel {
 	return service
 }
 
-//FuelUcfById query the fuel service by specific id
-func FuelUcfById(id int64) FuelUcf {
-	var service FuelUcf
-	Db.Find(&service, id)
 
-	return service
-}
 
 //FuelsInRange query the fuel services which is in the radius of a location
 func FuelsInRange(p r2.Point, max_range float64) []Fuel {

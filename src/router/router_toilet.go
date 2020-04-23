@@ -78,7 +78,7 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 /*NON-AUTH REQUIRED*/
@@ -94,7 +94,7 @@ func getAllToilets(w http.ResponseWriter, req *http.Request) {
 		res.Toilets = model.AllToilets()
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 func updateToilet(w http.ResponseWriter, req *http.Request) {
@@ -169,7 +169,7 @@ func getToiletInRange(w http.ResponseWriter, req *http.Request) {
 		res.Toilets = model.ToiletsInRange(location, max_range)
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 func HandleToilet(router *mux.Router) {

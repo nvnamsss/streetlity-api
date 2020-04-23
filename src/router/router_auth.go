@@ -66,7 +66,7 @@ func auth(w http.ResponseWriter, req *http.Request) {
 		res.Error(err)
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 func HandleAuth(router *mux.Router) {

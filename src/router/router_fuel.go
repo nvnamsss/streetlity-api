@@ -76,7 +76,7 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 func addFuel(w http.ResponseWriter, req *http.Request) {
@@ -143,7 +143,7 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 /*NON-AUTH REQUIRED*/
@@ -160,7 +160,7 @@ func getFuels(w http.ResponseWriter, req *http.Request) {
 
 	log.Println("[GetFuels]", res.Fuels)
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 func getFuel(w http.ResponseWriter, req *http.Request) {
@@ -197,7 +197,7 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 		res.Fuel = model.FuelById(id)
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 //getFuelInRange process the in-range query. the request must provide there
@@ -274,7 +274,7 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 		res.Fuels = model.FuelsInRange(location, max_range)
 	}
 
-	Write(w, res)
+	WriteJson(w, res)
 }
 
 func HandleFuel(router *mux.Router) {
