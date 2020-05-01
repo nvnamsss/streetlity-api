@@ -113,6 +113,8 @@ github.com/mdempsky/gocode v0.0.0-20191202075140-939b4a677f2f h1:fZeEdJL+u/usJDT
 github.com/mdempsky/gocode v0.0.0-20191202075140-939b4a677f2f/go.mod h1:hltEC42XzfMNgg0S1v6JTywwra2Mu6F6cLR03debVQ8=
 github.com/naoina/go-stringutil v0.1.0/go.mod h1:XJ2SJL9jCtBh+P9q5btrd/Ylo8XwT/h1USek5+NqSA0=
 github.com/naoina/toml v0.1.2-0.20170918210437-9fafd6967416/go.mod h1:NBIhNtsFMo3G2szEBne+bO4gS192HuIYRqfvOWb4i1E=
+github.com/nvnamsss/goinf v1.0.0 h1:k9J17Rfl5xs9EdgMFk2yKMtaji7ZoLg2kQl4RlSo0bY=
+github.com/nvnamsss/goinf v1.0.0/go.mod h1:tlct2DRHH8ozfcJMmNs9BUI/MT/nSmYmXqliDIPFEyY=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/olekukonko/tablewriter v0.0.1/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=
 github.com/olekukonko/tablewriter v0.0.2-0.20190409134802-7e037d187b0c/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=

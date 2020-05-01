@@ -26,7 +26,6 @@ func main() {
 	loggedRouter := handlers.LoggingHandler(os.Stdout, Router)
 
 	router.Handle(Router)
-
 	Server := &http.Server{
 		Addr:         "0.0.0.0:9000",
 		WriteTimeout: time.Second * 30,

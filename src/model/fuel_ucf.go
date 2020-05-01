@@ -1,10 +1,17 @@
 package model
 
+import (
+	"log"
+
+	"github.com/jinzhu/gorm"
+)
+
 //FuelUcf representation the Fuel service which is not confirmed
 type FuelUcf struct {
-	Id  int64
-	Lat float32 `gorm:"column:lat"`
-	Lon float32 `gorm:"column:lon"`
+	Id        int64
+	Lat       float32 `gorm:"column:lat"`
+	Lon       float32 `gorm:"column:lon"`
+	Confident int     `gorm:"column:confident"`
 }
 
 func (FuelUcf) TableName() string {
@@ -31,9 +38,35 @@ func AddFuelUcf(s FuelUcf) error {
 }
 
 //FuelUcfById query the fuel service by specific id
-func FuelUcfById(id int64) FuelUcf {
-	var service FuelUcf
-	Db.Find(&service, id)
+func FuelUcfById(id int64) (service FuelUcf, e error) {
+	if e = Db.Find(&service, id).Error; e != nil {
+		log.Println("[Database]", e.Error())
+	}
 
-	return service
+	return
+}
+
+//UpvoteFuelUcf upvote the unconfirmed fuel by specific id
+func UpvoteFuelUcf(id int64) error {
+	s, e := FuelUcfById(id)
+
+	if e != nil {
+		return e
+	}
+
+	s.Confident += 1
+	Db.Save(&s)
+
+	return nil
+}
+
+func (s *FuelUcf) AfterSave(scope *gorm.Scope) (err error) {
+	if s.Confident == 5 {
+		var f Fuel = Fuel{Lat: s.Lat, Lon: s.Lon}
+		AddFuel(f)
+		scope.DB().Delete(s)
+		log.Println("Confident is enough")
+	}
+
+	return
 }

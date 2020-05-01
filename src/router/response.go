@@ -7,7 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"streelity/v1/model"
-	"streelity/v1/pipeline"
+
+	"github.com/nvnamsss/goinf/pipeline"
 )
 
 //Response representing the data for a response, include
@@ -21,11 +22,14 @@ type Response struct {
 }
 
 //Error validate the data of response by err
-func (res *Response) Error(err error) {
+func (res *Response) Error(err error) bool {
 	if err != nil {
 		res.Status = false
 		res.Message = err.Error()
+		return true
 	}
+
+	return false
 }
 
 func (res *Response) Write(w http.ResponseWriter) {

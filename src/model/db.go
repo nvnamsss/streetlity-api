@@ -7,11 +7,11 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
-	"streelity/v1/event"
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/jinzhu/gorm"
+	"github.com/nvnamsss/goinf/event"
 )
 
 type Configuration struct {

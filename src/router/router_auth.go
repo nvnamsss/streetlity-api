@@ -6,9 +6,9 @@ import (
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
-	"streelity/v1/pipeline"
 
 	"github.com/gorilla/mux"
+	"github.com/nvnamsss/goinf/pipeline"
 )
 
 func confirm(w http.ResponseWriter, req *http.Request) {

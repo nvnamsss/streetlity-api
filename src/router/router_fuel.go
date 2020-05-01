@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
-	"streelity/v1/pipeline"
 
 	"github.com/golang/geo/r2"
 	"github.com/gorilla/mux"
+	"github.com/nvnamsss/goinf/pipeline"
 )
 
 /*AUTH REQUIRED*/
@@ -194,7 +194,10 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := pipe.GetInt("Id")[0]
-		res.Fuel = model.FuelById(id)
+		f, err := model.FuelById(id)
+		if !res.Error(err) {
+			res.Fuel = f
+		}
 	}
 
 	WriteJson(w, res)
@@ -277,6 +280,33 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 	WriteJson(w, res)
 }
 
+func upvoteFuel(w http.ResponseWriter, req *http.Request) {
+	var res Response = Response{Status: true}
+
+	req.ParseForm()
+	p := pipeline.NewPipeline()
+	vStage := pipeline.NewStage(func() (str struct{ Id int64 }, e error) {
+		form := req.PostForm
+		_, ok := form["id"]
+		if !ok {
+			e = errors.New("id params is missing")
+			return
+		}
+
+		str.Id, e = strconv.ParseInt(form["id"][0], 10, 64)
+		return
+	})
+	p.First = vStage
+	res.Error(p.Run())
+
+	if res.Status {
+		var id int64 = p.GetInt("Id")[0]
+		res.Error(model.UpvoteFuelUcf(id))
+	}
+
+	WriteJson(w, res)
+}
+
 func HandleFuel(router *mux.Router) {
 	log.Println("[Router]", "Handling fuel")
 	s := router.PathPrefix("/fuel").Subrouter()
@@ -284,5 +314,17 @@ func HandleFuel(router *mux.Router) {
 	s.HandleFunc("/update", updateFuel).Methods("POST")
 	s.HandleFunc("/id", getFuel).Methods("GET")
 	s.HandleFunc("/range", getFuelInRange).Methods("GET")
-	s.HandleFunc("/add", addFuel).Methods("POSt")
+	//s.HandleFunc("/add", addFuel).Methods("POST")
+	//s.HandleFunc("/upvote", upvoteFuel).Methods("POST")
+
+	r := s.PathPrefix("/add").Subrouter()
+	r.HandleFunc("", getFuelInRange).Methods("GET")
+	r.Use(Authenticate)
+
+	r = s.PathPrefix("/upvote").Subrouter()
+	r.HandleFunc("", upvoteFuel).Methods("POST")
+	r.Use(Authenticate)
+
+	Versioning(s, "1.0.0", "2.1.0")
+	// http.Handle("/range", Adapt(s, Authenticate()))
 }

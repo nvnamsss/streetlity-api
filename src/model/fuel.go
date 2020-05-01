@@ -1,6 +1,9 @@
 package model
 
 import (
+	"errors"
+	"log"
+
 	"github.com/golang/geo/r2"
 )
 
@@ -42,10 +45,13 @@ func AddFuel(s Fuel) error {
 }
 
 //FuelById query the fuel service by specific id
-func FuelById(id int64) Fuel {
-	var service Fuel
-	Db.Find(&service, id)
-	return service
+func FuelById(id int64) (service Fuel, e error) {
+	if e = Db.Find(&service, id).Error; e != nil {
+		log.Println("[Database]", e.Error())
+		return service, errors.New("Problem occured when query")
+	}
+
+	return
 }
 
 //FuelsInRange query the fuel services which is in the radius of a location

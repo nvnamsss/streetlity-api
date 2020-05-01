@@ -1,11 +1,17 @@
 package model
 
-import "github.com/golang/geo/r2"
+import (
+	"log"
+
+	"github.com/golang/geo/r2"
+	"github.com/jinzhu/gorm"
+)
 
 type MaintainerUcf struct {
-	Id  int64
-	Lat float32 `gorm:"column:lat"`
-	Lon float32 `gorm:"column:lon"`
+	Id        int64
+	Lat       float32 `gorm:"column:lat"`
+	Lon       float32 `gorm:"column:lon"`
+	Confident int     `gorm:"column:confident"`
 }
 
 func (MaintainerUcf) TableName() string {
@@ -17,7 +23,7 @@ func (s MaintainerUcf) Location() r2.Point {
 	return p
 }
 
-//AllFuels query all fuel services
+//AllMaintainerUcfs query all maintainer services
 func AllMaintainerUcfs() []MaintainerUcf {
 	var services []MaintainerUcf
 	Db.Find(&services)
@@ -25,21 +31,33 @@ func AllMaintainerUcfs() []MaintainerUcf {
 	return services
 }
 
-//AddFuel add new fuel service to the database
+//AddMaintainerUcf add new unconfirmed maintainer service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddMaintainerUcf(s MaintainerUcf) error {
-	if dbc := Db.Create(&s); dbc.Error != nil {
-		return dbc.Error
+func AddMaintainerUcf(s MaintainerUcf) (e error) {
+	if e = Db.Create(&s).Error; e != nil {
+		log.Println("[Database]", e.Error())
 	}
 
-	return nil
+	return
 }
 
-//FuelById query the fuel service by specific id
-func MaintainerUcfById(id int64) MaintainerUcf {
-	var service MaintainerUcf
-	Db.Find(&service, id)
+//MaintainerUcfById query the unconfirmed maintainer service by specific id
+func MaintainerUcfById(id int64) (service MaintainerUcf, e error) {
+	if e := Db.Find(&service, id).Error; e != nil {
+		log.Println("[Database]", e.Error())
+	}
 
-	return service
+	return
+}
+
+func (s *MaintainerUcf) AfterSave(scope *gorm.Scope) (err error) {
+	if s.Confident == 5 {
+		var m Maintainer = Maintainer{Lat: s.Lat, Lon: s.Lon}
+		AddMaintainer(m)
+		scope.DB().Delete(s)
+		log.Println("Confident is enough")
+	}
+
+	return
 }

@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
-	"streelity/v1/pipeline"
 
 	"github.com/golang/geo/r2"
 	"github.com/gorilla/mux"
+	"github.com/nvnamsss/goinf/pipeline"
 )
 
 /*AUTH REQUIRED*/
@@ -17,7 +17,6 @@ import (
 func addToilet(w http.ResponseWriter, req *http.Request) {
 	var res Response
 	res.Status = true
-
 	req.ParseForm()
 	form := req.PostForm
 

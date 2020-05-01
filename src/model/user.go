@@ -42,14 +42,10 @@ func Auth(tokenString string) error {
 	})
 
 	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
-		id, ok := claims["id"]
-		var u User
-		dbc := Db.Find(&u, id)
-
-		if !ok || dbc.Error != nil {
+		_, ok := claims["id"]
+		if !ok {
 			return errors.New("Invalid token")
 		}
-
 		return nil
 	} else {
 		fmt.Println(err)

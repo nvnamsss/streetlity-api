@@ -6,10 +6,10 @@ import (
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
-	"streelity/v1/pipeline"
 
 	"github.com/golang/geo/r2"
 	"github.com/gorilla/mux"
+	"github.com/nvnamsss/goinf/pipeline"
 )
 
 /*AUTH REQUIRED*/
@@ -158,15 +158,13 @@ func getMaintainers(w http.ResponseWriter, req *http.Request) {
 
 	res.Maintainer = model.AllMaintainers()
 
-	log.Println("[GetFuels]", res.Maintainer)
-
 	WriteJson(w, res)
 }
 
 func getMaintainer(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		Response
-		Fuel model.Fuel
+		Maintainer model.Maintainer
 	}
 
 	res.Status = true
@@ -194,7 +192,7 @@ func getMaintainer(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := pipe.GetInt("Id")[0]
-		res.Fuel = model.FuelById(id)
+		res.Maintainer = model.MaintainerById(id)
 	}
 
 	WriteJson(w, res)
