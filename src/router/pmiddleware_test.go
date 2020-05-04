@@ -6,6 +6,15 @@ import (
 	"testing"
 )
 
+//sumOfRunes return the sum of runes by int in a string
+func sumOfRunes(s string) (sum int) {
+	for _, r := range s {
+		sum += int(r)
+	}
+
+	return
+}
+
 func compareVersion(currentVersion, minVersion, maxVersion string) (status bool, err error) {
 	regFormat, _ := regexp.Compile("\\d*?[.]\\d*")
 	reg, _ := regexp.Compile("[.]")
@@ -36,12 +45,11 @@ func compareVersion(currentVersion, minVersion, maxVersion string) (status bool,
 	if len(max) < 3 {
 		return false, errors.New("maxVersion format is invalid")
 	}
+	minValue := sumOfRunes(min[0])*100 + sumOfRunes(min[1])*10 + sumOfRunes(min[2])
+	currentValue := sumOfRunes(current[0])*100 + sumOfRunes(current[1])*10 + sumOfRunes(current[2])
+	maxValue := sumOfRunes(max[0])*100 + sumOfRunes(max[1])*10 + sumOfRunes(max[2])
 
-	minValue := min[0]*100 + min[1]*10 + min[2]
-	currentValue := current[0]*100 + current[1]*10 + current[2]
-	maxValue := max[0]*100 + max[1]*10 + max[2]
-
-	if currentValue >= minValue && currentvalue <= maxValue {
+	if currentValue >= minValue && currentValue <= maxValue {
 		return true, nil
 	}
 

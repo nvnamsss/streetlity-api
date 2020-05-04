@@ -8,8 +8,31 @@ import (
 	"github.com/gorilla/mux"
 )
 
+//sumOfRunes return the sum of runes by int in a string
+func sumOfRunes(s string) (sum int) {
+	for _, r := range s {
+		sum += int(r)
+	}
+
+	return
+}
+
+//compareVersion compare the
 func compareVersion(currentVersion, minVersion, maxVersion string) (status bool, err error) {
-	reg, _ := regexp.Compile(".")
+	regFormat, _ := regexp.Compile("\\d*?[.]\\d*")
+	reg, _ := regexp.Compile("[.]")
+	if !regFormat.Match([]byte(currentVersion)) {
+		return false, errors.New("currentVersion format is invalid")
+	}
+
+	if !regFormat.Match([]byte(minVersion)) {
+		return false, errors.New("currentVersion format is invalid")
+	}
+
+	if !regFormat.Match([]byte(maxVersion)) {
+		return false, errors.New("currentVersion format is invalid")
+	}
+
 	current := reg.Split(currentVersion, -1)
 	min := reg.Split(minVersion, -1)
 	max := reg.Split(maxVersion, -1)
@@ -25,23 +48,15 @@ func compareVersion(currentVersion, minVersion, maxVersion string) (status bool,
 	if len(max) < 3 {
 		return false, errors.New("maxVersion format is invalid")
 	}
+	minValue := sumOfRunes(min[0])*100 + sumOfRunes(min[1])*10 + sumOfRunes(min[2])
+	currentValue := sumOfRunes(current[0])*100 + sumOfRunes(current[1])*10 + sumOfRunes(current[2])
+	maxValue := sumOfRunes(max[0])*100 + sumOfRunes(max[1])*10 + sumOfRunes(max[2])
 
-	switch {
-	case (min[0] < current[0] && max[0] > current[0]):
+	if currentValue >= minValue && currentValue <= maxValue {
 		return true, nil
-	case min[0] > current[0] || max[0] < current[1]:
-		return false, errors.New("This version is not supported")
-	case min[1] < current[0] && max[1] > current[1]:
-		return true, nil
-	case min[1] > current[1] || max[1] < current[1]:
-		return false, errors.New("This version is not supported")
-	case min[2] < current[2] && max[2] > current[2]:
-		return true, nil
-	case min[2] > current[2] || max[2] < current[2]:
-		return false, errors.New("This version is not supported")
 	}
 
-	return false, errors.New("I do not intent to be here " + currentVersion + " " + minVersion + " " + maxVersion)
+	return false, errors.New("This version is not supported")
 }
 
 //Versioning middleware
