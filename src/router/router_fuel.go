@@ -67,7 +67,7 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 	if res.Status {
 		var f model.Fuel
 		id, _ := strconv.ParseInt(form["id"][0], 10, 64)
-		if err := model.Db.Where(&model.Fuel{Id: id}).First(&f).Error; err != nil {
+		if err := model.Db.Where(&model.Fuel{Service: model.Service{Id: id}}).First(&f).Error; err != nil {
 			res.Status = false
 			res.Message = err.Error()
 		}

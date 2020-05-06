@@ -5,10 +5,8 @@ import (
 )
 
 type Atm struct {
-	Id     int64
-	Lat    float32 `gorm:"column:lat"`
-	Lon    float32 `gorm:"column:lon"`
-	BankId int64   `gorm:"column:bank_id"`
+	Service
+	BankId int64 `gorm:"column:bank_id"`
 }
 
 type Bank struct {

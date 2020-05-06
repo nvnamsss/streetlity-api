@@ -18,6 +18,9 @@ type RTree struct {
 	level      int
 }
 
+//MaxRange is using for automatically adding the new node in AddItem
+var MaxRange float64 = 4.0
+
 type Item interface {
 	Location() r2.Point
 }
@@ -46,10 +49,10 @@ func (r *RTree) AddTree(l *RTree) error {
 }
 
 //The AddItem adds a new item to the tree.
-//automatically create new RTree to hold this item if these are no RTree near the item
+//automatically create new RTree to hold this item if these are no RTree near the item in MaxRange
 //AddItem helps to automatically scale the tree and find the right tree for grouping
 func (rt *RTree) AddItem(item Item) error {
-	tree := rt.Nearest(item.Location(), 20)
+	tree := rt.Nearest(item.Location(), MaxRange)
 
 	if tree == nil {
 		tree = NewRTree()

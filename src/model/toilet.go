@@ -5,9 +5,7 @@ import (
 )
 
 type Toilet struct {
-	Id  int64
-	Lat float32 `gorm:"column:lat"`
-	Lon float32 `gorm:"column:lon"`
+	Service
 }
 
 //TableName determine the table name in database which is using for gorm

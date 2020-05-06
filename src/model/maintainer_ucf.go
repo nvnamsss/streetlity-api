@@ -64,10 +64,10 @@ func MaintainerUcfById(id int64) (service MaintainerUcf, e error) {
 
 func (s *MaintainerUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident == 5 {
-		var m Maintainer = Maintainer{Lat: s.Lat, Lon: s.Lon}
+		var m Maintainer = Maintainer{Service: Service{Lat: s.Lat, Lon: s.Lon, Address: s.Address}}
 		AddMaintainer(m)
 		scope.DB().Delete(s)
-		log.Println("Confident is enough")
+		log.Println("[Unconfirmed Maintainer]", "Confident is enough. Added", m)
 	}
 
 	return

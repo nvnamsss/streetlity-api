@@ -67,10 +67,10 @@ func AddAtmUcf(s AtmUcf) (e error) {
 
 func (s *AtmUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident == 5 {
-		var a Atm = Atm{Lat: s.Lat, Lon: s.Lon}
+		var a Atm = Atm{Service: Service{Lat: s.Lat, Lon: s.Lon, Address: s.Address}}
 		AddAtm(a)
 		scope.DB().Delete(s)
-		log.Println("Confident is enough")
+		log.Println("[Unconfirmed Atm]", "Confident is enough. Added", a)
 	}
 
 	return

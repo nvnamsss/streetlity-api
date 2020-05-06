@@ -71,7 +71,7 @@ func updateMaintainer(w http.ResponseWriter, req *http.Request) {
 	if res.Status {
 		var m model.Maintainer
 		id := pipe.GetInt("Id")[0]
-		if err := model.Db.Where(&model.Maintainer{Id: id}).First(&m).Error; err != nil {
+		if err := model.Db.Where(&model.Maintainer{Service: model.Service{Id: id}}).First(&m).Error; err != nil {
 			res.Status = false
 			res.Message = err.Error()
 		}

@@ -9,10 +9,10 @@ import (
 
 //FuelUcf representation the Fuel service which is confirmed
 type Fuel struct {
-	Id  int64
-	Lat float32 `gorm:"column:lat"`
-	Lon float32 `gorm:"column:lon"`
-	// Location r2.Point
+	Service
+	// Id  int64
+	// Lat float32 `gorm:"column:lat"`
+	// Lon float32 `gorm:"column:lon"`
 }
 
 //Determine table name

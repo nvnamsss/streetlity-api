@@ -59,10 +59,10 @@ func UpvoteFuelUcf(id int64) error {
 
 func (s *FuelUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident == 5 {
-		var f Fuel = Fuel{Lat: s.Lat, Lon: s.Lon}
+		var f Fuel = Fuel{Service: Service{Lat: s.Lat, Lon: s.Lon, Address: s.Address}}
 		AddFuel(f)
 		scope.DB().Delete(s)
-		log.Println("Confident is enough")
+		log.Println("[Unconfirmed Fuel]", "Confident is enough. Added", f)
 	}
 
 	return

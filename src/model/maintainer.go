@@ -3,9 +3,10 @@ package model
 import "github.com/golang/geo/r2"
 
 type Maintainer struct {
-	Id  int64
-	Lat float32 `gorm:"column:lat"`
-	Lon float32 `gorm:"column:lon"`
+	Service
+	// Id  int64
+	// Lat float32 `gorm:"column:lat"`
+	// Lon float32 `gorm:"column:lon"`
 }
 
 func (Maintainer) TableName() string {
