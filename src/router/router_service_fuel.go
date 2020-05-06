@@ -278,8 +278,6 @@ func HandleFuel(router *mux.Router) {
 	s.HandleFunc("/update", updateFuel).Methods("POST")
 	s.HandleFunc("/id", getFuel).Methods("GET")
 	s.HandleFunc("/range", getFuelInRange).Methods("GET")
-	//s.HandleFunc("/add", addFuel).Methods("POST")
-	//s.HandleFunc("/upvote", upvoteFuel).Methods("POST")
 
 	r := s.PathPrefix("/add").Subrouter()
 	r.HandleFunc("", addFuel).Methods("POST")
@@ -289,6 +287,4 @@ func HandleFuel(router *mux.Router) {
 	r.HandleFunc("", upvoteFuel).Methods("POST")
 	r.Use(Authenticate)
 
-	Versioning(s, "1.0.0", "2.1.0")
-	// http.Handle("/range", Adapt(s, Authenticate()))
 }

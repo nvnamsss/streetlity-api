@@ -286,4 +286,5 @@ func HandleMaintainer(router *mux.Router) {
 	r = s.PathPrefix("/upvote").Subrouter()
 	r.HandleFunc("", upvoteMaintainer).Methods("POST")
 	r.Use(Authenticate)
+
 }
