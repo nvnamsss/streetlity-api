@@ -21,7 +21,6 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 	form := req.PostForm
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	authStage := AuthStage(req)
 	validateParamsStage := pipeline.NewStage(func() error {
 		_, idOk := form["id"]
 		location, locationOk := form["location"]
@@ -61,9 +60,8 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
-	authStage.NextStage(validateParamsStage)
 	validateParamsStage.NextStage(parseValueStage)
-	pipe.First = authStage
+	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
 
 	if res.Status {
@@ -80,50 +78,16 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 }
 
 func addFuel(w http.ResponseWriter, req *http.Request) {
-	var res Response
-	res.Status = true
+	var res Response = Response{Status: true}
 
 	req.ParseForm()
-	form := req.PostForm
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	authStage := AuthStage(req)
-	validateParamsStage := pipeline.NewStage(func() error {
-		location, locationOk := form["location"]
-		if !locationOk {
-			return errors.New("location param is missing")
-		} else {
-			if len(location) < 2 {
-				return errors.New("location param must have 2 values")
-			}
-		}
+	validateParamsStage := AddingServiceValidateStage(req)
+	parseValueStage := AddingServiceParsingStage(req)
 
-		return nil
-	})
-
-	parseValueStage := pipeline.NewStage(func() (str struct {
-		Lat float64
-		Lon float64
-	}, e error) {
-		var (
-			latErr error
-			lonErr error
-		)
-
-		str.Lat, latErr = strconv.ParseFloat(form["location"][0], 64)
-		str.Lon, lonErr = strconv.ParseFloat(form["location"][1], 64)
-		if latErr != nil {
-			return str, errors.New("cannot parse location[0] to float")
-		}
-		if lonErr != nil {
-			return str, errors.New("cannot parse location[1] to float")
-		}
-		return str, nil
-	})
-
-	authStage.NextStage(validateParamsStage)
 	validateParamsStage.NextStage(parseValueStage)
-	pipe.First = authStage
+	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
 
 	if res.Status {
@@ -318,7 +282,7 @@ func HandleFuel(router *mux.Router) {
 	//s.HandleFunc("/upvote", upvoteFuel).Methods("POST")
 
 	r := s.PathPrefix("/add").Subrouter()
-	r.HandleFunc("", getFuelInRange).Methods("GET")
+	r.HandleFunc("", addFuel).Methods("POST")
 	r.Use(Authenticate)
 
 	r = s.PathPrefix("/upvote").Subrouter()

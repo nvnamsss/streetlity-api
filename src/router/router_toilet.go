@@ -15,49 +15,15 @@ import (
 /*AUTH REQUIRED*/
 
 func addToilet(w http.ResponseWriter, req *http.Request) {
-	var res Response
-	res.Status = true
+	var res Response = Response{Status: true}
 	req.ParseForm()
-	form := req.PostForm
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	authStage := AuthStage(req)
-	validateParamsStage := pipeline.NewStage(func() error {
-		location, locationOk := form["location"]
-		if !locationOk {
-			return errors.New("location param is missing")
-		} else {
-			if len(location) < 2 {
-				return errors.New("location param must have 2 values")
-			}
-		}
+	validateParamsStage := AddingServiceValidateStage(req)
+	parseValueStage := AddingServiceParsingStage(req)
 
-		return nil
-	})
-
-	parseValueStage := pipeline.NewStage(func() (str struct {
-		Lat float64
-		Lon float64
-	}, e error) {
-		var (
-			latErr error
-			lonErr error
-		)
-
-		str.Lat, latErr = strconv.ParseFloat(form["location"][0], 64)
-		str.Lon, lonErr = strconv.ParseFloat(form["location"][1], 64)
-		if latErr != nil {
-			return str, errors.New("cannot parse location[0] to float")
-		}
-		if lonErr != nil {
-			return str, errors.New("cannot parse location[1] to float")
-		}
-		return str, nil
-	})
-
-	authStage.NextStage(validateParamsStage)
 	validateParamsStage.NextStage(parseValueStage)
-	pipe.First = authStage
+	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
 
 	if res.Status {
@@ -75,6 +41,33 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 		} else {
 			res.Message = "Create new fuel is succeed"
 		}
+	}
+
+	WriteJson(w, res)
+}
+
+func upvoteToilet(w http.ResponseWriter, req *http.Request) {
+	var res Response = Response{Status: true}
+
+	req.ParseForm()
+	p := pipeline.NewPipeline()
+	vStage := pipeline.NewStage(func() (str struct{ Id int64 }, e error) {
+		form := req.PostForm
+		_, ok := form["id"]
+		if !ok {
+			e = errors.New("id params is missing")
+			return
+		}
+
+		str.Id, e = strconv.ParseInt(form["id"][0], 10, 64)
+		return
+	})
+	p.First = vStage
+	res.Error(p.Run())
+
+	if res.Status {
+		var id int64 = p.GetInt("Id")[0]
+		res.Error(model.UpvoteToiletUcf(id))
 	}
 
 	WriteJson(w, res)
@@ -175,7 +168,14 @@ func HandleToilet(router *mux.Router) {
 	log.Println("[Router]", "Handling Toilet")
 	s := router.PathPrefix("/toilet").Subrouter()
 	s.HandleFunc("/all", getAllToilets).Methods("GET")
-	s.HandleFunc("/add", addToilet).Methods("POST")
 	s.HandleFunc("/update", updateToilet).Methods("POST")
 	s.HandleFunc("/range", getToiletInRange).Methods("GET")
+
+	r := s.PathPrefix("/add").Subrouter()
+	r.HandleFunc("", addToilet).Methods("POST")
+	r.Use(Authenticate)
+
+	r = s.PathPrefix("/upvote").Subrouter()
+	r.HandleFunc("", updateToilet).Methods("POST")
+	r.Use(Authenticate)
 }

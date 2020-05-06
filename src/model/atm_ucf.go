@@ -8,11 +8,8 @@ import (
 )
 
 type AtmUcf struct {
-	Id        int64
-	Lat       float32 `gorm:"column:lat"`
-	Lon       float32 `gorm:"column:lon"`
-	BankId    int64   `gorm:"column:bank_id"`
-	Confident int     `gorm:"column:confident"`
+	ServiceUcf
+	BankId int64 `gorm:"column:bank_id"`
 }
 
 //TableName determine the table name in database which is using for gorm

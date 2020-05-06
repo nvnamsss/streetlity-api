@@ -8,10 +8,7 @@ import (
 )
 
 type MaintainerUcf struct {
-	Id        int64
-	Lat       float32 `gorm:"column:lat"`
-	Lon       float32 `gorm:"column:lon"`
-	Confident int     `gorm:"column:confident"`
+	ServiceUcf
 }
 
 func (MaintainerUcf) TableName() string {
@@ -29,6 +26,20 @@ func AllMaintainerUcfs() []MaintainerUcf {
 	Db.Find(&services)
 
 	return services
+}
+
+//UpvoteMaintainerUcf upvote the unconfirmed maintainer by specific id
+func UpvoteMaintainerUcf(id int64) error {
+	s, e := MaintainerUcfById(id)
+
+	if e != nil {
+		return e
+	}
+
+	s.Confident += 1
+	Db.Save(&s)
+
+	return nil
 }
 
 //AddMaintainerUcf add new unconfirmed maintainer service to the database

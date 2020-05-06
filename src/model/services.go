@@ -14,6 +14,14 @@ type Services struct {
 	Toilets []Toilet
 }
 
+type ServiceUcf struct {
+	Id        int64   `gorm:"column:id`
+	Lat       float32 `gorm:"column:lat"`
+	Lon       float32 `gorm:"column:lon"`
+	Address   string  `gorm:"column:address"`
+	Confident int     `gorm:"column:confident"`
+}
+
 type Service interface {
 }
 

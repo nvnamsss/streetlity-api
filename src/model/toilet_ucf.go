@@ -8,10 +8,7 @@ import (
 )
 
 type ToiletUcf struct {
-	Id        int64
-	Lat       float32 `gorm:"column:lat"`
-	Lon       float32 `gorm:"column:lon"`
-	Confident int     `gorm:"column:confident"`
+	ServiceUcf
 }
 
 //TableName determine the table name in database which is using for gorm
@@ -30,6 +27,20 @@ func AllToiletUcfs() []ToiletUcf {
 	Db.Find(&services)
 
 	return services
+}
+
+//UpvoteToiletUcf upvote the unconfirmed toilet by specific id
+func UpvoteToiletUcf(id int64) error {
+	s, e := ToiletUcfById(id)
+
+	if e != nil {
+		return e
+	}
+
+	s.Confident += 1
+	Db.Save(&s)
+
+	return nil
 }
 
 //ToiletUcfById query the unconfirmed toilet service by specific id

@@ -8,10 +8,7 @@ import (
 
 //FuelUcf representation the Fuel service which is not confirmed
 type FuelUcf struct {
-	Id        int64
-	Lat       float32 `gorm:"column:lat"`
-	Lon       float32 `gorm:"column:lon"`
-	Confident int     `gorm:"column:confident"`
+	ServiceUcf
 }
 
 func (FuelUcf) TableName() string {

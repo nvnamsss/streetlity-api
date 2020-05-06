@@ -3,6 +3,7 @@ package model
 import (
 	"errors"
 	"fmt"
+	"log"
 	"time"
 
 	"github.com/dgrijalva/jwt-go"
@@ -48,7 +49,7 @@ func Auth(tokenString string) error {
 		}
 		return nil
 	} else {
-		fmt.Println(err)
+		log.Println("[Authorization]", err.Error())
 		return err
 	}
 }

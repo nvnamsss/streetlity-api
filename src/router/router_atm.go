@@ -18,55 +18,42 @@ func updateAtm(w http.ResponseWriter, req *http.Request) {
 }
 
 func addAtm(w http.ResponseWriter, req *http.Request) {
-	var res Response
-
+	var res Response = Response{Status: true}
 	req.ParseForm()
-	form := req.PostForm
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	authStage := AuthStage(req)
-	validateParamsStage := pipeline.NewStage(func() error {
-		location, locationOk := form["location"]
-		if !locationOk {
-			return errors.New("location param is missing")
+	validateParamsStage := AddingServiceValidateStage(req)
+	parseValueStage := AddingServiceParsingStage(req)
+	bankValidateStage := pipeline.NewStage(func() (str struct{ BankId int64 }, e error) {
+		form := req.PostForm
+		bank, ok := form["bank"]
+		if !ok {
+			e = errors.New("bank param is missing")
 		} else {
-			if len(location) < 2 {
-				return errors.New("location param must have 2 values")
+			str.BankId, e = strconv.ParseInt(bank[0], 10, 64)
+			if e != nil {
+				e = errors.New("cannot parse bank to float")
 			}
 		}
 
-		return nil
+		return
 	})
 
-	parseValueStage := pipeline.NewStage(func() error {
-		_, latErr := strconv.ParseFloat(form["location"][0], 64)
-
-		_, lonErr := strconv.ParseFloat(form["location"][1], 64)
-
-		if latErr != nil {
-			return errors.New("cannot parse location[0] to float")
-		}
-
-		if lonErr != nil {
-			return errors.New("cannot parse location[1] to float")
-		}
-
-		return nil
-	})
-
-	authStage.NextStage(validateParamsStage)
 	validateParamsStage.NextStage(parseValueStage)
-	pipe.First = authStage
+	parseValueStage.NextStage(bankValidateStage)
+	pipe.First = validateParamsStage
 
 	res.Error(pipe.Run())
 
 	if res.Status {
 		var s model.AtmUcf
-		lat, _ := strconv.ParseFloat(form["location"][0], 64)
-		lon, _ := strconv.ParseFloat(form["location"][1], 64)
+		lat := pipe.GetFloat("Lat")[0]
+		lon := pipe.GetFloat("Lon")[0]
+		address := pipe.GetString("Address")[0]
 		s.Lat = float32(lat)
 		s.Lon = float32(lon)
-
+		s.Address = address
+		s.BankId = pipe.GetInt("BankId")[0]
 		err := model.AddAtmUcf(s)
 
 		if err != nil {
@@ -88,7 +75,6 @@ func addBank(w http.ResponseWriter, req *http.Request) {
 	form := req.PostForm
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	authStage := AuthStage(req)
 	validateParamsStage := pipeline.NewStage(func() (str struct{ Name string }, e error) {
 		name, nameOk := form["name"]
 		if !nameOk {
@@ -100,8 +86,7 @@ func addBank(w http.ResponseWriter, req *http.Request) {
 		return
 	})
 
-	authStage.NextStage(validateParamsStage)
-	pipe.First = authStage
+	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
 
 	if res.Status {
@@ -115,6 +100,33 @@ func addBank(w http.ResponseWriter, req *http.Request) {
 		} else {
 			res.Message = "Add new bank successfully"
 		}
+	}
+
+	WriteJson(w, res)
+}
+
+func upvoteAtm(w http.ResponseWriter, req *http.Request) {
+	var res Response = Response{Status: true}
+
+	req.ParseForm()
+	p := pipeline.NewPipeline()
+	vStage := pipeline.NewStage(func() (str struct{ Id int64 }, e error) {
+		form := req.PostForm
+		_, ok := form["id"]
+		if !ok {
+			e = errors.New("id params is missing")
+			return
+		}
+
+		str.Id, e = strconv.ParseInt(form["id"][0], 10, 64)
+		return
+	})
+	p.First = vStage
+	res.Error(p.Run())
+
+	if res.Status {
+		var id int64 = p.GetInt("Id")[0]
+		res.Error(model.UpvoteAtmUcf(id))
 	}
 
 	WriteJson(w, res)
@@ -237,7 +249,14 @@ func HandleAtm(router *mux.Router) {
 	s.HandleFunc("/update", updateAtm).Methods("POST")
 	s.HandleFunc("/id", getFuel).Methods("GET")
 	s.HandleFunc("/range", getAtmInRange).Methods("GET")
-	s.HandleFunc("/add", addAtm).Methods("POST")
 	s.HandleFunc("/bank/all", getBanks).Methods("GET")
 	s.HandleFunc("/bank/add", addBank).Methods("POST")
+
+	r := s.PathPrefix("/add").Subrouter()
+	r.HandleFunc("", addAtm).Methods("POST")
+	r.Use(Authenticate)
+
+	r = s.PathPrefix("/upvote").Subrouter()
+	r.HandleFunc("", upvoteAtm).Methods("POST")
+	r.Use(Authenticate)
 }

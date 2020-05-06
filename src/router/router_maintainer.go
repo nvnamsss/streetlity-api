@@ -13,16 +13,18 @@ import (
 )
 
 /*AUTH REQUIRED*/
+func requestMaintainer(w http.ResponseWriter, req *http.Request) {
+
+}
+
 func updateMaintainer(w http.ResponseWriter, req *http.Request) {
-	var res Response
-	res.Status = true
+	var res Response = Response{Status: true}
 
 	req.ParseForm()
-	form := req.PostForm
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	authStage := AuthStage(req)
 	validateParamsStage := pipeline.NewStage(func() error {
+		form := req.PostForm
 		_, idOk := form["id"]
 		location, locationOk := form["location"]
 
@@ -42,6 +44,7 @@ func updateMaintainer(w http.ResponseWriter, req *http.Request) {
 	})
 
 	parseValueStage := pipeline.NewStage(func() error {
+		form := req.PostForm
 		_, idErr := strconv.ParseInt(form["id"][0], 10, 64)
 		_, latErr := strconv.ParseFloat(form["location"][0], 64)
 		_, lonErr := strconv.ParseFloat(form["location"][1], 64)
@@ -61,14 +64,13 @@ func updateMaintainer(w http.ResponseWriter, req *http.Request) {
 		return nil
 	})
 
-	authStage.NextStage(validateParamsStage)
 	validateParamsStage.NextStage(parseValueStage)
-	pipe.First = authStage
+	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
 
 	if res.Status {
 		var m model.Maintainer
-		id, _ := strconv.ParseInt(form["id"][0], 10, 64)
+		id := pipe.GetInt("Id")[0]
 		if err := model.Db.Where(&model.Maintainer{Id: id}).First(&m).Error; err != nil {
 			res.Status = false
 			res.Message = err.Error()
@@ -80,50 +82,16 @@ func updateMaintainer(w http.ResponseWriter, req *http.Request) {
 }
 
 func addMaintainer(w http.ResponseWriter, req *http.Request) {
-	var res Response
-	res.Status = true
+	var res Response = Response{Status: true}
 
 	req.ParseForm()
-	form := req.PostForm
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	authStage := AuthStage(req)
-	validateParamsStage := pipeline.NewStage(func() error {
-		location, locationOk := form["location"]
-		if !locationOk {
-			return errors.New("location param is missing")
-		} else {
-			if len(location) < 2 {
-				return errors.New("location param must have 2 values")
-			}
-		}
+	validateParamsStage := AddingServiceValidateStage(req)
+	parseValueStage := AddingServiceParsingStage(req)
 
-		return nil
-	})
-
-	parseValueStage := pipeline.NewStage(func() (str struct {
-		Lat float64
-		Lon float64
-	}, e error) {
-		var (
-			latErr error
-			lonErr error
-		)
-
-		str.Lat, latErr = strconv.ParseFloat(form["location"][0], 64)
-		str.Lon, lonErr = strconv.ParseFloat(form["location"][1], 64)
-		if latErr != nil {
-			return str, errors.New("cannot parse location[0] to float")
-		}
-		if lonErr != nil {
-			return str, errors.New("cannot parse location[1] to float")
-		}
-		return str, nil
-	})
-
-	authStage.NextStage(validateParamsStage)
 	validateParamsStage.NextStage(parseValueStage)
-	pipe.First = authStage
+	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
 
 	if res.Status {
@@ -141,6 +109,33 @@ func addMaintainer(w http.ResponseWriter, req *http.Request) {
 		} else {
 			res.Message = "Create new Maintainer successfully"
 		}
+	}
+
+	WriteJson(w, res)
+}
+
+func upvoteMaintainer(w http.ResponseWriter, req *http.Request) {
+	var res Response = Response{Status: true}
+
+	req.ParseForm()
+	p := pipeline.NewPipeline()
+	vStage := pipeline.NewStage(func() (str struct{ Id int64 }, e error) {
+		form := req.PostForm
+		_, ok := form["id"]
+		if !ok {
+			e = errors.New("id params is missing")
+			return
+		}
+
+		str.Id, e = strconv.ParseInt(form["id"][0], 10, 64)
+		return
+	})
+	p.First = vStage
+	res.Error(p.Run())
+
+	if res.Status {
+		var id int64 = p.GetInt("Id")[0]
+		res.Error(model.UpvoteMaintainerUcf(id))
 	}
 
 	WriteJson(w, res)
@@ -282,5 +277,13 @@ func HandleMaintainer(router *mux.Router) {
 	s.HandleFunc("/update", updateMaintainer).Methods("POST")
 	s.HandleFunc("/id", getMaintainer).Methods("GET")
 	s.HandleFunc("/range", getMaintainerInRange).Methods("GET")
-	s.HandleFunc("/add", addMaintainer).Methods("POSt")
+	s.HandleFunc("/add", addMaintainer).Methods("POST")
+
+	r := s.PathPrefix("/add").Subrouter()
+	r.HandleFunc("", addMaintainer).Methods("POST")
+	r.Use(Authenticate)
+
+	r = s.PathPrefix("/upvote").Subrouter()
+	r.HandleFunc("", upvoteMaintainer).Methods("POST")
+	r.Use(Authenticate)
 }

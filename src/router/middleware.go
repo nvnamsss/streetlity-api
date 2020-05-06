@@ -35,7 +35,7 @@ func Authenticate(h http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		auth := r.Header.Get("Auth")
 		if auth != "" {
-			fmt.Println("Received key", auth)
+			log.Println("[Authorization]", "Received key", auth)
 			err := model.Auth(auth)
 			if err != nil {
 				var res Response = Response{Status: false, Message: err.Error()}
@@ -45,7 +45,7 @@ func Authenticate(h http.Handler) http.Handler {
 			}
 		} else {
 			var res Response = Response{Status: false, Message: "Authorization failure."}
-			fmt.Println("[Authorization]", r.URL, "Authorization failure")
+			log.Println("[Authorization]", r.URL, "Authorization failure")
 			WriteJson(w, res)
 		}
 	})
