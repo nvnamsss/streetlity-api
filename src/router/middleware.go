@@ -39,6 +39,7 @@ func Authenticate(h http.Handler) http.Handler {
 			err := model.Auth(auth)
 			if err != nil {
 				var res Response = Response{Status: false, Message: err.Error()}
+				w.WriteHeader(http.StatusUnauthorized)
 				WriteJson(w, res)
 			} else {
 				h.ServeHTTP(w, r)
@@ -48,6 +49,7 @@ func Authenticate(h http.Handler) http.Handler {
 			log.Println("[Authorization]", r.URL, "Authorization failure")
 			WriteJson(w, res)
 		}
+
 	})
 }
 

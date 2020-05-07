@@ -13,8 +13,16 @@ import (
 )
 
 /*AUTH REQUIRED*/
-func requestMaintenance(w http.ResponseWriter, req *http.Request) {
+func orderMaintenance(w http.ResponseWriter, req *http.Request) {
+	var res Response = Response{Status: true}
 
+	WriteJson(w, res)
+}
+
+func acceptOrderMaintenance(w http.ResponseWriter, req *http.Request) {
+	var res Response = Response{Status: true}
+
+	WriteJson(w, res)
 }
 
 func updateMaintenance(w http.ResponseWriter, req *http.Request) {
