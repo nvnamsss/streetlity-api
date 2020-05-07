@@ -8,10 +8,10 @@ import (
 )
 
 type Services struct {
-	Atms       []Atm
-	Fuels      []Fuel
-	Toilets    []Toilet
-	Maintainer []Maintainer
+	Atms        []Atm
+	Fuels       []Fuel
+	Toilets     []Toilet
+	Maintenance []Maintenance
 }
 
 type ServiceUcf struct {
@@ -44,7 +44,7 @@ func LoadService() {
 	fuels := AllFuels()
 	atms := AllAtms()
 	toilets := AllToilets()
-	maintainers := AllMaintainers()
+	maintainers := AllMaintenances()
 
 	for _, fuel := range fuels {
 		services.AddItem(fuel)

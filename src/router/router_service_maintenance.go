@@ -13,11 +13,11 @@ import (
 )
 
 /*AUTH REQUIRED*/
-func requestMaintainer(w http.ResponseWriter, req *http.Request) {
+func requestMaintenance(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func updateMaintainer(w http.ResponseWriter, req *http.Request) {
+func updateMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res Response = Response{Status: true}
 
 	req.ParseForm()
@@ -69,9 +69,9 @@ func updateMaintainer(w http.ResponseWriter, req *http.Request) {
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var m model.Maintainer
+		var m model.Maintenance
 		id := pipe.GetInt("Id")[0]
-		if err := model.Db.Where(&model.Maintainer{Service: model.Service{Id: id}}).First(&m).Error; err != nil {
+		if err := model.Db.Where(&model.Maintenance{Service: model.Service{Id: id}}).First(&m).Error; err != nil {
 			res.Status = false
 			res.Message = err.Error()
 		}
@@ -81,7 +81,7 @@ func updateMaintainer(w http.ResponseWriter, req *http.Request) {
 	WriteJson(w, res)
 }
 
-func addMaintainer(w http.ResponseWriter, req *http.Request) {
+func addMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res Response = Response{Status: true}
 
 	req.ParseForm()
@@ -95,26 +95,26 @@ func addMaintainer(w http.ResponseWriter, req *http.Request) {
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var m model.MaintainerUcf
+		var m model.MaintenanceUcf
 		lat := pipe.GetFloat("Lat")[0]
 		lon := pipe.GetFloat("Lon")[0]
 		m.Lat = float32(lat)
 		m.Lon = float32(lon)
 
-		err := model.AddMaintainerUcf(m)
+		err := model.AddMaintenanceUcf(m)
 
 		if err != nil {
 			res.Status = false
 			res.Message = err.Error()
 		} else {
-			res.Message = "Create new Maintainer successfully"
+			res.Message = "Create new Maintenance successfully"
 		}
 	}
 
 	WriteJson(w, res)
 }
 
-func upvoteMaintainer(w http.ResponseWriter, req *http.Request) {
+func upvoteMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res Response = Response{Status: true}
 
 	req.ParseForm()
@@ -135,7 +135,7 @@ func upvoteMaintainer(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		var id int64 = p.GetInt("Id")[0]
-		res.Error(model.UpvoteMaintainerUcf(id))
+		res.Error(model.UpvoteMaintenanceUcf(id))
 	}
 
 	WriteJson(w, res)
@@ -143,23 +143,23 @@ func upvoteMaintainer(w http.ResponseWriter, req *http.Request) {
 
 /*NON-AUTH REQUIRED*/
 
-func getMaintainers(w http.ResponseWriter, req *http.Request) {
+func getMaintenances(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		Response
-		Maintainer []model.Maintainer
+		Maintenance []model.Maintenance
 	}
 
 	res.Status = true
 
-	res.Maintainer = model.AllMaintainers()
+	res.Maintenance = model.AllMaintenances()
 
 	WriteJson(w, res)
 }
 
-func getMaintainer(w http.ResponseWriter, req *http.Request) {
+func getMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		Response
-		Maintainer model.Maintainer
+		Maintenance model.Maintenance
 	}
 
 	res.Status = true
@@ -187,7 +187,7 @@ func getMaintainer(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := pipe.GetInt("Id")[0]
-		res.Maintainer = model.MaintainerById(id)
+		res.Maintenance = model.MaintenanceById(id)
 	}
 
 	WriteJson(w, res)
@@ -199,10 +199,10 @@ func getMaintainer(w http.ResponseWriter, req *http.Request) {
 // 	- `location`: X and Y coordinator
 // 	- `range` : range to find
 //
-func getMaintainerInRange(w http.ResponseWriter, req *http.Request) {
+func getMaintenanceInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		Response
-		Maintainers []model.Maintainer
+		Maintenances []model.Maintenance
 	}
 
 	res.Status = true
@@ -264,27 +264,27 @@ func getMaintainerInRange(w http.ResponseWriter, req *http.Request) {
 		max_range := pipe.GetFloat("Range")[0]
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		res.Maintainers = model.MaintainersInRange(location, max_range)
+		res.Maintenances = model.MaintenancesInRange(location, max_range)
 	}
 
 	WriteJson(w, res)
 }
 
-func HandleMaintainer(router *mux.Router) {
+func HandleMaintenance(router *mux.Router) {
 	log.Println("[Router]", "Handling fuel")
 	s := router.PathPrefix("/maintain").Subrouter()
-	s.HandleFunc("/all", getMaintainers).Methods("GET")
-	s.HandleFunc("/update", updateMaintainer).Methods("POST")
-	s.HandleFunc("/id", getMaintainer).Methods("GET")
-	s.HandleFunc("/range", getMaintainerInRange).Methods("GET")
-	s.HandleFunc("/add", addMaintainer).Methods("POST")
+	s.HandleFunc("/all", getMaintenances).Methods("GET")
+	s.HandleFunc("/update", updateMaintenance).Methods("POST")
+	s.HandleFunc("/id", getMaintenance).Methods("GET")
+	s.HandleFunc("/range", getMaintenanceInRange).Methods("GET")
+	s.HandleFunc("/add", addMaintenance).Methods("POST")
 
 	r := s.PathPrefix("/add").Subrouter()
-	r.HandleFunc("", addMaintainer).Methods("POST")
+	r.HandleFunc("", addMaintenance).Methods("POST")
 	r.Use(Authenticate)
 
 	r = s.PathPrefix("/upvote").Subrouter()
-	r.HandleFunc("", upvoteMaintainer).Methods("POST")
+	r.HandleFunc("", upvoteMaintenance).Methods("POST")
 	r.Use(Authenticate)
 
 }

@@ -14,7 +14,7 @@ func HandleService(router *mux.Router) {
 	HandleFuel(s)
 	HandleAtm(s)
 	HandleToilet(s)
-	HandleMaintainer(s)
+	HandleMaintenance(s)
 
 	Versioning(s, "1.0.0", "2.1.0")
 }

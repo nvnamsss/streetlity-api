@@ -2,25 +2,25 @@ package model
 
 import "github.com/golang/geo/r2"
 
-type Maintainer struct {
+type Maintenance struct {
 	Service
 	// Id  int64
 	// Lat float32 `gorm:"column:lat"`
 	// Lon float32 `gorm:"column:lon"`
 }
 
-func (Maintainer) TableName() string {
+func (Maintenance) TableName() string {
 	return "maintainer"
 }
 
-func (s Maintainer) Location() r2.Point {
+func (s Maintenance) Location() r2.Point {
 	var p r2.Point = r2.Point{X: float64(s.Lat), Y: float64(s.Lon)}
 	return p
 }
 
 //AllFuels query all fuel services
-func AllMaintainers() []Maintainer {
-	var services []Maintainer
+func AllMaintenances() []Maintenance {
+	var services []Maintenance
 	Db.Find(&services)
 
 	return services
@@ -29,7 +29,7 @@ func AllMaintainers() []Maintainer {
 //AddFuel add new fuel service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddMaintainer(s Maintainer) error {
+func AddMaintenance(s Maintenance) error {
 	if dbc := Db.Create(&s); dbc.Error != nil {
 		return dbc.Error
 	}
@@ -38,16 +38,16 @@ func AddMaintainer(s Maintainer) error {
 }
 
 //FuelById query the fuel service by specific id
-func MaintainerById(id int64) Maintainer {
-	var service Maintainer
+func MaintenanceById(id int64) Maintenance {
+	var service Maintenance
 	Db.Find(&service, id)
 
 	return service
 }
 
 //FuelsInRange query the fuel services which is in the radius of a location
-func MaintainersInRange(p r2.Point, max_range float64) []Maintainer {
-	var result []Maintainer = []Maintainer{}
+func MaintenancesInRange(p r2.Point, max_range float64) []Maintenance {
+	var result []Maintenance = []Maintenance{}
 	trees := services.InRange(p, max_range)
 
 	for _, tree := range trees {
@@ -55,8 +55,8 @@ func MaintainersInRange(p r2.Point, max_range float64) []Maintainer {
 			location := item.Location()
 
 			d := distance(location, p)
-			s, isMaintainer := item.(Maintainer)
-			if isMaintainer && d < max_range {
+			s, isMaintenance := item.(Maintenance)
+			if isMaintenance && d < max_range {
 				result = append(result, s)
 			}
 		}
