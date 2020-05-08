@@ -247,7 +247,6 @@ func HandleAtm(router *mux.Router) {
 	s := router.PathPrefix("/atm").Subrouter()
 	s.HandleFunc("/all", getAtms).Methods("GET")
 	s.HandleFunc("/update", updateAtm).Methods("POST")
-	s.HandleFunc("/id", getFuel).Methods("GET")
 	s.HandleFunc("/range", getAtmInRange).Methods("GET")
 	s.HandleFunc("/bank/all", getBanks).Methods("GET")
 	s.HandleFunc("/bank/add", addBank).Methods("POST")

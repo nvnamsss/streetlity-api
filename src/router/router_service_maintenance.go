@@ -283,7 +283,6 @@ func HandleMaintenance(router *mux.Router) {
 	s := router.PathPrefix("/maintain").Subrouter()
 	s.HandleFunc("/all", getMaintenances).Methods("GET")
 	s.HandleFunc("/update", updateMaintenance).Methods("POST")
-	s.HandleFunc("/id", getMaintenance).Methods("GET")
 	s.HandleFunc("/range", getMaintenanceInRange).Methods("GET")
 	s.HandleFunc("/add", addMaintenance).Methods("POST")
 

@@ -127,46 +127,6 @@ func getFuels(w http.ResponseWriter, req *http.Request) {
 	WriteJson(w, res)
 }
 
-func getFuel(w http.ResponseWriter, req *http.Request) {
-	var res struct {
-		Response
-		Fuel model.Fuel
-	}
-
-	res.Status = true
-	query := req.URL.Query()
-
-	pipe := pipeline.NewPipeline()
-	validateParams := pipeline.NewStage(func() (str struct{ Id int64 }, e error) {
-		ids, ok := query["id"]
-		if ok {
-			return str, errors.New("id param is missing")
-		}
-		var err error
-		str.Id, err = strconv.ParseInt(ids[0], 10, 64)
-
-		if err != nil {
-			return str, errors.New("cannot parse id to int")
-		}
-
-		return str, nil
-	})
-
-	pipe.First = validateParams
-
-	res.Error(pipe.Run())
-
-	if res.Status {
-		id := pipe.GetInt("Id")[0]
-		f, err := model.FuelById(id)
-		if !res.Error(err) {
-			res.Fuel = f
-		}
-	}
-
-	WriteJson(w, res)
-}
-
 //getFuelInRange process the in-range query. the request must provide there
 //
 // Parameters:
@@ -276,7 +236,6 @@ func HandleFuel(router *mux.Router) {
 	s := router.PathPrefix("/fuel").Subrouter()
 	s.HandleFunc("/all", getFuels).Methods("GET")
 	s.HandleFunc("/update", updateFuel).Methods("POST")
-	s.HandleFunc("/id", getFuel).Methods("GET")
 	s.HandleFunc("/range", getFuelInRange).Methods("GET")
 
 	r := s.PathPrefix("/add").Subrouter()
@@ -286,5 +245,4 @@ func HandleFuel(router *mux.Router) {
 	r = s.PathPrefix("/upvote").Subrouter()
 	r.HandleFunc("", upvoteFuel).Methods("POST")
 	r.Use(Authenticate)
-
 }

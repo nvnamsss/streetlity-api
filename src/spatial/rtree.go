@@ -154,14 +154,14 @@ func (rt RTree) Level() int {
 	return level
 }
 
-//Find all RTree which are matched with the function
-func (rt *RTree) Find(match func(tree *RTree) bool) []RTree {
+//Find all RTree which are matched with the condition
+func (rt *RTree) Find(condition func(tree *RTree) bool) []RTree {
 	var result []RTree
-	if match(rt) {
+	if condition(rt) {
 		result = append(result, *rt)
 
 		for _, item := range rt.Descendant {
-			result = append(result, item.Find(match)...)
+			result = append(result, item.Find(condition)...)
 		}
 	}
 
