@@ -19,22 +19,34 @@ import (
 func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res Response = Response{Status: true}
 
+	req.ParseForm()
 	p := pipeline.NewPipeline()
-	vStage := InRangeServiceValidateStage(req)
+
+	vStage := pipeline.NewStage(func() (str struct{ ServiceId []string }, e error) {
+		form := req.PostForm
+		_, ok := form["id"]
+
+		if !ok {
+			return str, errors.New("id param is missing")
+		}
+
+		return
+	})
 	p.First = vStage
 	res.Error(p.Run())
 
 	if res.Status {
-		lat := p.GetFloat("Lat")[0]
-		lon := p.GetFloat("Lon")[0]
-		max_range := p.GetFloat("Range")[0]
-		var location r2.Point = r2.Point{X: lat, Y: lon}
+		service_ids := p.GetString("id")
+		// lat := p.GetFloat("Lat")[0]
+		// lon := p.GetFloat("Lon")[0]
+		// max_range := p.GetFloat("Range")[0]
+		// var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		services := model.MaintenancesInRange(location, max_range)
+		// services := model.MaintenancesInRange(location, max_range)
 		ids := []string{}
-		for _, s := range services {
-			ids = append(ids, strconv.FormatInt(s.Owner, 10))
-		}
+		// for _, s := range services {
+		// 	ids = append(ids, strconv.FormatInt(s.Owner, 10))
+		// }
 
 		host := "http://" + config.Config.UserHost + "/user/notify"
 		fmt.Println(host)
@@ -57,6 +69,59 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 
 func acceptOrderMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res Response = Response{Status: true}
+
+	req.ParseForm()
+	p := pipeline.NewPipeline()
+	vStage := pipeline.NewStage(func() (str struct {
+		User      string
+		OrderId   int64
+		Timestamp int64
+	}, e error) {
+		form := req.PostForm
+		_, ok := form["user"]
+		if !ok {
+			return str, errors.New("user param is missing")
+		}
+
+		timestamps, ok := form["timestamp"]
+		if !ok {
+			return str, errors.New("timestamp param is missing")
+		}
+
+		ids, ok := form["orderId"]
+		if !ok {
+			return str, errors.New("oderId param is missing")
+		}
+
+		id, e := strconv.ParseInt(ids[0], 10, 64)
+
+		if e != nil {
+			return str, errors.New("cannot parse orderId to int")
+		}
+
+		timestamp, e := strconv.ParseInt(timestamps[0], 10, 64)
+
+		if e != nil {
+			return str, errors.New("cannot parse timestamp to int")
+		}
+
+		str.User = form["user"][0]
+		str.OrderId = id
+		str.Timestamp = timestamp
+
+		return
+	})
+	p.First = vStage
+
+	res.Error(p.Run())
+
+	if res.Status {
+		user := p.GetString("User")[0]
+		id := p.GetInt("OrderId")[0]
+		timestamp := p.GetInt("Timestamp")[0]
+
+		model.UpdateMaintenanceHistory(id, user, timestamp)
+	}
 
 	WriteJson(w, res)
 }
@@ -139,13 +204,16 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var m model.MaintenanceUcf
+		var s model.MaintenanceUcf
 		lat := pipe.GetFloat("Lat")[0]
 		lon := pipe.GetFloat("Lon")[0]
-		m.Lat = float32(lat)
-		m.Lon = float32(lon)
-
-		err := model.AddMaintenanceUcf(m)
+		note := pipe.GetString("Note")[0]
+		address := pipe.GetString("Address")[0]
+		s.Lat = float32(lat)
+		s.Lon = float32(lon)
+		s.Note = note
+		s.Address = address
+		err := model.AddMaintenanceUcf(s)
 
 		if err != nil {
 			res.Status = false

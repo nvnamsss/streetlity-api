@@ -28,3 +28,26 @@ func RemoveMaintenanceHistory(h MaintenanceHistory) (e error) {
 
 	return
 }
+
+func MaintenanceHistoryById(id int64) (h MaintenanceHistory, e error) {
+	if e := Db.Find(&h, id).Error; e != nil {
+		log.Println("[Database]", e.Error())
+	}
+
+	return
+}
+
+func UpdateMaintenanceHistory(id int64, maintenanceUser string, timestamp int64) error {
+	h, e := MaintenanceHistoryById(id)
+
+	if e != nil {
+		return e
+	}
+
+	h.MaintenanceUser = maintenanceUser
+	h.Timestamp = timestamp
+
+	e = Db.Save(&h).Error
+
+	return e
+}

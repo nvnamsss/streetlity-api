@@ -49,9 +49,11 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 		var s model.AtmUcf
 		lat := pipe.GetFloat("Lat")[0]
 		lon := pipe.GetFloat("Lon")[0]
+		note := pipe.GetString("Note")[0]
 		address := pipe.GetString("Address")[0]
 		s.Lat = float32(lat)
 		s.Lon = float32(lon)
+		s.Note = note
 		s.Address = address
 		s.BankId = pipe.GetInt("BankId")[0]
 		err := model.AddAtmUcf(s)

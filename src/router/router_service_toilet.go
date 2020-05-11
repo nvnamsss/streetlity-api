@@ -27,13 +27,16 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var f model.ToiletUcf
+		var s model.ToiletUcf
 		lat := pipe.GetFloat("Lat")[0]
 		lon := pipe.GetFloat("Lon")[0]
-		f.Lat = float32(lat)
-		f.Lon = float32(lon)
-
-		err := model.AddToiletUcf(f)
+		note := pipe.GetString("Note")[0]
+		address := pipe.GetString("Address")[0]
+		s.Lat = float32(lat)
+		s.Lon = float32(lon)
+		s.Note = note
+		s.Address = address
+		err := model.AddToiletUcf(s)
 
 		if err != nil {
 			res.Status = false

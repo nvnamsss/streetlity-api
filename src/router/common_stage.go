@@ -13,7 +13,10 @@ the pipeline in request handle*/
 
 //ServiceValidateStage create the validated stage for adding a new service
 func AddingServiceValidateStage(req *http.Request) *pipeline.Stage {
-	s := pipeline.NewStage(func() (str struct{ Address string }, e error) {
+	s := pipeline.NewStage(func() (str struct {
+		Address string
+		Note    string
+	}, e error) {
 		form := req.PostForm
 		location, locationOk := form["location"]
 		_, addressOk := form["address"]
@@ -29,6 +32,11 @@ func AddingServiceValidateStage(req *http.Request) *pipeline.Stage {
 			return str, errors.New("address param is missing")
 		} else {
 			str.Address = form["address"][0]
+		}
+
+		_, ok := form["note"]
+		if ok {
+			str.Note = form["note"][0]
 		}
 
 		return

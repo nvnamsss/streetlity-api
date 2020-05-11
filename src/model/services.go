@@ -18,6 +18,7 @@ type ServiceUcf struct {
 	Id        int64   `gorm:"column:id"`
 	Lat       float32 `gorm:"column:lat"`
 	Lon       float32 `gorm:"column:lon"`
+	Note      string  `gorm:"column:note"`
 	Address   string  `gorm:"column:address"`
 	Confident int     `gorm:"column:confident"`
 }
@@ -27,6 +28,7 @@ type Service struct {
 	Lat     float32 `gorm:"column:lat"`
 	Lon     float32 `gorm:"column:lon"`
 	Address string  `gorm:"column:address"`
+	Note    string  `gorm:"column:note"`
 }
 
 var services spatial.RTree
