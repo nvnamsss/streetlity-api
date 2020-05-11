@@ -1,7 +1,7 @@
 {
-    "server" : "mysql_container:3306",
-    "dbname" : "map",
+    "server" : "mysql-streetlity-api:3306",
+    "dbname" : "services",
     "username" : "root",
     "password" : "streetlity",
-    "testna" :"na"
+    "user-host" :"35.240.232.218"
 }
