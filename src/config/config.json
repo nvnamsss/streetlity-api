@@ -1,6 +1,6 @@
 {
     "server" : "localhost:3306",
-    "dbname" : "map",
+    "dbname" : "services",
     "username" : "root",
     "password" : "manager",
 

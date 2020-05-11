@@ -59,7 +59,6 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 		}
 
 		host := "http://" + config.Config.UserHost + "/user/notify"
-		fmt.Println(host)
 
 		resp, err := http.PostForm(host, url.Values{
 			"id":            ids,
