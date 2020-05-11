@@ -46,6 +46,14 @@ func MaintenanceById(id int64) Maintenance {
 	return service
 }
 
+func MaintenanceByIds(ids ...int64) (services []Maintenance) {
+	for _, id := range ids {
+		services = append(services, MaintenanceById(id))
+	}
+
+	return
+}
+
 //FuelsInRange query the fuel services which is in the radius of a location
 func MaintenancesInRange(p r2.Point, max_range float64) []Maintenance {
 	var result []Maintenance = []Maintenance{}
