@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"log"
 
 	"github.com/golang/geo/r2"
@@ -11,6 +12,8 @@ type AtmUcf struct {
 	ServiceUcf
 	BankId int64 `gorm:"column:bank_id"`
 }
+
+var confident int = 1
 
 //TableName determine the table name in database which is using for gorm
 func (AtmUcf) TableName() string {
@@ -58,6 +61,11 @@ func UpvoteAtmUcf(id int64) error {
 //
 //return error if there is something wrong when doing transaction
 func AddAtmUcf(s AtmUcf) (e error) {
+	var existed AtmUcf
+	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&existed).Error; e == nil {
+		return errors.New("The service location is existed or some problems is occured")
+	}
+
 	if e = Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", e.Error())
 	}
@@ -66,7 +74,7 @@ func AddAtmUcf(s AtmUcf) (e error) {
 }
 
 func (s *AtmUcf) AfterSave(scope *gorm.Scope) (err error) {
-	if s.Confident == 5 {
+	if s.Confident == confident {
 		var a Atm = Atm{Service: Service{Lat: s.Lat, Lon: s.Lon, Address: s.Address}}
 		AddAtm(a)
 		scope.DB().Delete(s)

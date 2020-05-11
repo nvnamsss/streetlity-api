@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"log"
 
 	"github.com/golang/geo/r2"
@@ -55,17 +56,22 @@ func ToiletUcfById(id int64) (service ToiletUcf, e error) {
 //AddToiletUcf add new ToiletUcf service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddToiletUcf(s ToiletUcf) error {
-	if dbc := Db.Create(&s); dbc.Error != nil {
-		return dbc.Error
+func AddToiletUcf(s ToiletUcf) (e error) {
+	var existed ToiletUcf
+	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&existed).Error; e == nil {
+		return errors.New("The service location is existed or some problems is occured")
 	}
 
-	return nil
+	if e = Db.Create(&s).Error; e != nil {
+		log.Println("[Database]", e.Error())
+	}
+
+	return
 }
 
 //AfterSave automatically run everytime the update transaction is done
 func (s *ToiletUcf) AfterSave(scope *gorm.Scope) (err error) {
-	if s.Confident == 5 {
+	if s.Confident == confident {
 		var t Toilet = Toilet{Service: Service{Lat: s.Lat, Lon: s.Lon, Address: s.Address}}
 		AddToilet(t)
 		scope.DB().Delete(s)

@@ -54,6 +54,20 @@ func FuelById(id int64) (service Fuel, e error) {
 	return
 }
 
+//ToiletByIds query the toilets service by specific id
+func FuelByIds(ids ...int64) (services []Fuel) {
+	for _, id := range ids {
+		s, e := FuelById(id)
+		if e != nil {
+			continue
+		}
+
+		services = append(services, s)
+	}
+
+	return
+}
+
 //FuelsInRange query the fuel services which is in the radius of a location
 func FuelsInRange(p r2.Point, max_range float64) []Fuel {
 	var result []Fuel = []Fuel{}

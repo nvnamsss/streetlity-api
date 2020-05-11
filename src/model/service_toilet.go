@@ -1,6 +1,8 @@
 package model
 
 import (
+	"log"
+
 	"github.com/golang/geo/r2"
 )
 
@@ -35,6 +37,27 @@ func AddToilet(s Toilet) error {
 	}
 
 	return nil
+}
+
+func ToiletById(id int64) (service Toilet, e error) {
+	if e = Db.Find(&service, id).Error; e != nil {
+		log.Println("[Database]", e.Error())
+	}
+
+	return
+}
+
+//ToiletByIds query the toilets service by specific id
+func ToiletByIds(ids ...int64) (services []Toilet) {
+	for _, id := range ids {
+		s, e := ToiletById(id)
+		if e != nil {
+			continue
+		}
+		services = append(services, s)
+	}
+
+	return
 }
 
 //ToiletsInRange query the toilet services which is in the radius of a location

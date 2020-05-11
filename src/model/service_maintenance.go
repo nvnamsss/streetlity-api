@@ -1,10 +1,14 @@
 package model
 
-import "github.com/golang/geo/r2"
+import (
+	"log"
+
+	"github.com/golang/geo/r2"
+)
 
 type Maintenance struct {
 	Service
-	Owner int64 `gorm:"column:owner"`
+	Owner string `gorm:"column:owner"`
 	// Id  int64
 	// Lat float32 `gorm:"column:lat"`
 	// Lon float32 `gorm:"column:lon"`
@@ -19,7 +23,7 @@ func (s Maintenance) Location() r2.Point {
 	return p
 }
 
-//AllFuels query all fuel services
+//AllMaintenances query all maintenance services
 func AllMaintenances() []Maintenance {
 	var services []Maintenance
 	Db.Find(&services)
@@ -27,7 +31,7 @@ func AllMaintenances() []Maintenance {
 	return services
 }
 
-//AddFuel add new fuel service to the database
+//AddMaintenance add new maintenance service to the database
 //
 //return error if there is something wrong when doing transaction
 func AddMaintenance(s Maintenance) error {
@@ -38,23 +42,30 @@ func AddMaintenance(s Maintenance) error {
 	return nil
 }
 
-//FuelById query the fuel service by specific id
-func MaintenanceById(id int64) Maintenance {
-	var service Maintenance
-	Db.Find(&service, id)
-
-	return service
-}
-
-func MaintenanceByIds(ids ...int64) (services []Maintenance) {
-	for _, id := range ids {
-		services = append(services, MaintenanceById(id))
+//MaintenanceById query the maintenance service by specific id
+func MaintenanceById(id int64) (service Maintenance, e error) {
+	if e = Db.Find(&service, id).Error; e != nil {
+		log.Println("[Database]", e)
 	}
 
 	return
 }
 
-//FuelsInRange query the fuel services which is in the radius of a location
+//MaintenanceByIds query the maintenances service by specific id
+func MaintenanceByIds(ids ...int64) (services []Maintenance) {
+	for _, id := range ids {
+		s, e := MaintenanceById(id)
+		if e != nil {
+			continue
+		}
+
+		services = append(services, s)
+	}
+
+	return
+}
+
+//MaintenancesInRange query the maintenance services which is in the radius of a location
 func MaintenancesInRange(p r2.Point, max_range float64) []Maintenance {
 	var result []Maintenance = []Maintenance{}
 	trees := services.InRange(p, max_range)
@@ -71,4 +82,20 @@ func MaintenancesInRange(p r2.Point, max_range float64) []Maintenance {
 		}
 	}
 	return result
+}
+
+func UpdateMaintenance(id int64, values map[string]string) {
+	service, e := MaintenanceById(id)
+	if e != nil {
+		return
+	}
+
+	_, ok := values["owner"]
+	if ok {
+		service.Owner = values["owner"]
+	}
+
+	if e = Db.Save(&service).Error; e != nil {
+		log.Println("[Database]", e.Error())
+	}
 }

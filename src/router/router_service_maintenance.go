@@ -22,12 +22,21 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	p := pipeline.NewPipeline()
 
-	vStage := pipeline.NewStage(func() (str struct{ ServiceId []string }, e error) {
+	vStage := pipeline.NewStage(func() (str struct{ ServiceId []int64 }, e error) {
 		form := req.PostForm
-		_, ok := form["id"]
+		ids, ok := form["id"]
 
 		if !ok {
 			return str, errors.New("id param is missing")
+		}
+
+		for _, id := range ids {
+			v, e := strconv.ParseInt(id, 10, 64)
+			if e != nil {
+				continue
+			}
+
+			str.ServiceId = append(str.ServiceId, v)
 		}
 
 		return
@@ -36,17 +45,18 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 	res.Error(p.Run())
 
 	if res.Status {
-		service_ids := p.GetString("id")
+		service_ids := p.GetInt("id")
 		// lat := p.GetFloat("Lat")[0]
 		// lon := p.GetFloat("Lon")[0]
 		// max_range := p.GetFloat("Range")[0]
 		// var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		// services := model.MaintenancesInRange(location, max_range)
+		services := model.MaintenanceByIds(service_ids...)
+		fmt.Println(services)
 		ids := []string{}
-		// for _, s := range services {
-		// 	ids = append(ids, strconv.FormatInt(s.Owner, 10))
-		// }
+		for _, s := range services {
+			ids = append(ids, s.Owner)
+		}
 
 		host := "http://" + config.Config.UserHost + "/user/notify"
 		fmt.Println(host)
@@ -130,61 +140,34 @@ func updateMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res Response = Response{Status: true}
 
 	req.ParseForm()
-
-	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	validateParamsStage := pipeline.NewStage(func() error {
+	p := pipeline.NewPipeline()
+	vStage := pipeline.NewStage(func() (str struct{ Id int64 }, e error) {
 		form := req.PostForm
-		_, idOk := form["id"]
-		location, locationOk := form["location"]
-
-		if !idOk {
-			return errors.New("id param is missing")
+		_, ok := form["id"]
+		if !ok {
+			return str, errors.New("id param is missing")
 		}
 
-		if !locationOk {
-			return errors.New("location param is missing")
-		} else {
-			if len(location) < 2 {
-				return errors.New("location param must have 2 values")
-			}
+		_, err := strconv.ParseInt(form["id"][0], 10, 64)
+		if err != nil {
+			return str, errors.New("cannot parse id to int")
 		}
-
-		return nil
+		str.Id = 1
+		return
 	})
+	p.First = vStage
 
-	parseValueStage := pipeline.NewStage(func() error {
-		form := req.PostForm
-		_, idErr := strconv.ParseInt(form["id"][0], 10, 64)
-		_, latErr := strconv.ParseFloat(form["location"][0], 64)
-		_, lonErr := strconv.ParseFloat(form["location"][1], 64)
-
-		if idErr != nil {
-			return errors.New("cannot parse id to int")
-		}
-
-		if latErr != nil {
-			return errors.New("cannot parse location[0] to float")
-		}
-
-		if lonErr != nil {
-			return errors.New("cannot parse location[1] to float")
-		}
-
-		return nil
-	})
-
-	validateParamsStage.NextStage(parseValueStage)
-	pipe.First = validateParamsStage
-	res.Error(pipe.Run())
+	res.Error(p.Run())
 
 	if res.Status {
-		var m model.Maintenance
-		id := pipe.GetInt("Id")[0]
-		if err := model.Db.Where(&model.Maintenance{Service: model.Service{Id: id}}).First(&m).Error; err != nil {
-			res.Status = false
-			res.Message = err.Error()
+		id := p.GetInt("Id")[0]
+		values := make(map[string]string)
+		form := req.PostForm
+		for key, value := range form {
+			values[key] = value[0]
 		}
 
+		model.UpdateMaintenance(id, values)
 	}
 
 	WriteJson(w, res)
@@ -299,7 +282,7 @@ func getMaintenance(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := pipe.GetInt("Id")[0]
-		res.Maintenance = model.MaintenanceById(id)
+		res.Maintenance, _ = model.MaintenanceById(id)
 	}
 
 	WriteJson(w, res)

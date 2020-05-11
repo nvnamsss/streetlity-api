@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"log"
 
 	"github.com/jinzhu/gorm"
@@ -26,12 +27,17 @@ func AllFuelsUcf() []FuelUcf {
 //AddFuelUcf add new fuel service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddFuelUcf(s FuelUcf) error {
-	if dbc := Db.Create(&s); dbc.Error != nil {
-		return dbc.Error
+func AddFuelUcf(s FuelUcf) (e error) {
+	var existed FuelUcf
+	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&existed).Error; e == nil {
+		return errors.New("The service location is existed or some problems is occured")
 	}
 
-	return nil
+	if e = Db.Create(&s).Error; e != nil {
+		log.Println("[Database]", e.Error())
+	}
+
+	return
 }
 
 //FuelUcfById query the fuel service by specific id
@@ -58,7 +64,7 @@ func UpvoteFuelUcf(id int64) error {
 }
 
 func (s *FuelUcf) AfterSave(scope *gorm.Scope) (err error) {
-	if s.Confident == 5 {
+	if s.Confident == confident {
 		var f Fuel = Fuel{Service: Service{Lat: s.Lat, Lon: s.Lon, Address: s.Address}}
 		AddFuel(f)
 		scope.DB().Delete(s)

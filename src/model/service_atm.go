@@ -1,6 +1,8 @@
 package model
 
 import (
+	"log"
+
 	"github.com/golang/geo/r2"
 )
 
@@ -38,11 +40,26 @@ func AllAtms() []Atm {
 }
 
 //AtmById query the atm service by specific id
-func AtmById(id int64) Atm {
-	var service Atm
-	Db.Find(&service, id)
+func AtmById(id int64) (service Atm, e error) {
+	if e = Db.Find(&service, id).Error; e != nil {
+		log.Println("[Database]", e.Error())
+	}
 
-	return service
+	return
+}
+
+//AtmByIds query the atm services by specific ids
+func AtmByIds(ids ...int64) (services []Atm) {
+	for _, id := range ids {
+		s, e := AtmById(id)
+		if e != nil {
+			continue
+		}
+
+		services = append(services, s)
+	}
+
+	return
 }
 
 //AddAtm add new atm service to the database

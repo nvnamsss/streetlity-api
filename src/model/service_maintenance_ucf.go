@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"log"
 
 	"github.com/golang/geo/r2"
@@ -46,6 +47,11 @@ func UpvoteMaintenanceUcf(id int64) error {
 //
 //return error if there is something wrong when doing transaction
 func AddMaintenanceUcf(s MaintenanceUcf) (e error) {
+	var existed MaintenanceUcf
+	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&existed).Error; e == nil {
+		return errors.New("The service location is existed or some problems is occured")
+	}
+
 	if e = Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", e.Error())
 	}
@@ -63,7 +69,7 @@ func MaintenanceUcfById(id int64) (service MaintenanceUcf, e error) {
 }
 
 func (s *MaintenanceUcf) AfterSave(scope *gorm.Scope) (err error) {
-	if s.Confident == 5 {
+	if s.Confident == confident {
 		var m Maintenance = Maintenance{Service: Service{Lat: s.Lat, Lon: s.Lon, Address: s.Address}}
 		AddMaintenance(m)
 		scope.DB().Delete(s)
