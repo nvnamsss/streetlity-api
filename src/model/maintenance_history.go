@@ -20,3 +20,11 @@ func AddMaintenanceHistory(h MaintenanceHistory) (e error) {
 
 	return
 }
+
+func RemoveMaintenanceHistory(h MaintenanceHistory) (e error) {
+	if e = Db.Delete(h).Error; e != nil {
+		log.Println("[Database]", e.Error())
+	}
+
+	return
+}

@@ -12,7 +12,7 @@ type MaintenanceUcf struct {
 }
 
 func (MaintenanceUcf) TableName() string {
-	return "maintainer_ucf"
+	return "maintenance_ucf"
 }
 
 func (s MaintenanceUcf) Location() r2.Point {

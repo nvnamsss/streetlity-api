@@ -4,13 +4,14 @@ import "github.com/golang/geo/r2"
 
 type Maintenance struct {
 	Service
+	Owner int64 `gorm:"column:owner"`
 	// Id  int64
 	// Lat float32 `gorm:"column:lat"`
 	// Lon float32 `gorm:"column:lon"`
 }
 
 func (Maintenance) TableName() string {
-	return "maintainer"
+	return "maintenance"
 }
 
 func (s Maintenance) Location() r2.Point {

@@ -2,9 +2,12 @@ package router
 
 import (
 	"errors"
+	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"strconv"
+	"streelity/v1/config"
 	"streelity/v1/model"
 
 	"github.com/golang/geo/r2"
@@ -15,6 +18,39 @@ import (
 /*AUTH REQUIRED*/
 func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res Response = Response{Status: true}
+
+	p := pipeline.NewPipeline()
+	vStage := InRangeServiceValidateStage(req)
+	p.First = vStage
+	res.Error(p.Run())
+
+	if res.Status {
+		lat := p.GetFloat("Lat")[0]
+		lon := p.GetFloat("Lon")[0]
+		max_range := p.GetFloat("Range")[0]
+		var location r2.Point = r2.Point{X: lat, Y: lon}
+
+		services := model.MaintenancesInRange(location, max_range)
+		ids := []string{}
+		for _, s := range services {
+			ids = append(ids, strconv.FormatInt(s.Owner, 10))
+		}
+
+		host := "http://" + config.Config.UserHost + "/user/notify"
+		fmt.Println(host)
+
+		resp, err := http.PostForm(host, url.Values{
+			"id":            ids,
+			"notify-tittle": {"Customer is on service"},
+			"notify-body":   {"A customer is looking for maintaning"},
+			"data":          {"score:sss", "id:1"},
+		})
+
+		if err != nil {
+			fmt.Println(err)
+		}
+		fmt.Println(resp)
+	}
 
 	WriteJson(w, res)
 }
@@ -285,6 +321,8 @@ func HandleMaintenance(router *mux.Router) {
 	s.HandleFunc("/update", updateMaintenance).Methods("POST")
 	s.HandleFunc("/range", getMaintenanceInRange).Methods("GET")
 	s.HandleFunc("/add", addMaintenance).Methods("POST")
+	s.HandleFunc("/order", orderMaintenance).Methods("POST")
+	s.HandleFunc("/accept", acceptOrderMaintenance).Methods("POST")
 
 	r := s.PathPrefix("/add").Subrouter()
 	r.HandleFunc("", addMaintenance).Methods("POST")

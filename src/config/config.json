@@ -2,5 +2,7 @@
     "server" : "localhost:3306",
     "dbname" : "map",
     "username" : "root",
-    "password" : "manager"
+    "password" : "manager",
+
+    "user-host": "localhost:9001"
 }
