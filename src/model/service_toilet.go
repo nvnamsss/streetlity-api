@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/golang/geo/r2"
+	"github.com/jinzhu/gorm"
 )
 
 type Toilet struct {
@@ -79,4 +80,12 @@ func ToiletsInRange(p r2.Point, max_range float64) []Toilet {
 		}
 	}
 	return result
+}
+
+func (s Toilet) AfterCreate(scope *gorm.Scope) (e error) {
+	if e = services.AddItem(s); e != nil {
+		log.Println("[Database]", "After create toilet", e.Error())
+	}
+
+	return
 }

@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/golang/geo/r2"
+	"github.com/jinzhu/gorm"
 )
 
 type Maintenance struct {
@@ -98,4 +99,13 @@ func UpdateMaintenance(id int64, values map[string]string) {
 	if e = Db.Save(&service).Error; e != nil {
 		log.Println("[Database]", e.Error())
 	}
+}
+
+func (s Maintenance) AfterCreate(scope *gorm.Scope) (e error) {
+	if e = services.AddItem(s); e != nil {
+		log.Println("[Database]", "After create maintenance", e.Error())
+	}
+
+	log.Println("[Database]", "New maintennace added")
+	return
 }

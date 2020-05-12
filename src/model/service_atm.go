@@ -4,6 +4,7 @@ import (
 	"log"
 
 	"github.com/golang/geo/r2"
+	"github.com/jinzhu/gorm"
 )
 
 type Atm struct {
@@ -65,9 +66,10 @@ func AtmByIds(ids ...int64) (services []Atm) {
 //AddAtm add new atm service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddAtm(s Atm) error {
-	if dbc := Db.Create(&s); dbc.Error != nil {
-		return dbc.Error
+func AddAtm(s Atm) (e error) {
+	if e = Db.Create(&s).Error; e != nil {
+		log.Println("[Database]", "Add atm", e.Error())
+		return
 	}
 
 	return nil
@@ -99,10 +101,19 @@ func AllBanks() []Bank {
 	return banks
 }
 
-func AddBank(s Bank) error {
-	if dbc := Db.Create(&s); dbc.Error != nil {
-		return dbc.Error
+func AddBank(s Bank) (e error) {
+	if e = Db.Create(&s).Error; e != nil {
+		log.Println("pDatabase]", "Add bank", e.Error())
+		return
 	}
 
 	return nil
+}
+
+func (s Atm) AfterCreate(scope *gorm.Scope) (e error) {
+	if e = services.AddItem(s); e != nil {
+		log.Println("[Database]", "After create atm", e.Error())
+	}
+
+	return
 }
