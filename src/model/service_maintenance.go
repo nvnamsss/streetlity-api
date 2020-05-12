@@ -9,6 +9,7 @@ import (
 type Maintenance struct {
 	Service
 	Owner string `gorm:"column:owner"`
+	Name  string `gorm:"column:name"`
 	// Id  int64
 	// Lat float32 `gorm:"column:lat"`
 	// Lon float32 `gorm:"column:lon"`
@@ -96,6 +97,6 @@ func UpdateMaintenance(id int64, values map[string]string) {
 	}
 
 	if e = Db.Save(&service).Error; e != nil {
-		log.Println("[Database]", e.Error())
+		log.Println("[Database]", "Update maintenance", e.Error())
 	}
 }

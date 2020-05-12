@@ -15,7 +15,7 @@ func (MaintenanceHistory) TableName() string {
 
 func AddMaintenanceHistory(h MaintenanceHistory) (e error) {
 	if e = Db.Create(&h).Error; e != nil {
-		log.Println("[Database]", e.Error())
+		log.Println("[Database]", "Adding new history:", e.Error())
 	}
 
 	return
@@ -23,7 +23,7 @@ func AddMaintenanceHistory(h MaintenanceHistory) (e error) {
 
 func RemoveMaintenanceHistory(h MaintenanceHistory) (e error) {
 	if e = Db.Delete(h).Error; e != nil {
-		log.Println("[Database]", e.Error())
+		log.Println("[Database]", "Removing history:", e.Error())
 	}
 
 	return
@@ -31,7 +31,7 @@ func RemoveMaintenanceHistory(h MaintenanceHistory) (e error) {
 
 func MaintenanceHistoryById(id int64) (h MaintenanceHistory, e error) {
 	if e := Db.Find(&h, id).Error; e != nil {
-		log.Println("[Database]", e.Error())
+		log.Println("[Database]", "Maintenance history with id:", id, ":", e.Error())
 	}
 
 	return
@@ -47,7 +47,9 @@ func UpdateMaintenanceHistory(id int64, maintenanceUser string, timestamp int64)
 	h.MaintenanceUser = maintenanceUser
 	h.Timestamp = timestamp
 
-	e = Db.Save(&h).Error
+	if e = Db.Save(&h).Error; e != nil {
+		log.Println("[Database]", "Update maintenance history with id:", id, ":", e.Error())
+	}
 
 	return e
 }

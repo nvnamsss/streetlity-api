@@ -66,13 +66,15 @@ func AddToiletUcf(s ToiletUcf) (e error) {
 		log.Println("[Database]", e.Error())
 	}
 
+	//Temporal
+	UpvoteToiletUcf(s.Id)
 	return
 }
 
 //AfterSave automatically run everytime the update transaction is done
 func (s *ToiletUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident == confident {
-		var t Toilet = Toilet{Service: Service{Lat: s.Lat, Lon: s.Lon, Address: s.Address}}
+		var t Toilet = Toilet{Service: s.GetService()}
 		AddToilet(t)
 		scope.DB().Delete(s)
 		log.Println("[Unconfirmed Toilet]", "Confident is enough. Added", t)

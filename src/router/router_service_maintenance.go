@@ -191,10 +191,14 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 		lon := pipe.GetFloat("Lon")[0]
 		note := pipe.GetString("Note")[0]
 		address := pipe.GetString("Address")[0]
+		name, ok := req.PostForm["name"]
 		s.Lat = float32(lat)
 		s.Lon = float32(lon)
 		s.Note = note
 		s.Address = address
+		if ok {
+			s.Name = name[0]
+		}
 		err := model.AddMaintenanceUcf(s)
 
 		if err != nil {
