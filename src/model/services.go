@@ -27,8 +27,8 @@ type Service struct {
 	Id      int64   `gorm:"column:id"`
 	Lat     float32 `gorm:"column:lat"`
 	Lon     float32 `gorm:"column:lon"`
-	Address string  `gorm:"column:address"`
 	Note    string  `gorm:"column:note"`
+	Address string  `gorm:"column:address"`
 }
 
 var services spatial.RTree
@@ -64,4 +64,13 @@ func LoadService() {
 		services.AddItem(maintainer)
 	}
 
+}
+
+func (s ServiceUcf) GetService() (service Service) {
+	service.Lat = s.Lat
+	service.Lon = s.Lon
+	service.Note = s.Note
+	service.Address = s.Address
+
+	return
 }

@@ -191,10 +191,14 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 		lon := pipe.GetFloat("Lon")[0]
 		note := pipe.GetString("Note")[0]
 		address := pipe.GetString("Address")[0]
+		name, ok := req.PostForm["name"]
 		s.Lat = float32(lat)
 		s.Lon = float32(lon)
 		s.Note = note
 		s.Address = address
+		if ok {
+			s.Name = name[0]
+		}
 		err := model.AddMaintenanceUcf(s)
 
 		if err != nil {
@@ -262,7 +266,7 @@ func getMaintenance(w http.ResponseWriter, req *http.Request) {
 	pipe := pipeline.NewPipeline()
 	validateParams := pipeline.NewStage(func() (str struct{ Id int64 }, e error) {
 		ids, ok := query["id"]
-		if ok {
+		if !ok {
 			return str, errors.New("id param is missing")
 		}
 		var err error
@@ -281,7 +285,11 @@ func getMaintenance(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := pipe.GetInt("Id")[0]
-		res.Maintenance, _ = model.MaintenanceById(id)
+		s, e := model.MaintenanceById(id)
+		res.Error(e)
+		if res.Status {
+			res.Maintenance = s
+		}
 	}
 
 	WriteJson(w, res)
@@ -370,6 +378,7 @@ func HandleMaintenance(router *mux.Router) {
 	s.HandleFunc("/all", getMaintenances).Methods("GET")
 	s.HandleFunc("/update", updateMaintenance).Methods("POST")
 	s.HandleFunc("/range", getMaintenanceInRange).Methods("GET")
+	s.HandleFunc("/id", getMaintenance).Methods("GET")
 	s.HandleFunc("/add", addMaintenance).Methods("POST")
 	s.HandleFunc("/order", orderMaintenance).Methods("POST")
 	s.HandleFunc("/accept", acceptOrderMaintenance).Methods("POST")

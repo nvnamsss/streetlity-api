@@ -10,6 +10,7 @@ import (
 
 type MaintenanceUcf struct {
 	ServiceUcf
+	Name string `gorm:"column:name"`
 }
 
 func (MaintenanceUcf) TableName() string {
@@ -24,13 +25,15 @@ func (s MaintenanceUcf) Location() r2.Point {
 //AllMaintenanceUcfs query all maintainer services
 func AllMaintenanceUcfs() []MaintenanceUcf {
 	var services []MaintenanceUcf
-	Db.Find(&services)
+	if e := Db.Find(&services).Error; e != nil {
+		log.Println("[Database]", "All maintenance service", e.Error())
+	}
 
 	return services
 }
 
 //UpvoteMaintenanceUcf upvote the unconfirmed maintainer by specific id
-func UpvoteMaintenanceUcf(id int64) error {
+func UpvoteMaintenanceUcf(id int64) (e error) {
 	s, e := MaintenanceUcfById(id)
 
 	if e != nil {
@@ -38,7 +41,9 @@ func UpvoteMaintenanceUcf(id int64) error {
 	}
 
 	s.Confident += 1
-	Db.Save(&s)
+	if e = Db.Save(&s).Error; e != nil {
+		log.Println("[Database]", "Upvote maintenance service", id, ":", e.Error())
+	}
 
 	return nil
 }
@@ -53,16 +58,18 @@ func AddMaintenanceUcf(s MaintenanceUcf) (e error) {
 	}
 
 	if e = Db.Create(&s).Error; e != nil {
-		log.Println("[Database]", e.Error())
+		log.Println("[Database]", "Add maintenance service:", e.Error())
 	}
 
+	//Temporal
+	UpvoteMaintenanceUcf(s.Id)
 	return
 }
 
 //MaintenanceUcfById query the unconfirmed maintainer service by specific id
 func MaintenanceUcfById(id int64) (service MaintenanceUcf, e error) {
 	if e := Db.Find(&service, id).Error; e != nil {
-		log.Println("[Database]", e.Error())
+		log.Println("[Database]", "Maintenance service", id, ":", e.Error())
 	}
 
 	return
@@ -70,7 +77,7 @@ func MaintenanceUcfById(id int64) (service MaintenanceUcf, e error) {
 
 func (s *MaintenanceUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident == confident {
-		var m Maintenance = Maintenance{Service: Service{Lat: s.Lat, Lon: s.Lon, Address: s.Address}}
+		var m Maintenance = Maintenance{Service: s.GetService(), Name: s.Name}
 		AddMaintenance(m)
 		scope.DB().Delete(s)
 		log.Println("[Unconfirmed Maintenance]", "Confident is enough. Added", m)
