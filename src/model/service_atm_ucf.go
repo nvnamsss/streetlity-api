@@ -45,16 +45,26 @@ func AtmUcfById(id int64) (service AtmUcf, e error) {
 
 //UpvoteAtmUcf upvote the unconfirmed atm by specific id
 func UpvoteAtmUcf(id int64) error {
+	return upvoteAtmUcf(id, 1)
+}
+
+func UpvoteAtmUcfImmediately(id int64) error {
+	return upvoteAtmUcf(id, confident)
+}
+
+func upvoteAtmUcf(id int64, value int) (e error) {
 	s, e := AtmUcfById(id)
 
 	if e != nil {
 		return e
 	}
 
-	s.Confident += 1
-	Db.Save(&s)
+	s.Confident += value
+	if e := Db.Save(&s).Error; e != nil {
+		log.Println("[Database]", "upvote unconfirmed atm", id, ":", e.Error())
+	}
 
-	return nil
+	return
 }
 
 //AddAtmUcf add new AtmUcf service to the database

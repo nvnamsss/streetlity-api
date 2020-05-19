@@ -53,16 +53,26 @@ func FuelUcfById(id int64) (service FuelUcf, e error) {
 
 //UpvoteFuelUcf upvote the unconfirmed fuel by specific id
 func UpvoteFuelUcf(id int64) error {
+	return upvoteFuelUcf(id, 1)
+}
+
+func UpvoteFuelUcfImmediately(id int64) error {
+	return upvoteFuelUcf(id, confident)
+}
+
+func upvoteFuelUcf(id int64, value int) (e error) {
 	s, e := FuelUcfById(id)
 
 	if e != nil {
-		return e
+		return
 	}
 
-	s.Confident += 1
-	Db.Save(&s)
+	s.Confident += value
+	if e := Db.Save(&s).Error; e != nil {
+		log.Println("[Database]", "upvote unconfirmed fuel", id, ":", e.Error())
+	}
 
-	return nil
+	return
 }
 
 func (s *FuelUcf) AfterSave(scope *gorm.Scope) (err error) {

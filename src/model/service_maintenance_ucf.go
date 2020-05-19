@@ -34,18 +34,26 @@ func AllMaintenanceUcfs() []MaintenanceUcf {
 
 //UpvoteMaintenanceUcf upvote the unconfirmed maintainer by specific id
 func UpvoteMaintenanceUcf(id int64) (e error) {
+	return upvoteMaintenanceUcf(id, 1)
+}
+
+func UpvoteMaintenanceUcfImmediately(id int64) (e error) {
+	return upvoteMaintenanceUcf(id, confident)
+}
+
+func upvoteMaintenanceUcf(id int64, value int) (e error) {
 	s, e := MaintenanceUcfById(id)
 
 	if e != nil {
 		return e
 	}
 
-	s.Confident += 1
+	s.Confident += value
 	if e = Db.Save(&s).Error; e != nil {
 		log.Println("[Database]", "Upvote maintenance service", id, ":", e.Error())
 	}
 
-	return nil
+	return
 }
 
 //AddMaintenanceUcf add new unconfirmed maintainer service to the database

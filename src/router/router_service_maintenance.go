@@ -45,7 +45,7 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 	res.Error(p.Run())
 
 	if res.Status {
-		service_ids := p.GetInt("id")
+		service_ids := p.GetInt("ServiceId")
 		// lat := p.GetFloat("Lat")[0]
 		// lon := p.GetFloat("Lon")[0]
 		// max_range := p.GetFloat("Range")[0]
@@ -147,11 +147,12 @@ func updateMaintenance(w http.ResponseWriter, req *http.Request) {
 			return str, errors.New("id param is missing")
 		}
 
-		_, err := strconv.ParseInt(form["id"][0], 10, 64)
+		id, err := strconv.ParseInt(form["id"][0], 10, 64)
 		if err != nil {
 			return str, errors.New("cannot parse id to int")
 		}
-		str.Id = 1
+		str.Id = id
+
 		return
 	})
 	p.First = vStage
@@ -173,14 +174,16 @@ func updateMaintenance(w http.ResponseWriter, req *http.Request) {
 }
 
 func addMaintenance(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
+	var res struct {
+		Response
+		Service model.Maintenance
+	}
 
 	req.ParseForm()
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
 	validateParamsStage := AddingServiceValidateStage(req)
 	parseValueStage := AddingServiceParsingStage(req)
-
 	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
@@ -228,12 +231,19 @@ func upvoteMaintenance(w http.ResponseWriter, req *http.Request) {
 		str.Id, e = strconv.ParseInt(form["id"][0], 10, 64)
 		return
 	})
+
 	p.First = vStage
 	res.Error(p.Run())
 
 	if res.Status {
 		var id int64 = p.GetInt("Id")[0]
-		res.Error(model.UpvoteMaintenanceUcf(id))
+		t, ok := req.PostForm["type"]
+
+		if ok && t[0] == "immediately" {
+			res.Error(model.UpvoteMaintenanceUcfImmediately(id))
+		} else {
+			res.Error(model.UpvoteMaintenanceUcf(id))
+		}
 	}
 
 	WriteJson(w, res)

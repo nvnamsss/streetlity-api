@@ -32,16 +32,26 @@ func AllToiletUcfs() []ToiletUcf {
 
 //UpvoteToiletUcf upvote the unconfirmed toilet by specific id
 func UpvoteToiletUcf(id int64) error {
+	return upvoteToiletUcf(id, 1)
+}
+
+func UpvoteToiletUcfImmediately(id int64) error {
+	return upvoteToiletUcf(id, confident)
+}
+
+func upvoteToiletUcf(id int64, value int) (e error) {
 	s, e := ToiletUcfById(id)
 
 	if e != nil {
-		return e
+		return
 	}
 
-	s.Confident += 1
-	Db.Save(&s)
+	s.Confident += value
+	if e := Db.Save(&s).Error; e != nil {
+		log.Println("[Database]", "upvote unconfirmed toilet", id, ":", e.Error())
+	}
 
-	return nil
+	return
 }
 
 //ToiletUcfById query the unconfirmed toilet service by specific id
