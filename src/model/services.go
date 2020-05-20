@@ -46,7 +46,7 @@ func LoadService() {
 	fuels := AllFuels()
 	atms := AllAtms()
 	toilets := AllToilets()
-	maintainers := AllMaintenances()
+	maintenances := AllMaintenances()
 
 	for _, fuel := range fuels {
 		services.AddItem(fuel)
@@ -60,8 +60,8 @@ func LoadService() {
 		services.AddItem(toilet)
 	}
 
-	for _, maintainer := range maintainers {
-		services.AddItem(maintainer)
+	for _, maintenance := range maintenances {
+		services.AddItem(maintenance)
 	}
 
 }

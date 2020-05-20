@@ -384,7 +384,7 @@ func getMaintenanceInRange(w http.ResponseWriter, req *http.Request) {
 
 func HandleMaintenance(router *mux.Router) {
 	log.Println("[Router]", "Handling fuel")
-	s := router.PathPrefix("/maintain").Subrouter()
+	s := router.PathPrefix("/maintenance").Subrouter()
 	s.HandleFunc("/all", getMaintenances).Methods("GET")
 	s.HandleFunc("/update", updateMaintenance).Methods("POST")
 	s.HandleFunc("/range", getMaintenanceInRange).Methods("GET")

@@ -22,7 +22,7 @@ func (s MaintenanceUcf) Location() r2.Point {
 	return p
 }
 
-//AllMaintenanceUcfs query all maintainer services
+//AllMaintenanceUcfs query all maintenance services
 func AllMaintenanceUcfs() []MaintenanceUcf {
 	var services []MaintenanceUcf
 	if e := Db.Find(&services).Error; e != nil {
