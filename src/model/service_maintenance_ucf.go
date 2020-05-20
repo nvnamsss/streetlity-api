@@ -32,12 +32,14 @@ func AllMaintenanceUcfs() []MaintenanceUcf {
 	return services
 }
 
-//UpvoteMaintenanceUcf upvote the unconfirmed maintainer by specific id
-func UpvoteMaintenanceUcf(id int64) (e error) {
+//UpvoteMaintenanceUcfById upvote the unconfirmed maintainer by specific id
+func UpvoteMaintenanceUcfById(id int64) (e error) {
 	return upvoteMaintenanceUcf(id, 1)
 }
 
-func UpvoteMaintenanceUcfImmediately(id int64) (e error) {
+//UpvoteMaintenanceUcfById upvote the unconfirmed maintainer by specific id
+//with out caring about the remaining confident
+func UpvoteMaintenanceUcfByIdImmediately(id int64) (e error) {
 	return upvoteMaintenanceUcf(id, confident)
 }
 
@@ -70,7 +72,7 @@ func AddMaintenanceUcf(s MaintenanceUcf) (e error) {
 	}
 
 	//Temporal
-	UpvoteMaintenanceUcf(s.Id)
+	UpvoteMaintenanceUcfById(s.Id)
 	return
 }
 
@@ -84,7 +86,7 @@ func MaintenanceUcfById(id int64) (service MaintenanceUcf, e error) {
 }
 
 func (s *MaintenanceUcf) AfterSave(scope *gorm.Scope) (err error) {
-	if s.Confident == confident {
+	if s.Confident >= confident {
 		var m Maintenance = Maintenance{Service: s.GetService(), Name: s.Name}
 		AddMaintenance(m)
 		scope.DB().Delete(s)

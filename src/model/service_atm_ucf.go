@@ -86,7 +86,7 @@ func AddAtmUcf(s AtmUcf) (e error) {
 }
 
 func (s *AtmUcf) AfterSave(scope *gorm.Scope) (err error) {
-	if s.Confident == confident {
+	if s.Confident >= confident {
 		var a Atm = Atm{Service: s.GetService(), BankId: s.BankId}
 		AddAtm(a)
 		scope.DB().Delete(s)
