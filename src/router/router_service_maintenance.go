@@ -240,9 +240,9 @@ func upvoteMaintenance(w http.ResponseWriter, req *http.Request) {
 		t, ok := req.PostForm["type"]
 
 		if ok && t[0] == "immediately" {
-			res.Error(model.UpvoteMaintenanceUcfImmediately(id))
+			res.Error(model.UpvoteMaintenanceUcfByIdImmediately(id))
 		} else {
-			res.Error(model.UpvoteMaintenanceUcf(id))
+			res.Error(model.UpvoteMaintenanceUcfById(id))
 		}
 	}
 

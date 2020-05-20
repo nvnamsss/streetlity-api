@@ -70,8 +70,7 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 }
 
 func addBank(w http.ResponseWriter, req *http.Request) {
-	var res Response
-	res.Status = true
+	var res Response = Response{Status: true}
 
 	req.ParseForm()
 	form := req.PostForm
@@ -165,8 +164,8 @@ func getAtmInRange(w http.ResponseWriter, req *http.Request) {
 		Response
 		Atms []model.Atm
 	}
-
 	res.Status = true
+
 	query := req.URL.Query()
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
 
@@ -236,6 +235,7 @@ func getBanks(w http.ResponseWriter, req *http.Request) {
 		Response
 		Banks []model.Bank
 	}
+	res.Status = true
 
 	if res.Status {
 		res.Banks = model.AllBanks()
