@@ -119,11 +119,20 @@ func AllBanks() []Bank {
 
 func AddBank(s Bank) (e error) {
 	if e = Db.Create(&s).Error; e != nil {
-		log.Println("pDatabase]", "Add bank", e.Error())
+		log.Println("[Database]", "Add bank", e.Error())
 		return
 	}
 
 	return nil
+}
+
+func BankByName(name string) (bank Bank, e error) {
+	bank.Name = name
+	if e = Db.Find(&bank).Error; e != nil {
+		log.Println("[Database]", "Get bank", e.Error())
+	}
+
+	return
 }
 
 func (s Atm) AfterCreate(scope *gorm.Scope) (e error) {

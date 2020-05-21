@@ -70,7 +70,10 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 }
 
 func addBank(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
+	var res struct {
+		Response
+		Bank model.Bank
+	}
 
 	req.ParseForm()
 	form := req.PostForm
@@ -100,6 +103,7 @@ func addBank(w http.ResponseWriter, req *http.Request) {
 			res.Message = err.Error()
 		} else {
 			res.Message = "Add new bank successfully"
+			res.Bank, _ = model.BankByName(s.Name)
 		}
 	}
 
