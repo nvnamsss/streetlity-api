@@ -29,6 +29,33 @@ func RemoveMaintenanceHistory(h MaintenanceHistory) (e error) {
 	return
 }
 
+func RemoveMaintenanceHistoriesById(ids ...int64) (e error) {
+	for _, id := range ids {
+		if e = Db.Where("id=?", id).Delete(&MaintenanceHistory{}).Error; e != nil {
+			log.Println("[Database]", "remove M history", e.Error())
+		}
+	}
+
+	return
+}
+
+func queryMaintenanceHistory(h MaintenanceHistory) (history MaintenanceHistory, e error) {
+	history = h
+	if e = Db.Find(&history).Error; e != nil {
+		log.Println("[Database]", "query maintenance history", e.Error())
+	}
+
+	return
+}
+
+func MaintenanceHistoriesByMUser(mUser string) (histories []MaintenanceHistory, e error) {
+	if e = Db.Where("maintenance_user=?", mUser).Find(&histories).Error; e != nil {
+		log.Println("[Database]", "query M history by M user", e.Error())
+	}
+
+	return
+}
+
 func MaintenanceHistoryById(id int64) (h MaintenanceHistory, e error) {
 	if e := Db.Find(&h, id).Error; e != nil {
 		log.Println("[Database]", "Maintenance history with id:", id, ":", e.Error())

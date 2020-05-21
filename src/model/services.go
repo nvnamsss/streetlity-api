@@ -39,6 +39,12 @@ func distance(p1 r2.Point, p2 r2.Point) float64 {
 	return math.Sqrt(x + y)
 }
 
+// func QueryService(s Service) {
+// 	if e := Db.Find(&s).Error; e != nil {
+// 		log.Println(e)
+// 	}
+// }
+
 //LoadService loading all kind of service in Database and storage it into spatial tree.
 //
 //The functions which are using spatial tree need LoadService ran before to work as expectation.

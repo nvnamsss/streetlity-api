@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"log"
 
 	"github.com/golang/geo/r2"
@@ -32,12 +33,16 @@ func AllToilets() []Toilet {
 //AddToilet add new toilet service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddToilet(s Toilet) error {
-	if dbc := Db.Create(&s); dbc.Error != nil {
-		return dbc.Error
+func AddToilet(s Toilet) (e error) {
+	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Toilet{}).Error; e == nil {
+		return errors.New("The service location is existed or some problems is occured")
 	}
 
-	return nil
+	if e := Db.Create(&s).Error; e != nil {
+		log.Println("[Database]", "add toilet", e.Error())
+	}
+
+	return
 }
 
 func queryToilet(s Toilet) (service Toilet, e error) {

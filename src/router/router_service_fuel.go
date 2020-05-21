@@ -78,7 +78,11 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 }
 
 func addFuel(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
+	var res struct {
+		Response
+		Service model.FuelUcf
+	}
+	res.Status = true
 
 	req.ParseForm()
 

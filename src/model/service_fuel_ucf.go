@@ -28,8 +28,7 @@ func AllFuelsUcf() []FuelUcf {
 //
 //return error if there is something wrong when doing transaction
 func AddFuelUcf(s FuelUcf) (e error) {
-	var existed FuelUcf
-	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&existed).Error; e == nil {
+	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&FuelUcf{}).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
 

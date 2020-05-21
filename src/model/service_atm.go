@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"log"
 
 	"github.com/golang/geo/r2"
@@ -83,6 +84,10 @@ func AtmByIds(ids ...int64) (services []Atm) {
 //
 //return error if there is something wrong when doing transaction
 func AddAtm(s Atm) (e error) {
+	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Atm{}).Error; e == nil {
+		return errors.New("The service location is existed or some problems is occured")
+	}
+
 	if e = Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", "Add atm", e.Error())
 		return

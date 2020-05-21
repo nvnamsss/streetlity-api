@@ -37,12 +37,16 @@ func AllFuels() []Fuel {
 //AddFuel add new fuel service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddFuel(s Fuel) error {
-	if dbc := Db.Create(&s); dbc.Error != nil {
-		return dbc.Error
+func AddFuel(s Fuel) (e error) {
+	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Fuel{}).Error; e == nil {
+		return errors.New("The service location is existed or some problems is occured")
 	}
 
-	return nil
+	if e := Db.Create(&s).Error; e != nil {
+		log.Println("[Database]", "add fuel", e.Error())
+	}
+
+	return
 }
 
 func queryFuel(s Fuel) (service Fuel, e error) {
