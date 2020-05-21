@@ -14,7 +14,7 @@ type ToiletUcf struct {
 
 //TableName determine the table name in database which is using for gorm
 func (ToiletUcf) TableName() string {
-	return "ToiletUcf"
+	return "toilet_ucf"
 }
 
 func (s ToiletUcf) Location() r2.Point {

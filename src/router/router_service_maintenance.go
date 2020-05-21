@@ -436,6 +436,7 @@ func HandleMaintenance(router *mux.Router) {
 	s.HandleFunc("/order", orderMaintenance).Methods("POST")
 	s.HandleFunc("/accept", acceptOrderMaintenance).Methods("POST")
 	s.HandleFunc("/", getMaintenance).Methods("GET")
+
 	r := s.PathPrefix("/add").Subrouter()
 	r.HandleFunc("", addMaintenance).Methods("POST")
 	r.Use(Authenticate)

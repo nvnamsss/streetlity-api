@@ -51,9 +51,9 @@ func queryToilet(s Toilet) (service Toilet, e error) {
 }
 
 //ToiletByService get toilet by provide a Service
-func ToiletByService(s Service) (services Maintenance, e error) {
+func ToiletByService(s Service) (services Toilet, e error) {
 	services.Service = s
-	return queryMaintenance(services)
+	return queryToilet(services)
 }
 
 func ToiletById(id int64) (service Toilet, e error) {

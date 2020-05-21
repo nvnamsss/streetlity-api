@@ -234,12 +234,56 @@ func upvoteFuel(w http.ResponseWriter, req *http.Request) {
 	WriteJson(w, res)
 }
 
+func getFuel(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		Response
+		Service model.Fuel
+	}
+	res.Status = true
+
+	p := pipeline.NewPipeline()
+	stage := QueryServiceValidateStage(req)
+
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		c := p.GetInt("Case")[0]
+		s := model.Service{}
+
+		switch c {
+		case 0:
+			break
+		case 1:
+			s.Id = p.GetInt("Id")[0]
+			break
+		case 2:
+			s.Lat = float32(p.GetFloat("Lat")[0])
+			s.Lon = float32(p.GetFloat("Lat")[0])
+			break
+		case 3:
+			s.Address = p.GetString("Address")[0]
+			break
+		}
+
+		if m, e := model.FuelByService(s); e == nil {
+			res.Service = m
+		} else {
+			res.Error(e)
+		}
+
+	}
+
+	WriteJson(w, res)
+}
+
 func HandleFuel(router *mux.Router) {
 	log.Println("[Router]", "Handling fuel")
 	s := router.PathPrefix("/fuel").Subrouter()
 	s.HandleFunc("/all", getFuels).Methods("GET")
 	s.HandleFunc("/update", updateFuel).Methods("POST")
 	s.HandleFunc("/range", getFuelInRange).Methods("GET")
+	s.HandleFunc("/", getFuel).Methods("GET")
 
 	r := s.PathPrefix("/add").Subrouter()
 	r.HandleFunc("", addFuel).Methods("POST")

@@ -230,6 +230,49 @@ func getAtmInRange(w http.ResponseWriter, req *http.Request) {
 	WriteJson(w, res)
 }
 
+func getAtm(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		Response
+		Service model.Atm
+	}
+	res.Status = true
+
+	p := pipeline.NewPipeline()
+	stage := QueryServiceValidateStage(req)
+
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		c := p.GetInt("Case")[0]
+		s := model.Service{}
+
+		switch c {
+		case 0:
+			break
+		case 1:
+			s.Id = p.GetInt("Id")[0]
+			break
+		case 2:
+			s.Lat = float32(p.GetFloat("Lat")[0])
+			s.Lon = float32(p.GetFloat("Lat")[0])
+			break
+		case 3:
+			s.Address = p.GetString("Address")[0]
+			break
+		}
+
+		if m, e := model.AtmByService(s); e == nil {
+			res.Service = m
+		} else {
+			res.Error(e)
+		}
+
+	}
+
+	WriteJson(w, res)
+}
+
 func getBanks(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		Response
@@ -252,6 +295,7 @@ func HandleAtm(router *mux.Router) {
 	s.HandleFunc("/range", getAtmInRange).Methods("GET")
 	s.HandleFunc("/bank/all", getBanks).Methods("GET")
 	s.HandleFunc("/bank/add", addBank).Methods("POST")
+	s.HandleFunc("/", getAtm).Methods("GET")
 
 	r := s.PathPrefix("/add").Subrouter()
 	r.HandleFunc("", addAtm).Methods("POST")
