@@ -178,6 +178,7 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 		Response
 		Service model.Maintenance
 	}
+	res.Status = true
 
 	req.ParseForm()
 
