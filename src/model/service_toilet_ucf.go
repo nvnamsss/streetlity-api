@@ -54,6 +54,21 @@ func upvoteToiletUcf(id int64, value int) (e error) {
 	return
 }
 
+func queryToiletUcf(s ToiletUcf) (service ToiletUcf, e error) {
+	service = s
+
+	if e := Db.Find(&service).Error; e != nil {
+		log.Println("[Database]", "query unconfirmed atm", e.Error())
+	}
+
+	return
+}
+
+func ToiletUcfByService(s ServiceUcf) (service ToiletUcf, e error) {
+	service.ServiceUcf = s
+	return queryToiletUcf(service)
+}
+
 //ToiletUcfById query the unconfirmed toilet service by specific id
 func ToiletUcfById(id int64) (service ToiletUcf, e error) {
 	if e := Db.Find(&service, id).Error; e != nil {

@@ -40,6 +40,22 @@ func AddToilet(s Toilet) error {
 	return nil
 }
 
+func queryToilet(s Toilet) (service Toilet, e error) {
+	service = s
+
+	if e := Db.Find(&service).Error; e != nil {
+		log.Println("[Database]", "query toilet", e.Error())
+	}
+
+	return
+}
+
+//ToiletByService get toilet by provide a Service
+func ToiletByService(s Service) (services Maintenance, e error) {
+	services.Service = s
+	return queryMaintenance(services)
+}
+
 func ToiletById(id int64) (service Toilet, e error) {
 	if e = Db.Find(&service, id).Error; e != nil {
 		log.Println("[Database]", e.Error())

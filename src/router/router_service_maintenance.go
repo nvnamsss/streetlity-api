@@ -264,7 +264,7 @@ func getMaintenances(w http.ResponseWriter, req *http.Request) {
 	WriteJson(w, res)
 }
 
-func getMaintenance(w http.ResponseWriter, req *http.Request) {
+func getMaintenanceById(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		Response
 		Maintenance model.Maintenance
@@ -382,17 +382,60 @@ func getMaintenanceInRange(w http.ResponseWriter, req *http.Request) {
 	WriteJson(w, res)
 }
 
+func getMaintenance(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		Response
+		Service model.Maintenance
+	}
+	res.Status = true
+
+	p := pipeline.NewPipeline()
+	stage := QueryServiceValidateStage(req)
+
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		c := p.GetInt("Case")[0]
+		s := model.Service{}
+
+		switch c {
+		case 0:
+			break
+		case 1:
+			s.Id = p.GetInt("Id")[0]
+			break
+		case 2:
+			s.Lat = float32(p.GetFloat("Lat")[0])
+			s.Lon = float32(p.GetFloat("Lat")[0])
+			break
+		case 3:
+			s.Address = p.GetString("Address")[0]
+			break
+		}
+
+		if m, e := model.MaintenanceByService(s); e == nil {
+			res.Service = m
+		} else {
+			res.Error(e)
+		}
+
+	}
+
+	WriteJson(w, res)
+}
+
 func HandleMaintenance(router *mux.Router) {
 	log.Println("[Router]", "Handling fuel")
 	s := router.PathPrefix("/maintenance").Subrouter()
 	s.HandleFunc("/all", getMaintenances).Methods("GET")
 	s.HandleFunc("/update", updateMaintenance).Methods("POST")
 	s.HandleFunc("/range", getMaintenanceInRange).Methods("GET")
-	s.HandleFunc("/id", getMaintenance).Methods("GET")
+	s.HandleFunc("/id", getMaintenanceById).Methods("GET")
 	s.HandleFunc("/add", addMaintenance).Methods("POST")
 	s.HandleFunc("/order", orderMaintenance).Methods("POST")
 	s.HandleFunc("/accept", acceptOrderMaintenance).Methods("POST")
-
+	s.HandleFunc("/", getMaintenance).Methods("GET")
 	r := s.PathPrefix("/add").Subrouter()
 	r.HandleFunc("", addMaintenance).Methods("POST")
 	r.Use(Authenticate)

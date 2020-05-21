@@ -36,7 +36,7 @@ func Authenticate(h http.Handler) http.Handler {
 		auth := r.Header.Get("Auth")
 		if auth != "" {
 			log.Println("[Authorization]", "Received key", auth)
-			err := model.Auth(auth)
+			err := model.Authenticate(auth)
 			if err != nil {
 				var res Response = Response{Status: false, Message: err.Error()}
 				w.WriteHeader(http.StatusUnauthorized)

@@ -76,6 +76,21 @@ func AddMaintenanceUcf(s MaintenanceUcf) (e error) {
 	return
 }
 
+func queryMaintenanceUcf(s MaintenanceUcf) (service MaintenanceUcf, e error) {
+	service = s
+
+	if e := Db.Find(&service).Error; e != nil {
+		log.Println("[Database]", "query unconfirmed maintenance", e.Error())
+	}
+
+	return
+}
+
+func MaintenaceUcfByService(s ServiceUcf) (service MaintenanceUcf, e error) {
+	service.ServiceUcf = s
+	return queryMaintenanceUcf(service)
+}
+
 //MaintenanceUcfById query the unconfirmed maintainer service by specific id
 func MaintenanceUcfById(id int64) (service MaintenanceUcf, e error) {
 	if e := Db.Find(&service, id).Error; e != nil {

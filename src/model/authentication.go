@@ -26,8 +26,8 @@ func CreateToken(id int64) (string, error) {
 	return tokenString, err
 }
 
-func Auth(tokenString string) error {
-	fmt.Println("[Auth]", tokenString)
+func Authenticate(tokenString string) error {
+	fmt.Println("[Authenticate]", tokenString)
 	if tokenString == "" {
 		return errors.New("Token is empty")
 	}
@@ -49,7 +49,7 @@ func Auth(tokenString string) error {
 		}
 		return nil
 	} else {
-		log.Println("[Authorization]", err.Error())
+		log.Println("[Authenticate]", err.Error())
 		return err
 	}
 }

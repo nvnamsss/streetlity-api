@@ -34,6 +34,21 @@ func AllAtmUcfs() []AtmUcf {
 	return services
 }
 
+func queryAtmUcf(s AtmUcf) (service AtmUcf, e error) {
+	service = s
+
+	if e := Db.Find(&service).Error; e != nil {
+		log.Println("[Database]", "query unconfirmed atm", e.Error())
+	}
+
+	return
+}
+
+func AtmUcfByService(s ServiceUcf) (service AtmUcf, e error) {
+	service.ServiceUcf = s
+	return queryAtmUcf(service)
+}
+
 //AtmUcfById query the AtmUcf service by specific id
 func AtmUcfById(id int64) (service AtmUcf, e error) {
 	if e = Db.Find(&service, id).Error; e != nil {

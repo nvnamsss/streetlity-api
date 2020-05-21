@@ -45,6 +45,22 @@ func AddFuel(s Fuel) error {
 	return nil
 }
 
+func queryFuel(s Fuel) (service Fuel, e error) {
+	service = s
+
+	if e := Db.Find(&service).Error; e != nil {
+		log.Println("[Database]", "query fuel", e.Error())
+	}
+
+	return
+}
+
+//FuelByService get fuel by provide Service
+func FuelByService(s Service) (services Fuel, e error) {
+	services.Service = s
+	return queryFuel(services)
+}
+
 //FuelById query the fuel service by specific id
 func FuelById(id int64) (service Fuel, e error) {
 	if e = Db.Find(&service, id).Error; e != nil {

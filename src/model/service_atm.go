@@ -40,6 +40,22 @@ func AllAtms() []Atm {
 	return services
 }
 
+func queryAtm(s Atm) (service Atm, e error) {
+	service = s
+
+	if e := Db.Find(&service).Error; e != nil {
+		log.Println("[Database]", "query atm", e.Error())
+	}
+
+	return
+}
+
+//AtmByService get atm by provide Service
+func AtmByService(s Service) (services Atm, e error) {
+	services.Service = s
+	return queryAtm(services)
+}
+
 //AtmById query the atm service by specific id
 func AtmById(id int64) (service Atm, e error) {
 	if e = Db.Find(&service, id).Error; e != nil {

@@ -44,6 +44,16 @@ func AddMaintenance(s Maintenance) error {
 	return nil
 }
 
+func queryMaintenance(s Maintenance) (service Maintenance, e error) {
+	service = s
+
+	if e := Db.Find(&service).Error; e != nil {
+		log.Println("[Database]", "query maintenance", e.Error())
+	}
+
+	return
+}
+
 //MaintenanceById query the maintenance service by specific id
 func MaintenanceById(id int64) (service Maintenance, e error) {
 	if e = Db.Find(&service, id).Error; e != nil {
@@ -51,6 +61,12 @@ func MaintenanceById(id int64) (service Maintenance, e error) {
 	}
 
 	return
+}
+
+//MaintenanceByService get maintenance by provide Service
+func MaintenanceByService(s Service) (services Maintenance, e error) {
+	services.Service = s
+	return queryMaintenance(services)
 }
 
 //MaintenanceByIds query the maintenances service by specific id

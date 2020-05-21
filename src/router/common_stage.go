@@ -123,3 +123,52 @@ func InRangeServiceValidateStage(req *http.Request) *pipeline.Stage {
 
 	return validateParamsStage
 }
+
+func QueryServiceValidateStage(req *http.Request) *pipeline.Stage {
+	stage := pipeline.NewStage(func() (str struct {
+		Id      int64
+		Lat     float64
+		Lon     float64
+		Address string
+		Case    int
+	}, e error) {
+		query := req.URL.Query()
+
+		id, ok := query["id"]
+		if ok {
+			if id, e := strconv.ParseInt(id[0], 10, 64); e != nil {
+				return str, errors.New("cannot parse id to int")
+			} else {
+				str.Id = id
+				str.Case = 1
+				return str, nil
+			}
+		}
+
+		lat, latOk := query["lat"]
+		lon, lonOk := query["lon"]
+		if latOk && lonOk {
+			lat, latOk := strconv.ParseFloat(lat[0], 64)
+			lon, lonOk := strconv.ParseFloat(lon[0], 64)
+
+			if latOk == nil && lonOk == nil {
+				str.Lat = lat
+				str.Lon = lon
+				str.Case = 2
+				return str, nil
+			}
+		}
+
+		addresses, addressOk := query["address"]
+
+		if !addressOk {
+			return str, errors.New("required at least one param id / lat - lon / address")
+		}
+
+		str.Address = addresses[0]
+		str.Case = 3
+		return
+	})
+
+	return stage
+}

@@ -42,6 +42,21 @@ func AddFuelUcf(s FuelUcf) (e error) {
 	return
 }
 
+func queryFuelUcf(s FuelUcf) (service FuelUcf, e error) {
+	service = s
+
+	if e := Db.Find(&service).Error; e != nil {
+		log.Println("[Database]", "query unconfirmed fuel", e.Error())
+	}
+
+	return
+}
+
+func FuelUcfByService(s ServiceUcf) (service FuelUcf, e error) {
+	service.ServiceUcf = s
+	return queryFuelUcf(service)
+}
+
 //FuelUcfById query the fuel service by specific id
 func FuelUcfById(id int64) (service FuelUcf, e error) {
 	if e = Db.Find(&service, id).Error; e != nil {
@@ -76,7 +91,7 @@ func upvoteFuelUcf(id int64, value int) (e error) {
 }
 
 func (s *FuelUcf) AfterSave(scope *gorm.Scope) (err error) {
-	if s.Confident == confident {
+	if s.Confident >= confident {
 		var f Fuel = Fuel{Service: s.GetService()}
 		AddFuel(f)
 		scope.DB().Delete(s)

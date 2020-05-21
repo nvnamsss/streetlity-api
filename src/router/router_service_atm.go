@@ -142,7 +142,7 @@ func getAtms(w http.ResponseWriter, req *http.Request) {
 	}
 	res.Status = true
 
-	res.Error(model.Auth(req.Header.Get("Auth")))
+	res.Error(model.Authenticate(req.Header.Get("Auth")))
 	if !res.Status {
 		res.Write(w)
 		return

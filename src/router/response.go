@@ -65,7 +65,7 @@ func ValidateParams(data url.Values, fields ...string) error {
 
 func AuthStage(req *http.Request) *pipeline.Stage {
 	s := pipeline.NewStage(func() error {
-		return model.Auth(req.Header.Get("Auth"))
+		return model.Authenticate(req.Header.Get("Auth"))
 	})
 
 	return s
