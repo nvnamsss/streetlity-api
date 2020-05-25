@@ -16,6 +16,7 @@ func AddingServiceValidateStage(req *http.Request) *pipeline.Stage {
 	s := pipeline.NewStage(func() (str struct {
 		Address string
 		Note    string
+		Images  []string
 	}, e error) {
 		form := req.PostForm
 		location, locationOk := form["location"]
@@ -38,6 +39,8 @@ func AddingServiceValidateStage(req *http.Request) *pipeline.Stage {
 		if ok {
 			str.Note = form["note"][0]
 		}
+
+		str.Images = form["images"]
 
 		return
 	})

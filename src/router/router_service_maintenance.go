@@ -7,8 +7,8 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"streelity/v1/config"
 	"streelity/v1/model"
+	"streelity/v1/srpc"
 
 	"github.com/golang/geo/r2"
 	"github.com/gorilla/mux"
@@ -58,9 +58,7 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 			ids = append(ids, s.Owner)
 		}
 
-		host := "http://" + config.Config.UserHost + "/user/notify"
-
-		resp, err := http.PostForm(host, url.Values{
+		resp, err := srpc.RequestNotify(url.Values{
 			"id":            ids,
 			"notify-tittle": {"Customer is on service"},
 			"notify-body":   {"A customer is looking for maintaning"},
@@ -195,10 +193,14 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 		lon := pipe.GetFloat("Lon")[0]
 		note := pipe.GetString("Note")[0]
 		address := pipe.GetString("Address")[0]
+		images := pipe.GetString("Images")
 		name, ok := req.PostForm["name"]
 		s.Lat = float32(lat)
 		s.Lon = float32(lon)
 		s.Note = note
+		for _, image := range images {
+			s.Images += image + ";"
+		}
 		s.Address = address
 		if ok {
 			s.Name = name[0]

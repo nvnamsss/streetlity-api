@@ -1,7 +1,9 @@
 package model
 
 import (
+	"log"
 	"math"
+	"regexp"
 	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
@@ -21,6 +23,7 @@ type ServiceUcf struct {
 	Note      string  `gorm:"column:note"`
 	Address   string  `gorm:"column:address"`
 	Confident int     `gorm:"column:confident"`
+	Images    string  `gorm:"column:images"`
 }
 
 type Service struct {
@@ -29,6 +32,29 @@ type Service struct {
 	Lon     float32 `gorm:"column:lon"`
 	Note    string  `gorm:"column:note"`
 	Address string  `gorm:"column:address"`
+	Images  string  `gorm:"column:images"`
+}
+
+func (s Service) GetImages() (images []string) {
+	reg, e := regexp.Compile(";")
+	if e != nil {
+		log.Println("[Database]", "wrong images data", s.Images)
+		return
+	}
+
+	images = reg.Split(s.Images, -1)
+	return
+}
+
+func (s ServiceUcf) GetImages() (images []string) {
+	reg, e := regexp.Compile(";")
+	if e != nil {
+		log.Println("[Database]", "wrong images data", s.Images)
+		return
+	}
+
+	images = reg.Split(s.Images, -1)
+	return
 }
 
 var services spatial.RTree
