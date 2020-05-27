@@ -37,6 +37,8 @@ func main() {
 	go func() {
 		if err := Server.ListenAndServe(); err != nil {
 			log.Println(err)
+		} else {
+			log.Println("Listening on", Server.Addr)
 		}
 	}()
 

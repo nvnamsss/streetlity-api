@@ -2,7 +2,6 @@ package router
 
 import (
 	"errors"
-	"fmt"
 	"log"
 	"net/http"
 	"net/url"
@@ -22,12 +21,33 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	p := pipeline.NewPipeline()
 
-	vStage := pipeline.NewStage(func() (str struct{ ServiceId []int64 }, e error) {
+	vStage := pipeline.NewStage(func() (str struct {
+		CommonUser string
+		Reason     string
+		Note       string
+		ServiceId  []int64
+	}, e error) {
 		form := req.PostForm
+
+		commonUsers, ok := form["commonUser"]
+		if !ok {
+			return str, errors.New("commonUser param is misisng")
+		}
+
 		ids, ok := form["id"]
 
 		if !ok {
 			return str, errors.New("id param is missing")
+		}
+
+		reasons, ok := form["reason"]
+		if !ok {
+			return str, errors.New("reason param is missing")
+		}
+
+		notes, ok := form["note"]
+		if ok {
+			str.Note = notes[0]
 		}
 
 		for _, id := range ids {
@@ -39,36 +59,39 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 			str.ServiceId = append(str.ServiceId, v)
 		}
 
+		str.CommonUser = commonUsers[0]
+		str.Reason = reasons[0]
+
 		return
 	})
 	p.First = vStage
 	res.Error(p.Run())
 
 	if res.Status {
+		commonUser := p.GetString("CommonUser")[0]
 		service_ids := p.GetInt("ServiceId")
-		// lat := p.GetFloat("Lat")[0]
-		// lon := p.GetFloat("Lon")[0]
-		// max_range := p.GetFloat("Range")[0]
-		// var location r2.Point = r2.Point{X: lat, Y: lon}
+		reason := p.GetString("Reason")[0]
+		note := p.GetStringFirstOrDefault("Note")
 
 		services := model.MaintenanceByIds(service_ids...)
-		fmt.Println(services)
-		ids := []string{}
+		maintenanceIds := []string{}
 		for _, s := range services {
-			ids = append(ids, s.Owner)
+			maintenanceIds = append(maintenanceIds, s.Owner)
 		}
 
-		resp, err := srpc.RequestNotify(url.Values{
-			"id":            ids,
-			"notify-tittle": {"Customer is on service"},
-			"notify-body":   {"A customer is looking for maintaning"},
-			"data":          {"score:sss", "id:1"},
-		})
-
-		if err != nil {
-			fmt.Println(err)
+		if len(maintenanceIds) == 0 {
+			res.Error(errors.New("cannot find any suitable maintenance user"))
+		} else {
+			order, e := srpc.RequestOrder(url.Values{
+				"maintenanceUser": maintenanceIds,
+				"commonUser":      {commonUser},
+				"reason":          {reason},
+				"note":            {note},
+			})
+			log.Println(order)
+			res.Error(e)
 		}
-		fmt.Println(resp)
+
 	}
 
 	WriteJson(w, res)
@@ -214,7 +237,7 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 			res.Message = "Create new Maintenance successfully"
 		}
 	}
-
+	log.Println(res)
 	WriteJson(w, res)
 }
 
