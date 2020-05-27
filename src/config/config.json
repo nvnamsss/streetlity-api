@@ -4,5 +4,6 @@
     "username" : "root",
     "password" : "manager",
 
-    "user-host": "localhost:9001"
+    "user-host": "localhost:9001",
+    "maintenance-host": "localhost:9002"
 }
