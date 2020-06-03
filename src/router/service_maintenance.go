@@ -241,39 +241,7 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 	WriteJson(w, res)
 }
 
-func upvoteMaintenance(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
 
-	req.ParseForm()
-	p := pipeline.NewPipeline()
-	vStage := pipeline.NewStage(func() (str struct{ Id int64 }, e error) {
-		form := req.PostForm
-		_, ok := form["id"]
-		if !ok {
-			e = errors.New("id params is missing")
-			return
-		}
-
-		str.Id, e = strconv.ParseInt(form["id"][0], 10, 64)
-		return
-	})
-
-	p.First = vStage
-	res.Error(p.Run())
-
-	if res.Status {
-		var id int64 = p.GetInt("Id")[0]
-		t, ok := req.PostForm["type"]
-
-		if ok && t[0] == "immediately" {
-			res.Error(model.UpvoteMaintenanceUcfByIdImmediately(id))
-		} else {
-			res.Error(model.UpvoteMaintenanceUcfById(id))
-		}
-	}
-
-	WriteJson(w, res)
-}
 
 /*NON-AUTH REQUIRED*/
 

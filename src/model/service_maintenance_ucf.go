@@ -90,6 +90,9 @@ func MaintenaceUcfByService(s ServiceUcf) (service MaintenanceUcf, e error) {
 	return queryMaintenanceUcf(service)
 }
 
+func MaintenanceUcfByAddress() {
+}
+
 //MaintenanceUcfById query the unconfirmed maintainer service by specific id
 func MaintenanceUcfById(id int64) (service MaintenanceUcf, e error) {
 	if e := Db.Find(&service, id).Error; e != nil {
