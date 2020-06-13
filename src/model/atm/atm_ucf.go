@@ -3,13 +3,14 @@ package atm
 import (
 	"errors"
 	"log"
+	"streelity/v1/model"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
 )
 
 type AtmUcf struct {
-	ServiceUcf
+	model.ServiceUcf
 	BankId int64 `gorm:"column:bank_id"`
 }
 
@@ -29,7 +30,7 @@ func (s AtmUcf) Location() r2.Point {
 //AllAtmUcfs query all the AtmUcf serivces
 func AllAtmUcfs() []AtmUcf {
 	var services []AtmUcf
-	Db.Find(&services)
+	model.Db.Find(&services)
 
 	return services
 }
@@ -37,21 +38,21 @@ func AllAtmUcfs() []AtmUcf {
 func queryAtmUcf(s AtmUcf) (service AtmUcf, e error) {
 	service = s
 
-	if e := Db.Find(&service).Error; e != nil {
+	if e := model.Db.Find(&service).Error; e != nil {
 		log.Println("[Database]", "query unconfirmed atm", e.Error())
 	}
 
 	return
 }
 
-func AtmUcfByService(s ServiceUcf) (service AtmUcf, e error) {
+func AtmUcfByService(s model.ServiceUcf) (service AtmUcf, e error) {
 	service.ServiceUcf = s
 	return queryAtmUcf(service)
 }
 
 //AtmUcfById query the AtmUcf service by specific id
 func AtmUcfById(id int64) (service AtmUcf, e error) {
-	if e = Db.Find(&service, id).Error; e != nil {
+	if e = model.Db.Find(&service, id).Error; e != nil {
 		log.Println("[Database]", e)
 	}
 
@@ -75,7 +76,7 @@ func upvoteAtmUcf(id int64, value int) (e error) {
 	}
 
 	s.Confident += value
-	if e := Db.Save(&s).Error; e != nil {
+	if e := model.Db.Save(&s).Error; e != nil {
 		log.Println("[Database]", "upvote unconfirmed atm", id, ":", e.Error())
 	}
 
@@ -87,11 +88,11 @@ func upvoteAtmUcf(id int64, value int) (e error) {
 //return error if there is something wrong when doing transaction
 func AddAtmUcf(s AtmUcf) (e error) {
 	var existed AtmUcf
-	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&existed).Error; e == nil {
+	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&existed).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
 
-	if e = Db.Create(&s).Error; e != nil {
+	if e = model.Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", e.Error())
 	}
 

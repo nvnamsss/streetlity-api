@@ -73,7 +73,7 @@ func init() {
 
 	// loadConfig(configPath)
 	OnDisconnect.Subscribe(reconnect)
-	OnConnected.Subscribe(LoadService)
+	// OnConnected.Subscribe(LoadService)
 	go connect()
 
 	log.Println("Hi mom init db")

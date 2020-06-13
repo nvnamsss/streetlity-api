@@ -7,8 +7,10 @@ import (
 	"net/url"
 	"strconv"
 	"streelity/v1/model"
+	"streelity/v1/model/maintenance"
 	"streelity/v1/router/middleware"
 	"streelity/v1/router/sres"
+	"streelity/v1/router/stages"
 	"streelity/v1/srpc"
 
 	"github.com/golang/geo/r2"
@@ -75,7 +77,7 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 		reason := p.GetString("Reason")[0]
 		note := p.GetStringFirstOrDefault("Note")
 
-		services := model.MaintenanceByIds(service_ids...)
+		services := maintenance.MaintenanceByIds(service_ids...)
 		maintenanceIds := []string{}
 		for _, s := range services {
 			maintenanceIds = append(maintenanceIds, s.Owner)
@@ -152,7 +154,7 @@ func acceptOrderMaintenance(w http.ResponseWriter, req *http.Request) {
 		id := p.GetInt("OrderId")[0]
 		timestamp := p.GetInt("Timestamp")[0]
 
-		model.UpdateMaintenanceHistory(id, user, timestamp)
+		maintenance.UpdateMaintenanceHistory(id, user, timestamp)
 	}
 
 	sres.WriteJson(w, res)
@@ -190,7 +192,7 @@ func updateMaintenance(w http.ResponseWriter, req *http.Request) {
 			values[key] = value[0]
 		}
 
-		model.UpdateMaintenance(id, values)
+		maintenance.UpdateMaintenance(id, values)
 	}
 
 	sres.WriteJson(w, res)
@@ -199,21 +201,21 @@ func updateMaintenance(w http.ResponseWriter, req *http.Request) {
 func addMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Service model.Maintenance
+		Service maintenance.Maintenance
 	}
 	res.Status = true
 
 	req.ParseForm()
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	validateParamsStage := AddingServiceValidateStage(req)
-	parseValueStage := AddingServiceParsingStage(req)
+	validateParamsStage := stages.AddingServiceValidateStage(req)
+	parseValueStage := stages.AddingServiceParsingStage(req)
 	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var s model.MaintenanceUcf
+		var s maintenance.MaintenanceUcf
 		lat := pipe.GetFloat("Lat")[0]
 		lon := pipe.GetFloat("Lon")[0]
 		note := pipe.GetString("Note")[0]
@@ -230,7 +232,7 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 		if ok {
 			s.Name = name[0]
 		}
-		err := model.AddMaintenanceUcf(s)
+		err := maintenance.AddMaintenanceUcf(s)
 
 		if err != nil {
 			res.Status = false
@@ -248,12 +250,12 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 func getMaintenances(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Maintenance []model.Maintenance
+		Maintenance []maintenance.Maintenance
 	}
 
 	res.Status = true
 
-	res.Maintenance = model.AllMaintenances()
+	res.Maintenance = maintenance.AllMaintenances()
 
 	sres.WriteJson(w, res)
 }
@@ -261,7 +263,7 @@ func getMaintenances(w http.ResponseWriter, req *http.Request) {
 func getMaintenanceById(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Maintenance model.Maintenance
+		Maintenance maintenance.Maintenance
 	}
 
 	res.Status = true
@@ -289,7 +291,7 @@ func getMaintenanceById(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := pipe.GetInt("Id")[0]
-		s, e := model.MaintenanceById(id)
+		s, e := maintenance.MaintenanceById(id)
 		res.Error(e)
 		if res.Status {
 			res.Maintenance = s
@@ -308,7 +310,7 @@ func getMaintenanceById(w http.ResponseWriter, req *http.Request) {
 func getMaintenanceInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Maintenances []model.Maintenance
+		Maintenances []maintenance.Maintenance
 	}
 
 	res.Status = true
@@ -370,7 +372,7 @@ func getMaintenanceInRange(w http.ResponseWriter, req *http.Request) {
 		max_range := pipe.GetFloat("Range")[0]
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		res.Maintenances = model.MaintenancesInRange(location, max_range)
+		res.Maintenances = maintenance.MaintenancesInRange(location, max_range)
 	}
 
 	sres.WriteJson(w, res)
@@ -379,12 +381,12 @@ func getMaintenanceInRange(w http.ResponseWriter, req *http.Request) {
 func getMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Service model.Maintenance
+		Service maintenance.Maintenance
 	}
 	res.Status = true
 
 	p := pipeline.NewPipeline()
-	stage := QueryServiceValidateStage(req)
+	stage := stages.QueryServiceValidateStage(req)
 
 	p.First = stage
 	res.Error(p.Run())
@@ -408,7 +410,7 @@ func getMaintenance(w http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		if m, e := model.MaintenanceByService(s); e == nil {
+		if m, e := maintenance.MaintenanceByService(s); e == nil {
 			res.Service = m
 		} else {
 			res.Error(e)

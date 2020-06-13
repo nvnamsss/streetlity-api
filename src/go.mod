@@ -6,6 +6,7 @@ require (
 	cloud.google.com/go/firestore v1.2.0 // indirect
 	cloud.google.com/go/storage v1.7.0 // indirect
 	firebase.google.com/go v3.12.1+incompatible // indirect
+	github.com/brianvoe/gofakeit/v5 v5.7.0
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/ethereum/go-ethereum v1.9.12
 	github.com/go-sql-driver/mysql v1.5.0

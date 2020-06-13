@@ -3,16 +3,19 @@ package atm
 import (
 	"errors"
 	"log"
+	"math"
 	"streelity/v1/model"
 	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
 )
 
-type Service struct {
+type Atm struct {
 	model.Service
 	BankId int64 `gorm:"column:bank_id"`
 }
+
+var tag string = "[ATM]"
 
 //TableName determine the table name in database which is using for gorm
 func (Atm) TableName() string {
@@ -30,7 +33,7 @@ func (s Atm) Location() r2.Point {
 //AllAtms query all the atm serivces
 func AllAtms() []Atm {
 	var services []Atm
-	Db.Find(&services)
+	model.Db.Find(&services)
 
 	return services
 }
@@ -38,7 +41,7 @@ func AllAtms() []Atm {
 func queryAtm(s Atm) (service Atm, e error) {
 	service = s
 
-	if e := Db.Find(&service).Error; e != nil {
+	if e := model.Db.Find(&service).Error; e != nil {
 		log.Println("[Database]", "query atm", e.Error())
 	}
 
@@ -46,14 +49,14 @@ func queryAtm(s Atm) (service Atm, e error) {
 }
 
 //AtmByService get atm by provide Service
-func AtmByService(s Service) (services Atm, e error) {
+func AtmByService(s model.Service) (services Atm, e error) {
 	services.Service = s
 	return queryAtm(services)
 }
 
 //AtmById query the atm service by specific id
 func AtmById(id int64) (service Atm, e error) {
-	if e = Db.Find(&service, id).Error; e != nil {
+	if e = model.Db.Find(&service, id).Error; e != nil {
 		log.Println("[Database]", e.Error())
 	}
 
@@ -78,16 +81,22 @@ func AtmByIds(ids ...int64) (services []Atm) {
 //
 //return error if there is something wrong when doing transaction
 func AddAtm(s Atm) (e error) {
-	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Atm{}).Error; e == nil {
+	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Atm{}).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
 
-	if e = Db.Create(&s).Error; e != nil {
+	if e = model.Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", "Add atm", e.Error())
 		return
 	}
 
 	return nil
+}
+
+func distance(p1 r2.Point, p2 r2.Point) float64 {
+	x := math.Pow(p1.X-p2.X, 2)
+	y := math.Pow(p1.Y-p2.Y, 2)
+	return math.Sqrt(x + y)
 }
 
 //AtmsInRange query the atm services which is in the radius of a location

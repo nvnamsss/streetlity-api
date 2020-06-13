@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"strconv"
-	"streelity/v1/model"
+	"streelity/v1/model/maintenance"
 	"streelity/v1/router/sres"
 
 	"github.com/nvnamsss/goinf/pipeline"
@@ -35,9 +35,9 @@ func upvoteMaintenance(w http.ResponseWriter, req *http.Request) {
 		t, ok := req.PostForm["type"]
 
 		if ok && t[0] == "immediately" {
-			res.Error(model.UpvoteMaintenanceUcfByIdImmediately(id))
+			res.Error(maintenance.UpvoteMaintenanceUcfByIdImmediately(id))
 		} else {
-			res.Error(model.UpvoteMaintenanceUcfById(id))
+			res.Error(maintenance.UpvoteMaintenanceUcfById(id))
 		}
 	}
 
@@ -47,7 +47,7 @@ func upvoteMaintenance(w http.ResponseWriter, req *http.Request) {
 func getUMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Services []model.MaintenanceUcf
+		Services []maintenance.MaintenanceUcf
 	}
 
 	p := pipeline.NewPipeline()

@@ -1,5 +1,14 @@
 package middleware
 
+import (
+	"errors"
+	"net/http"
+	"regexp"
+	"streelity/v1/router/sres"
+
+	"github.com/gorilla/mux"
+)
+
 //sumOfRunes return the sum of runes by int in a string
 func sumOfRunes(s string) (sum int) {
 	for _, r := range s {

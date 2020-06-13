@@ -1,6 +1,9 @@
-package model
+package maintenance
 
-import "log"
+import (
+	"log"
+	"streelity/v1/model"
+)
 
 type MaintenanceHistory struct {
 	Id              int64
@@ -14,7 +17,7 @@ func (MaintenanceHistory) TableName() string {
 }
 
 func AddMaintenanceHistory(h MaintenanceHistory) (e error) {
-	if e = Db.Create(&h).Error; e != nil {
+	if e = model.Db.Create(&h).Error; e != nil {
 		log.Println("[Database]", "Adding new history:", e.Error())
 	}
 
@@ -22,7 +25,7 @@ func AddMaintenanceHistory(h MaintenanceHistory) (e error) {
 }
 
 func RemoveMaintenanceHistory(h MaintenanceHistory) (e error) {
-	if e = Db.Delete(h).Error; e != nil {
+	if e = model.Db.Delete(h).Error; e != nil {
 		log.Println("[Database]", "Removing history:", e.Error())
 	}
 
@@ -31,7 +34,7 @@ func RemoveMaintenanceHistory(h MaintenanceHistory) (e error) {
 
 func RemoveMaintenanceHistoriesById(ids ...int64) (e error) {
 	for _, id := range ids {
-		if e = Db.Where("id=?", id).Delete(&MaintenanceHistory{}).Error; e != nil {
+		if e = model.Db.Where("id=?", id).Delete(&MaintenanceHistory{}).Error; e != nil {
 			log.Println("[Database]", "remove M history", e.Error())
 		}
 	}
@@ -41,7 +44,7 @@ func RemoveMaintenanceHistoriesById(ids ...int64) (e error) {
 
 func queryMaintenanceHistory(h MaintenanceHistory) (history MaintenanceHistory, e error) {
 	history = h
-	if e = Db.Find(&history).Error; e != nil {
+	if e = model.Db.Find(&history).Error; e != nil {
 		log.Println("[Database]", "query maintenance history", e.Error())
 	}
 
@@ -49,7 +52,7 @@ func queryMaintenanceHistory(h MaintenanceHistory) (history MaintenanceHistory, 
 }
 
 func MaintenanceHistoriesByMUser(mUser string) (histories []MaintenanceHistory, e error) {
-	if e = Db.Where("maintenance_user=?", mUser).Find(&histories).Error; e != nil {
+	if e = model.Db.Where("maintenance_user=?", mUser).Find(&histories).Error; e != nil {
 		log.Println("[Database]", "query M history by M user", e.Error())
 	}
 
@@ -57,7 +60,7 @@ func MaintenanceHistoriesByMUser(mUser string) (histories []MaintenanceHistory, 
 }
 
 func MaintenanceHistoryById(id int64) (h MaintenanceHistory, e error) {
-	if e := Db.Find(&h, id).Error; e != nil {
+	if e := model.Db.Find(&h, id).Error; e != nil {
 		log.Println("[Database]", "Maintenance history with id:", id, ":", e.Error())
 	}
 
@@ -74,7 +77,7 @@ func UpdateMaintenanceHistory(id int64, maintenanceUser string, timestamp int64)
 	h.MaintenanceUser = maintenanceUser
 	h.Timestamp = timestamp
 
-	if e = Db.Save(&h).Error; e != nil {
+	if e = model.Db.Save(&h).Error; e != nil {
 		log.Println("[Database]", "Update maintenance history with id:", id, ":", e.Error())
 	}
 

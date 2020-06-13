@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
+	"streelity/v1/model/toilet"
 	"streelity/v1/router/middleware"
 	"streelity/v1/router/sres"
+	"streelity/v1/router/stages"
 
 	"github.com/golang/geo/r2"
 	"github.com/gorilla/mux"
@@ -21,15 +23,15 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	validateParamsStage := AddingServiceValidateStage(req)
-	parseValueStage := AddingServiceParsingStage(req)
+	validateParamsStage := stages.AddingServiceValidateStage(req)
+	parseValueStage := stages.AddingServiceParsingStage(req)
 
 	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var s model.ToiletUcf
+		var s toilet.ToiletUcf
 		lat := pipe.GetFloat("Lat")[0]
 		lon := pipe.GetFloat("Lon")[0]
 		note := pipe.GetString("Note")[0]
@@ -38,7 +40,7 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 		s.Lon = float32(lon)
 		s.Note = note
 		s.Address = address
-		err := model.AddToiletUcf(s)
+		err := toilet.AddToiletUcf(s)
 
 		if err != nil {
 			res.Status = false
@@ -72,7 +74,7 @@ func upvoteToilet(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		var id int64 = p.GetInt("Id")[0]
-		res.Error(model.UpvoteToiletUcf(id))
+		res.Error(toilet.UpvoteToiletUcf(id))
 	}
 
 	sres.WriteJson(w, res)
@@ -83,12 +85,12 @@ func upvoteToilet(w http.ResponseWriter, req *http.Request) {
 func getAllToilets(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Toilets []model.Toilet
+		Toilets []toilet.Toilet
 	}
 	res.Status = true
 
 	if res.Status {
-		res.Toilets = model.AllToilets()
+		res.Toilets = toilet.AllToilets()
 	}
 
 	sres.WriteJson(w, res)
@@ -101,7 +103,7 @@ func updateToilet(w http.ResponseWriter, req *http.Request) {
 func getToiletInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Toilets []model.Toilet
+		Toilets []toilet.Toilet
 	}
 
 	res.Status = true
@@ -163,7 +165,7 @@ func getToiletInRange(w http.ResponseWriter, req *http.Request) {
 		max_range := pipe.GetFloat("Range")[0]
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		res.Toilets = model.ToiletsInRange(location, max_range)
+		res.Toilets = toilet.ToiletsInRange(location, max_range)
 	}
 
 	sres.WriteJson(w, res)
@@ -172,12 +174,12 @@ func getToiletInRange(w http.ResponseWriter, req *http.Request) {
 func getToilet(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Service model.Toilet
+		Service toilet.Toilet
 	}
 	res.Status = true
 
 	p := pipeline.NewPipeline()
-	stage := QueryServiceValidateStage(req)
+	stage := stages.QueryServiceValidateStage(req)
 
 	p.First = stage
 	res.Error(p.Run())
@@ -201,7 +203,7 @@ func getToilet(w http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		if m, e := model.ToiletByService(s); e == nil {
+		if m, e := toilet.ToiletByService(s); e == nil {
 			res.Service = m
 		} else {
 			res.Error(e)

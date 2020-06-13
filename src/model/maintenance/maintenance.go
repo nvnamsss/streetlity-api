@@ -1,21 +1,26 @@
-package model
+package maintenance
 
 import (
 	"errors"
 	"log"
+	"math"
+	"streelity/v1/model"
+	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
 )
 
 type Maintenance struct {
-	Service
+	model.Service
 	Owner string `gorm:"column:owner"`
 	Name  string `gorm:"column:name"`
 	// Id  int64
 	// Lat float32 `gorm:"column:lat"`
 	// Lon float32 `gorm:"column:lon"`
 }
+
+var services spatial.RTree
 
 func (Maintenance) TableName() string {
 	return "maintenance"
@@ -29,7 +34,7 @@ func (s Maintenance) Location() r2.Point {
 //AllMaintenances query all maintenance services
 func AllMaintenances() []Maintenance {
 	var services []Maintenance
-	Db.Find(&services)
+	model.Db.Find(&services)
 
 	return services
 }
@@ -38,11 +43,11 @@ func AllMaintenances() []Maintenance {
 //
 //return error if there is something wrong when doing transaction
 func AddMaintenance(s Maintenance) (e error) {
-	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Maintenance{}).Error; e == nil {
+	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Maintenance{}).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
 
-	if e := Db.Create(&s).Error; e != nil {
+	if e := model.Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", "add maintennace", e.Error())
 	}
 
@@ -52,7 +57,7 @@ func AddMaintenance(s Maintenance) (e error) {
 func queryMaintenance(s Maintenance) (service Maintenance, e error) {
 	service = s
 
-	if e := Db.Find(&service).Error; e != nil {
+	if e := model.Db.Find(&service).Error; e != nil {
 		log.Println("[Database]", "query maintenance", e.Error())
 	}
 
@@ -61,7 +66,7 @@ func queryMaintenance(s Maintenance) (service Maintenance, e error) {
 
 //MaintenanceById query the maintenance service by specific id
 func MaintenanceById(id int64) (service Maintenance, e error) {
-	if e = Db.Find(&service, id).Error; e != nil {
+	if e = model.Db.Find(&service, id).Error; e != nil {
 		log.Println("[Database]", e)
 	}
 
@@ -69,7 +74,7 @@ func MaintenanceById(id int64) (service Maintenance, e error) {
 }
 
 //MaintenanceByService get maintenance by provide Service
-func MaintenanceByService(s Service) (services Maintenance, e error) {
+func MaintenanceByService(s model.Service) (services Maintenance, e error) {
 	services.Service = s
 	return queryMaintenance(services)
 }
@@ -86,6 +91,12 @@ func MaintenanceByIds(ids ...int64) (services []Maintenance) {
 	}
 
 	return
+}
+
+func distance(p1 r2.Point, p2 r2.Point) float64 {
+	x := math.Pow(p1.X-p2.X, 2)
+	y := math.Pow(p1.Y-p2.Y, 2)
+	return math.Sqrt(x + y)
 }
 
 //MaintenancesInRange query the maintenance services which is in the radius of a location
@@ -118,7 +129,7 @@ func UpdateMaintenance(id int64, values map[string]string) {
 		service.Owner = values["owner"]
 	}
 
-	if e = Db.Save(&service).Error; e != nil {
+	if e = model.Db.Save(&service).Error; e != nil {
 		log.Println("[Database]", "Update maintenance", e.Error())
 	}
 }
@@ -130,4 +141,20 @@ func (s Maintenance) AfterCreate(scope *gorm.Scope) (e error) {
 
 	log.Println("[Database]", "New maintennace added")
 	return
+}
+
+func LoadService() {
+	log.Println("[Maintenance]", "Loading service")
+
+	maintenances := AllMaintenances()
+	for _, service := range maintenances {
+		services.AddItem(service)
+	}
+}
+
+func init() {
+	model.OnConnected.Subscribe(LoadService)
+	model.OnDisconnect.Subscribe(func() {
+		model.OnConnected.Unsubscribe(LoadService)
+	})
 }

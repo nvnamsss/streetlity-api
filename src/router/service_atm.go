@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
+	"streelity/v1/model/atm"
 	"streelity/v1/router/middleware"
 	"streelity/v1/router/sres"
+	"streelity/v1/router/stages"
 
 	"github.com/golang/geo/r2"
 	"github.com/gorilla/mux"
@@ -24,8 +26,8 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	validateParamsStage := AddingServiceValidateStage(req)
-	parseValueStage := AddingServiceParsingStage(req)
+	validateParamsStage := stages.AddingServiceValidateStage(req)
+	parseValueStage := stages.AddingServiceParsingStage(req)
 	bankValidateStage := pipeline.NewStage(func() (str struct{ BankId int64 }, e error) {
 		form := req.PostForm
 		bank, ok := form["bank"]
@@ -48,7 +50,7 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var s model.AtmUcf
+		var s atm.AtmUcf
 		lat := pipe.GetFloat("Lat")[0]
 		lon := pipe.GetFloat("Lon")[0]
 		note := pipe.GetString("Note")[0]
@@ -58,7 +60,7 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 		s.Note = note
 		s.Address = address
 		s.BankId = pipe.GetInt("BankId")[0]
-		err := model.AddAtmUcf(s)
+		err := atm.AddAtmUcf(s)
 
 		if err != nil {
 			res.Status = false
@@ -74,7 +76,7 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 func addBank(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Bank model.Bank
+		Bank atm.Bank
 	}
 
 	req.ParseForm()
@@ -96,16 +98,16 @@ func addBank(w http.ResponseWriter, req *http.Request) {
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var s model.Bank
+		var s atm.Bank
 		s.Name = pipe.GetString("Name")[0]
-		err := model.AddBank(s)
+		err := atm.AddBank(s)
 
 		if err != nil {
 			res.Status = false
 			res.Message = err.Error()
 		} else {
 			res.Message = "Add new bank successfully"
-			res.Bank, _ = model.BankByName(s.Name)
+			res.Bank, _ = atm.BankByName(s.Name)
 		}
 	}
 
@@ -133,7 +135,7 @@ func upvoteAtm(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		var id int64 = p.GetInt("Id")[0]
-		res.Error(model.UpvoteAtmUcf(id))
+		res.Error(atm.UpvoteAtmUcf(id))
 	}
 
 	sres.WriteJson(w, res)
@@ -144,7 +146,7 @@ func upvoteAtm(w http.ResponseWriter, req *http.Request) {
 func getAtms(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Atms []model.Atm
+		Atms []atm.Atm
 	}
 	res.Status = true
 
@@ -154,7 +156,7 @@ func getAtms(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if res.Status {
-		res.Atms = model.AllAtms()
+		res.Atms = atm.AllAtms()
 	}
 
 	sres.WriteJson(w, res)
@@ -167,7 +169,7 @@ func getAtmById(w http.ResponseWriter, req *http.Request) {
 func getAtmInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Atms []model.Atm
+		Atms []atm.Atm
 	}
 	res.Status = true
 
@@ -229,7 +231,7 @@ func getAtmInRange(w http.ResponseWriter, req *http.Request) {
 		max_range := pipe.GetFloat("Range")[0]
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		res.Atms = model.AtmsInRange(location, max_range)
+		res.Atms = atm.AtmsInRange(location, max_range)
 	}
 
 	sres.WriteJson(w, res)
@@ -238,12 +240,12 @@ func getAtmInRange(w http.ResponseWriter, req *http.Request) {
 func getAtm(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Service model.Atm
+		Service atm.Atm
 	}
 	res.Status = true
 
 	p := pipeline.NewPipeline()
-	stage := QueryServiceValidateStage(req)
+	stage := stages.QueryServiceValidateStage(req)
 
 	p.First = stage
 	res.Error(p.Run())
@@ -267,7 +269,7 @@ func getAtm(w http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		if m, e := model.AtmByService(s); e == nil {
+		if m, e := atm.AtmByService(s); e == nil {
 			res.Service = m
 		} else {
 			res.Error(e)
@@ -281,12 +283,12 @@ func getAtm(w http.ResponseWriter, req *http.Request) {
 func getBanks(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Banks []model.Bank
+		Banks []atm.Bank
 	}
 	res.Status = true
 
 	if res.Status {
-		res.Banks = model.AllBanks()
+		res.Banks = atm.AllBanks()
 	}
 
 	sres.WriteJson(w, res)

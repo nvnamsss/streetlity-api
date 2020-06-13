@@ -10,6 +10,7 @@ import (
 	"streelity/v1/router/middleware"
 	"streelity/v1/router/rfuel"
 	"streelity/v1/router/sres"
+	"streelity/v1/router/stages"
 
 	"github.com/golang/geo/r2"
 	"github.com/gorilla/mux"
@@ -69,9 +70,9 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var f model.Fuel
+		var f fuel.Fuel
 		id, _ := strconv.ParseInt(form["id"][0], 10, 64)
-		if err := model.Db.Where(&model.Fuel{Service: model.Service{Id: id}}).First(&f).Error; err != nil {
+		if err := model.Db.Where(&fuel.Fuel{Service: model.Service{Id: id}}).First(&f).Error; err != nil {
 			res.Status = false
 			res.Message = err.Error()
 		}
@@ -84,22 +85,22 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 func addFuel(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Service model.FuelUcf
+		Service fuel.FuelUcf
 	}
 	res.Status = true
 
 	req.ParseForm()
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	validateParamsStage := AddingServiceValidateStage(req)
-	parseValueStage := AddingServiceParsingStage(req)
+	validateParamsStage := stages.AddingServiceValidateStage(req)
+	parseValueStage := stages.AddingServiceParsingStage(req)
 
 	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
 
 	if res.Status {
-		var s model.FuelUcf
+		var s fuel.FuelUcf
 		lat := pipe.GetFloat("Lat")[0]
 		lon := pipe.GetFloat("Lon")[0]
 		note := pipe.GetString("Note")[0]
@@ -108,7 +109,7 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 		s.Lon = float32(lon)
 		s.Note = note
 		s.Address = address
-		err := model.AddFuelUcf(s)
+		err := fuel.AddFuelUcf(s)
 
 		if err != nil {
 			res.Status = false
@@ -244,12 +245,12 @@ func addFuelReview(w http.ResponseWriter, req *http.Request) {
 func getFuels(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Fuels []model.Fuel
+		Fuels []fuel.Fuel
 	}
 
 	res.Status = true
 
-	res.Fuels = model.AllFuels()
+	res.Fuels = fuel.AllFuels()
 
 	log.Println("[GetFuels]", res.Fuels)
 
@@ -265,7 +266,7 @@ func getFuels(w http.ResponseWriter, req *http.Request) {
 func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Fuels []model.Fuel
+		Fuels []fuel.Fuel
 	}
 
 	res.Status = true
@@ -327,7 +328,7 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 		max_range := pipe.GetFloat("Range")[0]
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		res.Fuels = model.FuelsInRange(location, max_range)
+		res.Fuels = fuel.FuelsInRange(location, max_range)
 	}
 
 	sres.WriteJson(w, res)
@@ -354,7 +355,7 @@ func upvoteFuel(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		var id int64 = p.GetInt("Id")[0]
-		res.Error(model.UpvoteFuelUcf(id))
+		res.Error(fuel.UpvoteFuelUcf(id))
 	}
 
 	sres.WriteJson(w, res)
@@ -363,12 +364,12 @@ func upvoteFuel(w http.ResponseWriter, req *http.Request) {
 func getFuel(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Service model.Fuel
+		Service fuel.Fuel
 	}
 	res.Status = true
 
 	p := pipeline.NewPipeline()
-	stage := QueryServiceValidateStage(req)
+	stage := stages.QueryServiceValidateStage(req)
 
 	p.First = stage
 	res.Error(p.Run())
@@ -392,7 +393,7 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		if m, e := model.FuelByService(s); e == nil {
+		if m, e := fuel.FuelByService(s); e == nil {
 			res.Service = m
 		} else {
 			res.Error(e)

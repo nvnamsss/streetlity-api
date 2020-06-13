@@ -1,8 +1,11 @@
-package model
+package fuel
 
 import (
 	"errors"
 	"log"
+	"math"
+	"streelity/v1/model"
+	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
@@ -10,11 +13,13 @@ import (
 
 //FuelUcf representation the Fuel service which is confirmed
 type Fuel struct {
-	Service
+	model.Service
 	// Id  int64
 	// Lat float32 `gorm:"column:lat"`
 	// Lon float32 `gorm:"column:lon"`
 }
+
+var services spatial.RTree
 
 //Determine table name
 func (Fuel) TableName() string {
@@ -29,7 +34,7 @@ func (s Fuel) Location() r2.Point {
 //AllFuels query all fuel services
 func AllFuels() []Fuel {
 	var services []Fuel
-	Db.Find(&services)
+	model.Db.Find(&services)
 
 	return services
 }
@@ -38,11 +43,11 @@ func AllFuels() []Fuel {
 //
 //return error if there is something wrong when doing transaction
 func AddFuel(s Fuel) (e error) {
-	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Fuel{}).Error; e == nil {
+	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Fuel{}).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
 
-	if e := Db.Create(&s).Error; e != nil {
+	if e := model.Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", "add fuel", e.Error())
 	}
 
@@ -52,22 +57,22 @@ func AddFuel(s Fuel) (e error) {
 func queryFuel(s Fuel) (service Fuel, e error) {
 	service = s
 
-	if e := Db.Find(&service).Error; e != nil {
+	if e := model.Db.Find(&service).Error; e != nil {
 		log.Println("[Database]", "query fuel", e.Error())
 	}
 
 	return
 }
 
-//FuelByService get fuel by provide Service
-func FuelByService(s Service) (services Fuel, e error) {
+//FuelByService get fuel by provide model.Service
+func FuelByService(s model.Service) (services Fuel, e error) {
 	services.Service = s
 	return queryFuel(services)
 }
 
 //FuelById query the fuel service by specific id
 func FuelById(id int64) (service Fuel, e error) {
-	if e = Db.Find(&service, id).Error; e != nil {
+	if e = model.Db.Find(&service, id).Error; e != nil {
 		log.Println("[Database]", e.Error())
 		return service, errors.New("Problem occured when query")
 	}
@@ -87,6 +92,12 @@ func FuelByIds(ids ...int64) (services []Fuel) {
 	}
 
 	return
+}
+
+func distance(p1 r2.Point, p2 r2.Point) float64 {
+	x := math.Pow(p1.X-p2.X, 2)
+	y := math.Pow(p1.Y-p2.Y, 2)
+	return math.Sqrt(x + y)
 }
 
 //FuelsInRange query the fuel services which is in the radius of a location
@@ -114,4 +125,20 @@ func (s Fuel) AfterCreate(scope *gorm.Scope) (e error) {
 	}
 
 	return
+}
+
+func LoadService() {
+	log.Println("[Fuel]", "Loading service")
+
+	fuels := AllFuels()
+	for _, atm := range fuels {
+		services.AddItem(atm)
+	}
+}
+
+func init() {
+	model.OnConnected.Subscribe(LoadService)
+	model.OnDisconnect.Subscribe(func() {
+		model.OnConnected.Unsubscribe(LoadService)
+	})
 }

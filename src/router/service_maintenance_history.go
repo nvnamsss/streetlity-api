@@ -5,7 +5,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"streelity/v1/model"
+	"streelity/v1/model/maintenance"
 	"streelity/v1/router/sres"
 
 	"github.com/gorilla/mux"
@@ -19,7 +19,7 @@ func allMaintenanceHistory(w http.ResponseWriter, req *http.Request) {
 func getMaintenanceHistories(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Histories []model.MaintenanceHistory
+		Histories []maintenance.MaintenanceHistory
 	}
 	res.Status = true
 
@@ -70,7 +70,7 @@ func removeMaintenanceHistory(w http.ResponseWriter, req *http.Request) {
 	res.Error(p.Run())
 	if res.Status {
 		ids := p.GetInt("Id")
-		res.Error(model.RemoveMaintenanceHistoriesById(ids...))
+		res.Error(maintenance.RemoveMaintenanceHistoriesById(ids...))
 	}
 
 	sres.WriteJson(w, res)

@@ -1,6 +1,18 @@
+package fuel
+
+import (
+	"errors"
+	"log"
+	"streelity/v1/model"
+
+	"github.com/jinzhu/gorm"
+)
+
+var confident int = 5
+
 //FuelUcf representation the Fuel service which is not confirmed
 type FuelUcf struct {
-	ServiceUcf
+	model.ServiceUcf
 }
 
 func (FuelUcf) TableName() string {
@@ -10,7 +22,7 @@ func (FuelUcf) TableName() string {
 //AllFuelsUcf query all unconfirmed fuel services
 func AllFuelsUcf() []FuelUcf {
 	var services []FuelUcf
-	Db.Find(&services)
+	model.Db.Find(&services)
 
 	return services
 }
@@ -19,11 +31,11 @@ func AllFuelsUcf() []FuelUcf {
 //
 //return error if there is something wrong when doing transaction
 func AddFuelUcf(s FuelUcf) (e error) {
-	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&FuelUcf{}).Error; e == nil {
+	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&FuelUcf{}).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
 
-	if e = Db.Create(&s).Error; e != nil {
+	if e = model.Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", e.Error())
 	}
 
@@ -35,21 +47,21 @@ func AddFuelUcf(s FuelUcf) (e error) {
 func queryFuelUcf(s FuelUcf) (service FuelUcf, e error) {
 	service = s
 
-	if e := Db.Find(&service).Error; e != nil {
+	if e := model.Db.Find(&service).Error; e != nil {
 		log.Println("[Database]", "query unconfirmed fuel", e.Error())
 	}
 
 	return
 }
 
-func FuelUcfByService(s ServiceUcf) (service FuelUcf, e error) {
+func FuelUcfByService(s model.ServiceUcf) (service FuelUcf, e error) {
 	service.ServiceUcf = s
 	return queryFuelUcf(service)
 }
 
 //FuelUcfById query the fuel service by specific id
 func FuelUcfById(id int64) (service FuelUcf, e error) {
-	if e = Db.Find(&service, id).Error; e != nil {
+	if e = model.Db.Find(&service, id).Error; e != nil {
 		log.Println("[Database]", e.Error())
 	}
 
@@ -73,7 +85,7 @@ func upvoteFuelUcf(id int64, value int) (e error) {
 	}
 
 	s.Confident += value
-	if e := Db.Save(&s).Error; e != nil {
+	if e := model.Db.Save(&s).Error; e != nil {
 		log.Println("[Database]", "upvote unconfirmed fuel", id, ":", e.Error())
 	}
 

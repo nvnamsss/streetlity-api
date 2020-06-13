@@ -1,15 +1,18 @@
-package model
+package maintenance
 
 import (
 	"errors"
 	"log"
+	"streelity/v1/model"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
 )
 
+var confident int = 5
+
 type MaintenanceUcf struct {
-	ServiceUcf
+	model.ServiceUcf
 	Name string `gorm:"column:name"`
 }
 
@@ -25,7 +28,7 @@ func (s MaintenanceUcf) Location() r2.Point {
 //AllMaintenanceUcfs query all maintenance services
 func AllMaintenanceUcfs() []MaintenanceUcf {
 	var services []MaintenanceUcf
-	if e := Db.Find(&services).Error; e != nil {
+	if e := model.Db.Find(&services).Error; e != nil {
 		log.Println("[Database]", "All maintenance service", e.Error())
 	}
 
@@ -51,7 +54,7 @@ func upvoteMaintenanceUcf(id int64, value int) (e error) {
 	}
 
 	s.Confident += value
-	if e = Db.Save(&s).Error; e != nil {
+	if e = model.Db.Save(&s).Error; e != nil {
 		log.Println("[Database]", "Upvote maintenance service", id, ":", e.Error())
 	}
 
@@ -62,11 +65,11 @@ func upvoteMaintenanceUcf(id int64, value int) (e error) {
 //
 //return error if there is something wrong when doing transaction
 func AddMaintenanceUcf(s MaintenanceUcf) (e error) {
-	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&MaintenanceUcf{}).Error; e == nil {
+	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&MaintenanceUcf{}).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
 
-	if e = Db.Create(&s).Error; e != nil {
+	if e = model.Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", "Add maintenance service:", e.Error())
 	}
 
@@ -78,14 +81,14 @@ func AddMaintenanceUcf(s MaintenanceUcf) (e error) {
 func queryMaintenanceUcf(s MaintenanceUcf) (service MaintenanceUcf, e error) {
 	service = s
 
-	if e := Db.Find(&service).Error; e != nil {
+	if e := model.Db.Find(&service).Error; e != nil {
 		log.Println("[Database]", "query unconfirmed maintenance", e.Error())
 	}
 
 	return
 }
 
-func MaintenaceUcfByService(s ServiceUcf) (service MaintenanceUcf, e error) {
+func MaintenaceUcfByService(s model.ServiceUcf) (service MaintenanceUcf, e error) {
 	service.ServiceUcf = s
 	return queryMaintenanceUcf(service)
 }
@@ -95,7 +98,7 @@ func MaintenanceUcfByAddress() {
 
 //MaintenanceUcfById query the unconfirmed maintainer service by specific id
 func MaintenanceUcfById(id int64) (service MaintenanceUcf, e error) {
-	if e := Db.Find(&service, id).Error; e != nil {
+	if e := model.Db.Find(&service, id).Error; e != nil {
 		log.Println("[Database]", "Maintenance service", id, ":", e.Error())
 	}
 

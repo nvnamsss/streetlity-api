@@ -2,6 +2,7 @@ package router
 
 import (
 	"log"
+	"streelity/v1/router/middleware"
 
 	"github.com/gorilla/mux"
 )
@@ -16,5 +17,5 @@ func HandleService(router *mux.Router) {
 	HandleToilet(s)
 	HandleMaintenance(s)
 
-	Versioning(s, "1.0.0", "2.1.0")
+	middleware.Versioning(s, "1.0.0", "2.1.0")
 }

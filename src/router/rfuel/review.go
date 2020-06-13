@@ -7,6 +7,7 @@ import (
 	"strconv"
 	"streelity/v1/model/fuel"
 	"streelity/v1/router/sres"
+	"streelity/v1/router/stages"
 
 	"github.com/gorilla/mux"
 	"github.com/nvnamsss/goinf/pipeline"
@@ -159,7 +160,26 @@ func ReviewByServiceId(w http.ResponseWriter, req *http.Request) {
 }
 
 func CreateReview(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		sres.Response
+		Review fuel.Review
+	}
+	res.Status = true
+	req.ParseForm()
+	p := pipeline.NewPipeline()
+	stage := stages.ReviewValidateStage(req)
+	p.First = stage
+	res.Error(p.Run())
 
+	if res.Status {
+		service_id := p.GetIntFirstOrDefault("ServiceId")
+		commenter := p.GetIntFirstOrDefault("Commenter")
+		score := p.GetFloatFirstOrDefault("Score")
+		body := p.GetStringFirstOrDefault("Body")
+		res.Error(fuel.CreateReview(service_id, commenter, float32(score), body))
+	}
+
+	sres.WriteJson(w, res)
 }
 
 func Handle(router *mux.Router) {

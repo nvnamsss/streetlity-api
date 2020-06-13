@@ -1,4 +1,4 @@
-package toilet
+package atm
 
 import (
 	"log"
@@ -17,7 +17,7 @@ type Review struct {
 }
 
 func (Review) TableName() string {
-	return "toilet_review"
+	return "fuel_review"
 }
 
 func CreateReview(service_id int64, commenter int64, score float32, body string) (e error) {

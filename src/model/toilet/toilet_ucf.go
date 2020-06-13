@@ -1,16 +1,19 @@
-package model
+package toilet
 
 import (
 	"errors"
 	"log"
+	"streelity/v1/model"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
 )
 
 type ToiletUcf struct {
-	ServiceUcf
+	model.ServiceUcf
 }
+
+var confident int = 5
 
 //TableName determine the table name in database which is using for gorm
 func (ToiletUcf) TableName() string {
@@ -25,7 +28,7 @@ func (s ToiletUcf) Location() r2.Point {
 //AllAtms query all the atm serivces
 func AllToiletUcfs() []ToiletUcf {
 	var services []ToiletUcf
-	Db.Find(&services)
+	model.Db.Find(&services)
 
 	return services
 }
@@ -47,7 +50,7 @@ func upvoteToiletUcf(id int64, value int) (e error) {
 	}
 
 	s.Confident += value
-	if e := Db.Save(&s).Error; e != nil {
+	if e := model.Db.Save(&s).Error; e != nil {
 		log.Println("[Database]", "upvote unconfirmed toilet", id, ":", e.Error())
 	}
 
@@ -57,21 +60,21 @@ func upvoteToiletUcf(id int64, value int) (e error) {
 func queryToiletUcf(s ToiletUcf) (service ToiletUcf, e error) {
 	service = s
 
-	if e := Db.Find(&service).Error; e != nil {
+	if e := model.Db.Find(&service).Error; e != nil {
 		log.Println("[Database]", "query unconfirmed atm", e.Error())
 	}
 
 	return
 }
 
-func ToiletUcfByService(s ServiceUcf) (service ToiletUcf, e error) {
+func ToiletUcfByService(s model.ServiceUcf) (service ToiletUcf, e error) {
 	service.ServiceUcf = s
 	return queryToiletUcf(service)
 }
 
 //ToiletUcfById query the unconfirmed toilet service by specific id
 func ToiletUcfById(id int64) (service ToiletUcf, e error) {
-	if e := Db.Find(&service, id).Error; e != nil {
+	if e := model.Db.Find(&service, id).Error; e != nil {
 		log.Println("[Database]", e.Error())
 	}
 
@@ -82,11 +85,11 @@ func ToiletUcfById(id int64) (service ToiletUcf, e error) {
 //
 //return error if there is something wrong when doing transaction
 func AddToiletUcf(s ToiletUcf) (e error) {
-	if e = Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&ToiletUcf{}).Error; e == nil {
+	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&ToiletUcf{}).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
 
-	if e = Db.Create(&s).Error; e != nil {
+	if e = model.Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", e.Error())
 	}
 

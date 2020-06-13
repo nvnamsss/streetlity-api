@@ -9,12 +9,12 @@ import (
 	"github.com/golang/geo/r2"
 )
 
-type Services struct {
-	Atms        []Atm
-	Fuels       []Fuel
-	Toilets     []Toilet
-	Maintenance []Maintenance
-}
+// type Services struct {
+// 	Atms        []Atm
+// 	Fuels       []Fuel
+// 	Toilets     []Toilet
+// 	Maintenance []Maintenance
+// }
 
 type ServiceUcf struct {
 	Id        int64   `gorm:"column:id"`
@@ -74,29 +74,29 @@ func distance(p1 r2.Point, p2 r2.Point) float64 {
 //LoadService loading all kind of service in Database and storage it into spatial tree.
 //
 //The functions which are using spatial tree need LoadService ran before to work as expectation.
-func LoadService() {
-	fuels := AllFuels()
-	atms := AllAtms()
-	toilets := AllToilets()
-	maintenances := AllMaintenances()
+// func LoadService() {
+// 	fuels := AllFuels()
+// 	atms := AllAtms()
+// 	toilets := AllToilets()
+// 	maintenances := AllMaintenances()
 
-	for _, fuel := range fuels {
-		services.AddItem(fuel)
-	}
+// 	for _, fuel := range fuels {
+// 		services.AddItem(fuel)
+// 	}
 
-	for _, atm := range atms {
-		services.AddItem(atm)
-	}
+// 	for _, atm := range atms {
+// 		services.AddItem(atm)
+// 	}
 
-	for _, toilet := range toilets {
-		services.AddItem(toilet)
-	}
+// 	for _, toilet := range toilets {
+// 		services.AddItem(toilet)
+// 	}
 
-	for _, maintenance := range maintenances {
-		services.AddItem(maintenance)
-	}
+// 	for _, maintenance := range maintenances {
+// 		services.AddItem(maintenance)
+// 	}
 
-}
+// }
 
 func (s ServiceUcf) GetService() (service Service) {
 	service.Lat = s.Lat
