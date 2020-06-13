@@ -5,12 +5,13 @@ import (
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
+	"streelity/v1/router/sres"
 
 	"github.com/nvnamsss/goinf/pipeline"
 )
 
 func upvoteMaintenance(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
+	var res sres.Response = sres.Response{Status: true}
 
 	req.ParseForm()
 	p := pipeline.NewPipeline()
@@ -40,12 +41,12 @@ func upvoteMaintenance(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func getUMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Services []model.MaintenanceUcf
 	}
 
@@ -72,17 +73,17 @@ func getUMaintenance(w http.ResponseWriter, req *http.Request) {
 			return str, errors.New("location must has at least 2 values")
 		}
 
-		lat, ok := strconv.ParseFloat(location[0], 64)
-		if !ok {
+		lat, e := strconv.ParseFloat(location[0], 64)
+		if e != nil {
 			return str, errors.New("location[0] cannot parse to float")
 		}
 
-		lon, ok := strconv.ParseFloat(location[1], 64)
-		if !ok {
+		lon, e := strconv.ParseFloat(location[1], 64)
+		if e != nil {
 			return str, errors.New(("location[1] cannot parse to float"))
 		}
 
-		r, ok := strconv.ParseFloat(ranges[0], 64)
+		r, e := strconv.ParseFloat(ranges[0], 64)
 		if !ok {
 			return str, errors.New("range cannot parse to float")
 		}
@@ -93,6 +94,7 @@ func getUMaintenance(w http.ResponseWriter, req *http.Request) {
 
 		return
 	})
+	p.First = stage
 
 	res.Error(p.Run())
 

@@ -7,6 +7,8 @@ import (
 	"net/url"
 	"strconv"
 	"streelity/v1/model"
+	"streelity/v1/router/middleware"
+	"streelity/v1/router/sres"
 	"streelity/v1/srpc"
 
 	"github.com/golang/geo/r2"
@@ -16,7 +18,7 @@ import (
 
 /*AUTH REQUIRED*/
 func orderMaintenance(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
+	var res sres.Response = sres.Response{Status: true}
 
 	req.ParseForm()
 	p := pipeline.NewPipeline()
@@ -94,11 +96,11 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func acceptOrderMaintenance(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
+	var res sres.Response = sres.Response{Status: true}
 
 	req.ParseForm()
 	p := pipeline.NewPipeline()
@@ -153,11 +155,11 @@ func acceptOrderMaintenance(w http.ResponseWriter, req *http.Request) {
 		model.UpdateMaintenanceHistory(id, user, timestamp)
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func updateMaintenance(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
+	var res sres.Response = sres.Response{Status: true}
 
 	req.ParseForm()
 	p := pipeline.NewPipeline()
@@ -191,12 +193,12 @@ func updateMaintenance(w http.ResponseWriter, req *http.Request) {
 		model.UpdateMaintenance(id, values)
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func addMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Service model.Maintenance
 	}
 	res.Status = true
@@ -238,16 +240,14 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 	log.Println(res)
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
-
-
 
 /*NON-AUTH REQUIRED*/
 
 func getMaintenances(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Maintenance []model.Maintenance
 	}
 
@@ -255,12 +255,12 @@ func getMaintenances(w http.ResponseWriter, req *http.Request) {
 
 	res.Maintenance = model.AllMaintenances()
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func getMaintenanceById(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Maintenance model.Maintenance
 	}
 
@@ -296,7 +296,7 @@ func getMaintenanceById(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 //getFuelInRange process the in-range query. the request must provide there
@@ -307,7 +307,7 @@ func getMaintenanceById(w http.ResponseWriter, req *http.Request) {
 //
 func getMaintenanceInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Maintenances []model.Maintenance
 	}
 
@@ -373,12 +373,12 @@ func getMaintenanceInRange(w http.ResponseWriter, req *http.Request) {
 		res.Maintenances = model.MaintenancesInRange(location, max_range)
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func getMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Service model.Maintenance
 	}
 	res.Status = true
@@ -416,7 +416,7 @@ func getMaintenance(w http.ResponseWriter, req *http.Request) {
 
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func HandleMaintenance(router *mux.Router) {
@@ -433,10 +433,10 @@ func HandleMaintenance(router *mux.Router) {
 
 	r := s.PathPrefix("/add").Subrouter()
 	r.HandleFunc("", addMaintenance).Methods("POST")
-	r.Use(Authenticate)
+	r.Use(middleware.Authenticate)
 
 	r = s.PathPrefix("/upvote").Subrouter()
 	r.HandleFunc("", upvoteMaintenance).Methods("POST")
-	r.Use(Authenticate)
+	r.Use(middleware.Authenticate)
 
 }

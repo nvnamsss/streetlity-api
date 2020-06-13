@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
+	"streelity/v1/router/middleware"
+	"streelity/v1/router/sres"
 
 	"github.com/golang/geo/r2"
 	"github.com/gorilla/mux"
@@ -15,7 +17,7 @@ import (
 /*AUTH REQUIRED*/
 
 func addToilet(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
+	var res sres.Response = sres.Response{Status: true}
 	req.ParseForm()
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
@@ -46,11 +48,11 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func upvoteToilet(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
+	var res sres.Response = sres.Response{Status: true}
 
 	req.ParseForm()
 	p := pipeline.NewPipeline()
@@ -73,14 +75,14 @@ func upvoteToilet(w http.ResponseWriter, req *http.Request) {
 		res.Error(model.UpvoteToiletUcf(id))
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 /*NON-AUTH REQUIRED*/
 
 func getAllToilets(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Toilets []model.Toilet
 	}
 	res.Status = true
@@ -89,7 +91,7 @@ func getAllToilets(w http.ResponseWriter, req *http.Request) {
 		res.Toilets = model.AllToilets()
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func updateToilet(w http.ResponseWriter, req *http.Request) {
@@ -98,7 +100,7 @@ func updateToilet(w http.ResponseWriter, req *http.Request) {
 
 func getToiletInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Toilets []model.Toilet
 	}
 
@@ -164,12 +166,12 @@ func getToiletInRange(w http.ResponseWriter, req *http.Request) {
 		res.Toilets = model.ToiletsInRange(location, max_range)
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func getToilet(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Service model.Toilet
 	}
 	res.Status = true
@@ -207,7 +209,7 @@ func getToilet(w http.ResponseWriter, req *http.Request) {
 
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func HandleToilet(router *mux.Router) {
@@ -220,9 +222,9 @@ func HandleToilet(router *mux.Router) {
 
 	r := s.PathPrefix("/add").Subrouter()
 	r.HandleFunc("", addToilet).Methods("POST")
-	r.Use(Authenticate)
+	r.Use(middleware.Authenticate)
 
 	r = s.PathPrefix("/upvote").Subrouter()
 	r.HandleFunc("", updateToilet).Methods("POST")
-	r.Use(Authenticate)
+	r.Use(middleware.Authenticate)
 }

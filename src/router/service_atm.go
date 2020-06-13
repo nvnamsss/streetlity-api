@@ -6,6 +6,8 @@ import (
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
+	"streelity/v1/router/middleware"
+	"streelity/v1/router/sres"
 
 	"github.com/golang/geo/r2"
 	"github.com/gorilla/mux"
@@ -18,7 +20,7 @@ func updateAtm(w http.ResponseWriter, req *http.Request) {
 }
 
 func addAtm(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
+	var res sres.Response = sres.Response{Status: true}
 	req.ParseForm()
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
@@ -66,12 +68,12 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func addBank(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Bank model.Bank
 	}
 
@@ -107,11 +109,11 @@ func addBank(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func upvoteAtm(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
+	var res sres.Response = sres.Response{Status: true}
 
 	req.ParseForm()
 	p := pipeline.NewPipeline()
@@ -134,19 +136,18 @@ func upvoteAtm(w http.ResponseWriter, req *http.Request) {
 		res.Error(model.UpvoteAtmUcf(id))
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 /*NON-AUTH REQUIRED*/
 
 func getAtms(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Atms []model.Atm
 	}
 	res.Status = true
 
-	res.Error(model.Authenticate(req.Header.Get("Auth")))
 	if !res.Status {
 		res.Write(w)
 		return
@@ -156,7 +157,7 @@ func getAtms(w http.ResponseWriter, req *http.Request) {
 		res.Atms = model.AllAtms()
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func getAtmById(w http.ResponseWriter, req *http.Request) {
@@ -165,7 +166,7 @@ func getAtmById(w http.ResponseWriter, req *http.Request) {
 
 func getAtmInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Atms []model.Atm
 	}
 	res.Status = true
@@ -231,12 +232,12 @@ func getAtmInRange(w http.ResponseWriter, req *http.Request) {
 		res.Atms = model.AtmsInRange(location, max_range)
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func getAtm(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Service model.Atm
 	}
 	res.Status = true
@@ -274,12 +275,12 @@ func getAtm(w http.ResponseWriter, req *http.Request) {
 
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func getBanks(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Banks []model.Bank
 	}
 	res.Status = true
@@ -288,7 +289,7 @@ func getBanks(w http.ResponseWriter, req *http.Request) {
 		res.Banks = model.AllBanks()
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func HandleAtm(router *mux.Router) {
@@ -303,10 +304,10 @@ func HandleAtm(router *mux.Router) {
 
 	r := s.PathPrefix("/add").Subrouter()
 	r.HandleFunc("", addAtm).Methods("POST")
-	r.Use(Authenticate)
+	r.Use(middleware.Authenticate)
 
 	r = s.PathPrefix("/upvote").Subrouter()
 	r.HandleFunc("", upvoteAtm).Methods("POST")
-	r.Use(Authenticate)
+	r.Use(middleware.Authenticate)
 
 }

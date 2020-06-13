@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
+	"streelity/v1/router/sres"
 
 	"github.com/gorilla/mux"
 	"github.com/nvnamsss/goinf/pipeline"
@@ -17,7 +18,7 @@ func allMaintenanceHistory(w http.ResponseWriter, req *http.Request) {
 
 func getMaintenanceHistories(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Histories []model.MaintenanceHistory
 	}
 	res.Status = true
@@ -41,11 +42,11 @@ func getMaintenanceHistories(w http.ResponseWriter, req *http.Request) {
 	if res.Status {
 
 	}
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func removeMaintenanceHistory(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
+	var res sres.Response = sres.Response{Status: true}
 
 	req.ParseForm()
 	p := pipeline.NewPipeline()
@@ -72,7 +73,7 @@ func removeMaintenanceHistory(w http.ResponseWriter, req *http.Request) {
 		res.Error(model.RemoveMaintenanceHistoriesById(ids...))
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func HandleMaintenanceHistory(router *mux.Router) {

@@ -6,6 +6,10 @@ import (
 	"net/http"
 	"strconv"
 	"streelity/v1/model"
+	"streelity/v1/model/fuel"
+	"streelity/v1/router/middleware"
+	"streelity/v1/router/rfuel"
+	"streelity/v1/router/sres"
 
 	"github.com/golang/geo/r2"
 	"github.com/gorilla/mux"
@@ -14,7 +18,7 @@ import (
 
 /*AUTH REQUIRED*/
 func updateFuel(w http.ResponseWriter, req *http.Request) {
-	var res Response
+	var res sres.Response
 	res.Status = true
 
 	req.ParseForm()
@@ -74,12 +78,12 @@ func updateFuel(w http.ResponseWriter, req *http.Request) {
 
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func addFuel(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Service model.FuelUcf
 	}
 	res.Status = true
@@ -114,14 +118,132 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
+}
+
+func getFuelReview(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		sres.Response
+		Review []fuel.Review
+	}
+	res.Status = true
+	p := pipeline.NewPipeline()
+	stage := pipeline.NewStage(func() (str struct {
+		ReviewId int64
+		Order    int64
+	}, e error) {
+		query := req.URL.Query()
+
+		_, ok := query["review_id"]
+		if !ok {
+			return str, errors.New("review_id param is missing")
+		}
+
+		_, ok = query["order"]
+		if !ok {
+			return str, errors.New("order param is missing")
+		}
+
+		review_id, e := strconv.ParseInt(query["review_id"][0], 10, 64)
+		if e != nil {
+			return str, errors.New("review_id cannot parse to int64")
+		}
+
+		order, e := strconv.ParseInt(query["order"][0], 10, 64)
+		if e != nil {
+			return str, errors.New("order cannot parse to int64")
+		}
+
+		str.ReviewId = review_id
+		str.Order = order
+		return
+	})
+
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		review_id := p.GetIntFirstOrDefault("ReviewId")
+		order := p.GetIntFirstOrDefault("Order")
+
+		fuel.ReviewByService(review_id, order, 5)
+	}
+}
+
+func addFuelReview(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		sres.Response
+		Review fuel.Review
+	}
+	res.Status = true
+	req.ParseForm()
+	p := pipeline.NewPipeline()
+	stage := pipeline.NewStage(func() (str struct {
+		ServiceId int64
+		Commenter int64
+		Score     float32
+		Body      string
+	}, e error) {
+		form := req.PostForm
+
+		if _, ok := form["service_id"]; !ok {
+			return str, errors.New("service_id param is missing")
+		}
+
+		if _, ok := form["commenter"]; !ok {
+			return str, errors.New("commenter param is missing")
+		}
+
+		if _, ok := form["score"]; !ok {
+			return str, errors.New("score param is missing")
+		}
+
+		if _, ok := form["body"]; !ok {
+			return str, errors.New("body param is missing")
+		}
+
+		if i, e := strconv.ParseInt(form["service_id"][0], 10, 64); e == nil {
+			str.ServiceId = i
+		} else {
+			return str, errors.New("service_id cannot parse to int")
+		}
+
+		if i, e := strconv.ParseInt(form["commenter"][0], 10, 64); e == nil {
+			str.Commenter = i
+		} else {
+			return str, errors.New("commenter cannot parse to int")
+		}
+
+		if f, e := strconv.ParseFloat(form["score"][0], 32); e == nil {
+			str.Score = float32(f)
+		} else {
+			return str, errors.New("score cannot parse to float")
+		}
+
+		str.Body = form["body"][0]
+
+		return
+	})
+
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		service_id := p.GetIntFirstOrDefault("ServiceId")
+		commenter := p.GetIntFirstOrDefault("Commenter")
+		score := p.GetFloatFirstOrDefault("Score")
+		body := p.GetStringFirstOrDefault("Body")
+		res.Error(fuel.CreateReview(service_id, commenter, float32(score), body))
+	}
+
+	sres.WriteJson(w, res)
 }
 
 /*NON-AUTH REQUIRED*/
 
 func getFuels(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Fuels []model.Fuel
 	}
 
@@ -131,7 +253,7 @@ func getFuels(w http.ResponseWriter, req *http.Request) {
 
 	log.Println("[GetFuels]", res.Fuels)
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 //getFuelInRange process the in-range query. the request must provide there
@@ -142,7 +264,7 @@ func getFuels(w http.ResponseWriter, req *http.Request) {
 //
 func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Fuels []model.Fuel
 	}
 
@@ -208,11 +330,11 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 		res.Fuels = model.FuelsInRange(location, max_range)
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func upvoteFuel(w http.ResponseWriter, req *http.Request) {
-	var res Response = Response{Status: true}
+	var res sres.Response = sres.Response{Status: true}
 
 	req.ParseForm()
 	p := pipeline.NewPipeline()
@@ -235,12 +357,12 @@ func upvoteFuel(w http.ResponseWriter, req *http.Request) {
 		res.Error(model.UpvoteFuelUcf(id))
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func getFuel(w http.ResponseWriter, req *http.Request) {
 	var res struct {
-		Response
+		sres.Response
 		Service model.Fuel
 	}
 	res.Status = true
@@ -278,7 +400,7 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 
 	}
 
-	WriteJson(w, res)
+	sres.WriteJson(w, res)
 }
 
 func HandleFuel(router *mux.Router) {
@@ -289,11 +411,14 @@ func HandleFuel(router *mux.Router) {
 	s.HandleFunc("/range", getFuelInRange).Methods("GET")
 	s.HandleFunc("/", getFuel).Methods("GET")
 
+	rfuel.Handle(s)
+	// s.HandleFunc("/review", addFuelReview).Methods("POST")
+
 	r := s.PathPrefix("/add").Subrouter()
 	r.HandleFunc("", addFuel).Methods("POST")
-	r.Use(Authenticate)
+	r.Use(middleware.Authenticate)
 
 	r = s.PathPrefix("/upvote").Subrouter()
 	r.HandleFunc("", upvoteFuel).Methods("POST")
-	r.Use(Authenticate)
+	r.Use(middleware.Authenticate)
 }
