@@ -61,30 +61,7 @@ func UpdateReview(w http.ResponseWriter, req *http.Request) {
 
 	req.ParseForm()
 	p := pipeline.NewPipeline()
-	stage := pipeline.NewStage(func() (str struct {
-		ReviewId int64
-		NewBody  string
-	}, e error) {
-		form := req.PostForm
-		review_ids, ok := form["review_id"]
-		if !ok {
-			return str, errors.New("review_id param is missing")
-		}
-
-		bodies, ok := form["new_body"]
-		if !ok {
-			return str, errors.New("new_body param is missing")
-		}
-
-		review_id, e := strconv.ParseInt(review_ids[0], 10, 64)
-		if e != nil {
-			return str, errors.New("review_id param cannot parse to int64")
-		}
-
-		str.ReviewId = review_id
-		str.NewBody = bodies[0]
-		return
-	})
+	stage := stages.UpdateReviewValidateStage(req)
 
 	p.First = stage
 	res.Error(p.Run())
@@ -112,36 +89,7 @@ func ReviewByServiceId(w http.ResponseWriter, req *http.Request) {
 	res.Status = true
 
 	p := pipeline.NewPipeline()
-	stage := pipeline.NewStage(func() (str struct {
-		ServiceId int64
-		Order     int64
-	}, e error) {
-		query := req.URL.Query()
-
-		_, ok := query["review_id"]
-		if !ok {
-			return str, errors.New("review_id param is missing")
-		}
-
-		_, ok = query["order"]
-		if !ok {
-			return str, errors.New("order param is missing")
-		}
-
-		review_id, e := strconv.ParseInt(query["review_id"][0], 10, 64)
-		if e != nil {
-			return str, errors.New("review_id cannot parse to int64")
-		}
-
-		order, e := strconv.ParseInt(query["order"][0], 10, 64)
-		if e != nil {
-			return str, errors.New("order cannot parse to int64")
-		}
-
-		str.ServiceId = review_id
-		str.Order = order
-		return
-	})
+	stage := stages.ReviewByOrderValidate(req)
 
 	p.First = stage
 	res.Error(p.Run())
@@ -149,7 +97,8 @@ func ReviewByServiceId(w http.ResponseWriter, req *http.Request) {
 	if res.Status {
 		service_id := p.GetIntFirstOrDefault("ServiceId")
 		order := p.GetIntFirstOrDefault("Order")
-		if reviews, e := atm.ReviewByService(service_id, order, 5); e != nil {
+		limit := p.GetIntFirstOrDefault("Limit")
+		if reviews, e := atm.ReviewByService(service_id, order, limit); e != nil {
 			res.Error(e)
 		} else {
 			res.Reviews = reviews

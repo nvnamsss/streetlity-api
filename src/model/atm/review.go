@@ -2,6 +2,7 @@ package atm
 
 import (
 	"log"
+	"math"
 	"streelity/v1/model"
 
 	"github.com/jinzhu/gorm"
@@ -10,7 +11,7 @@ import (
 type Review struct {
 	Id        int64
 	ServiceId int64   `gorm:"column:service_id"`
-	Commenter int64   `gorm:"column:commenter"`
+	Reviewer  int64   `gorm:"column:commenter"`
 	Score     float32 `gorm:"column:score"`
 	Body      string  `gorm:"column:body"`
 	db        *gorm.DB
@@ -23,7 +24,7 @@ func (Review) TableName() string {
 func CreateReview(service_id int64, commenter int64, score float32, body string) (e error) {
 	var review Review = Review{}
 	review.ServiceId = service_id
-	review.Commenter = commenter
+	review.Reviewer = commenter
 	review.Score = score
 	review.Body = body
 
@@ -43,7 +44,11 @@ func DeleteReview(review_id int64) (e error) {
 	return
 }
 
-func ReviewByService(service_id, order int64, limit int) (reviews []Review, e error) {
+func ReviewByService(service_id, order int64, limit int64) (reviews []Review, e error) {
+	if limit < 0 {
+		limit = math.MaxInt64
+	}
+
 	if e := model.Db.Where("service_id=?", service_id).Offset(order).Limit(limit).Find(&reviews).Error; e != nil {
 		log.Println("[Database]", "get fuel reviews", e.Error())
 	}

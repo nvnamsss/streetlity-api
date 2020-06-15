@@ -3,6 +3,7 @@ package stages
 import (
 	"errors"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/nvnamsss/goinf/pipeline"
@@ -14,6 +15,8 @@ the pipeline in request handle*/
 //ServiceValidateStage create the validated stage for adding a new service
 func AddingServiceValidateStage(req *http.Request) *pipeline.Stage {
 	s := pipeline.NewStage(func() (str struct {
+		Lat     float64
+		Lon     float64
 		Address string
 		Note    string
 		Images  []string
@@ -35,40 +38,24 @@ func AddingServiceValidateStage(req *http.Request) *pipeline.Stage {
 			str.Address = form["address"][0]
 		}
 
-		_, ok := form["note"]
-		if ok {
-			str.Note = form["note"][0]
-		}
-
-		str.Images = form["images"]
-
-		return
-	})
-
-	return s
-}
-
-//AddingServiceParsingStage create the parsing stage for adding a new service
-func AddingServiceParsingStage(req *http.Request) *pipeline.Stage {
-	s := pipeline.NewStage(func() (str struct {
-		Lat float64
-		Lon float64
-	}, e error) {
-		var (
-			latErr error
-			lonErr error
-		)
-		form := req.PostForm
-
-		str.Lat, latErr = strconv.ParseFloat(form["location"][0], 64)
-		str.Lon, lonErr = strconv.ParseFloat(form["location"][1], 64)
+		lat, latErr := strconv.ParseFloat(form["location"][0], 64)
+		lon, lonErr := strconv.ParseFloat(form["location"][1], 64)
 		if latErr != nil {
 			return str, errors.New("cannot parse location[0] to float")
 		}
 		if lonErr != nil {
 			return str, errors.New("cannot parse location[1] to float")
 		}
-		return str, nil
+
+		_, ok := form["note"]
+		if ok {
+			str.Note = form["note"][0]
+		}
+
+		str.Images = form["images"]
+		str.Lat = lat
+		str.Lon = lon
+		return
 	})
 
 	return s
@@ -231,6 +218,7 @@ func ReviewByOrderValidate(req *http.Request) *pipeline.Stage {
 	stage := pipeline.NewStage(func() (str struct {
 		ServiceId int64
 		Order     int64
+		Limit     int64
 	}, e error) {
 		query := req.URL.Query()
 
@@ -244,6 +232,11 @@ func ReviewByOrderValidate(req *http.Request) *pipeline.Stage {
 			return str, errors.New("order param is missing")
 		}
 
+		_, ok = query["limit"]
+		if !ok {
+			return str, errors.New("limit param is missing")
+		}
+
 		review_id, e := strconv.ParseInt(query["review_id"][0], 10, 64)
 		if e != nil {
 			return str, errors.New("review_id cannot parse to int64")
@@ -254,8 +247,11 @@ func ReviewByOrderValidate(req *http.Request) *pipeline.Stage {
 			return str, errors.New("order cannot parse to int64")
 		}
 
+		limit, e := strconv.ParseInt(query["limit"][0], 10, 64)
+
 		str.ServiceId = review_id
 		str.Order = order
+		str.Limit = limit
 		return
 	})
 	return stage
@@ -306,6 +302,27 @@ func ReviewIdValidate(req *http.Request) *pipeline.Stage {
 		}
 
 		str.ReviewId = review_id
+		return
+	})
+
+	return stage
+}
+
+func IdValidateStage(values url.Values) *pipeline.Stage {
+	stage := pipeline.NewStage(func() (str struct {
+		Id int64
+	}, e error) {
+		_, ok := values["id"]
+		if !ok {
+			return str, errors.New("id param is missing")
+		}
+
+		if id, e := strconv.ParseInt(values["id"][0], 10, 64); e != nil {
+			return str, errors.New("id cannot parse to int")
+		} else {
+			str.Id = id
+		}
+
 		return
 	})
 

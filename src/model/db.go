@@ -66,15 +66,24 @@ func reconnect() {
 	connect()
 }
 
+func Connect() {
+	OnDisconnect.Subscribe(reconnect)
+	go connect()
+}
+
+//Synchronous connect to the database
+func ConnectSync() {
+	OnDisconnect.Subscribe(reconnect)
+	connect()
+}
+
 func init() {
 	// _, b, _, _ := runtime.Caller(0)
 	// basepath := filepath.Dir(b)
 	// configPath := filepath.Join(filepath.Dir(basepath), "config", "config.json")
 
 	// loadConfig(configPath)
-	OnDisconnect.Subscribe(reconnect)
 	// OnConnected.Subscribe(LoadService)
-	go connect()
 
-	log.Println("Hi mom init db")
+	// log.Println("Hi mom init db")
 }

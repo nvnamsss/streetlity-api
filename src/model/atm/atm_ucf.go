@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"streelity/v1/model"
+	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
@@ -15,6 +16,7 @@ type AtmUcf struct {
 }
 
 var confident int = 1
+var ucf_services spatial.RTree
 
 //TableName determine the table name in database which is using for gorm
 func (AtmUcf) TableName() string {
@@ -101,13 +103,50 @@ func AddAtmUcf(s AtmUcf) (e error) {
 	return
 }
 
+//UcfInRange query the unconfirmed atm services that are in the radius of a location
+func UcfInRange(p r2.Point, max_range float64) []AtmUcf {
+	var result []AtmUcf = []AtmUcf{}
+	trees := services.InRange(p, max_range)
+
+	for _, tree := range trees {
+		for _, item := range tree.Items {
+			location := item.Location()
+
+			d := distance(location, p)
+			s, isFuel := item.(AtmUcf)
+			if isFuel && d < max_range {
+				result = append(result, s)
+			}
+		}
+	}
+	return result
+}
+
 func (s *AtmUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident >= confident {
 		var a Atm = Atm{Service: s.GetService(), BankId: s.BankId}
 		AddAtm(a)
 		scope.DB().Delete(s)
 		log.Println("[Unconfirmed Atm]", "Confident is enough. Added", a)
+	} else {
+		ucf_services.AddItem(s)
 	}
 
 	return
+}
+
+func LoadUnconfirmedService() {
+	log.Println("[Maintenance]", "Loading unconfirmed service")
+
+	maintenances := AllAtmUcfs()
+	for _, service := range maintenances {
+		ucf_services.AddItem(service)
+	}
+}
+
+func init() {
+	model.OnConnected.Subscribe(LoadUnconfirmedService)
+	model.OnDisconnect.Subscribe(func() {
+		model.OnConnected.Unsubscribe(LoadUnconfirmedService)
+	})
 }

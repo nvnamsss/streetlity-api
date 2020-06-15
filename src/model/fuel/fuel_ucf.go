@@ -4,11 +4,14 @@ import (
 	"errors"
 	"log"
 	"streelity/v1/model"
+	"streelity/v1/spatial"
 
+	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
 )
 
 var confident int = 5
+var ucf_services spatial.RTree
 
 //FuelUcf representation the Fuel service which is not confirmed
 type FuelUcf struct {
@@ -17,6 +20,11 @@ type FuelUcf struct {
 
 func (FuelUcf) TableName() string {
 	return "fuel_ucf"
+}
+
+func (s FuelUcf) Location() r2.Point {
+	var p r2.Point = r2.Point{X: float64(s.Lat), Y: float64(s.Lon)}
+	return p
 }
 
 //AllFuelsUcf query all unconfirmed fuel services
@@ -59,6 +67,34 @@ func FuelUcfByService(s model.ServiceUcf) (service FuelUcf, e error) {
 	return queryFuelUcf(service)
 }
 
+func DeleteUcf(id int64) (e error) {
+	ucf := FuelUcf{model.ServiceUcf{Id: id}}
+	if e := model.Db.Delete(&ucf).Error; e != nil {
+		log.Println("[Database]", "delete ucf fuel", e.Error())
+	}
+
+	return
+}
+
+//UcfInRange query the unconfirmed fuel services that are in the radius of a location
+func UcfInRange(p r2.Point, max_range float64) []FuelUcf {
+	var result []FuelUcf = []FuelUcf{}
+	trees := services.InRange(p, max_range)
+
+	for _, tree := range trees {
+		for _, item := range tree.Items {
+			location := item.Location()
+
+			d := distance(location, p)
+			s, isFuel := item.(FuelUcf)
+			if isFuel && d < max_range {
+				result = append(result, s)
+			}
+		}
+	}
+	return result
+}
+
 //FuelUcfById query the fuel service by specific id
 func FuelUcfById(id int64) (service FuelUcf, e error) {
 	if e = model.Db.Find(&service, id).Error; e != nil {
@@ -98,7 +134,25 @@ func (s *FuelUcf) AfterSave(scope *gorm.Scope) (err error) {
 		AddFuel(f)
 		scope.DB().Delete(s)
 		log.Println("[Unconfirmed Fuel]", "Confident is enough. Added", f)
+	} else {
+		ucf_services.AddItem(s)
 	}
 
 	return
+}
+
+func LoadUnconfirmedService() {
+	log.Println("[Fuel]", "Loading unconfirmed service")
+
+	fuels := AllFuelsUcf()
+	for _, fuel := range fuels {
+		ucf_services.AddItem(fuel)
+	}
+}
+
+func init() {
+	model.OnConnected.Subscribe(LoadUnconfirmedService)
+	model.OnDisconnect.Subscribe(func() {
+		model.OnConnected.Unsubscribe(LoadService)
+	})
 }

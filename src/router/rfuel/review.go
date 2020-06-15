@@ -118,9 +118,9 @@ func ReviewByServiceId(w http.ResponseWriter, req *http.Request) {
 	}, e error) {
 		query := req.URL.Query()
 
-		_, ok := query["review_id"]
+		_, ok := query["service_id"]
 		if !ok {
-			return str, errors.New("review_id param is missing")
+			return str, errors.New("service_id param is missing")
 		}
 
 		_, ok = query["order"]
@@ -182,11 +182,17 @@ func CreateReview(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
+func DeleteReview(w http.ResponseWriter, req *http.Request) {
+
+}
+
 func Handle(router *mux.Router) {
 	log.Println("[Router]", "Handling review fuel")
 	s := router.PathPrefix("/review").Subrouter()
 
 	s.HandleFunc("/", ReviewById).Methods("GET")
 	s.HandleFunc("/", UpdateReview).Methods("POST")
+	s.HandleFunc("/", DeleteReview).Methods("DELETE")
+	s.HandleFunc("/query", ReviewByServiceId).Methods("GET")
 	s.HandleFunc("/create", CreateReview).Methods("POST")
 }

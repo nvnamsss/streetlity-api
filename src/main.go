@@ -7,6 +7,7 @@ import (
 	"net/http"
 	"os"
 	"os/signal"
+	"streelity/v1/model"
 	"streelity/v1/router"
 	"time"
 
@@ -25,6 +26,7 @@ func main() {
 
 	loggedRouter := handlers.LoggingHandler(os.Stdout, Router)
 
+	model.Connect()
 	router.Handle(Router)
 	Server := &http.Server{
 		Addr:         "0.0.0.0:9000",

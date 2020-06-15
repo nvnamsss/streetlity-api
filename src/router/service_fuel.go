@@ -93,9 +93,6 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
 	validateParamsStage := stages.AddingServiceValidateStage(req)
-	parseValueStage := stages.AddingServiceParsingStage(req)
-
-	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
 
@@ -412,7 +409,7 @@ func HandleFuel(router *mux.Router) {
 	s.HandleFunc("/range", getFuelInRange).Methods("GET")
 	s.HandleFunc("/", getFuel).Methods("GET")
 
-	rfuel.Handle(s)
+	rfuel.HandleReview(s)
 	// s.HandleFunc("/review", addFuelReview).Methods("POST")
 
 	r := s.PathPrefix("/add").Subrouter()

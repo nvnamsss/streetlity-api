@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"streelity/v1/model"
+	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
@@ -14,6 +15,7 @@ type ToiletUcf struct {
 }
 
 var confident int = 5
+var ucf_services spatial.RTree
 
 //TableName determine the table name in database which is using for gorm
 func (ToiletUcf) TableName() string {
@@ -98,6 +100,25 @@ func AddToiletUcf(s ToiletUcf) (e error) {
 	return
 }
 
+//UcfInRange query the unconfirmed fuel services that are in the radius of a location
+func UcfInRange(p r2.Point, max_range float64) []ToiletUcf {
+	var result []ToiletUcf = []ToiletUcf{}
+	trees := services.InRange(p, max_range)
+
+	for _, tree := range trees {
+		for _, item := range tree.Items {
+			location := item.Location()
+
+			d := distance(location, p)
+			s, isService := item.(ToiletUcf)
+			if isService && d < max_range {
+				result = append(result, s)
+			}
+		}
+	}
+	return result
+}
+
 //AfterSave automatically run everytime the update transaction is done
 func (s *ToiletUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident >= confident {
@@ -108,4 +129,20 @@ func (s *ToiletUcf) AfterSave(scope *gorm.Scope) (err error) {
 	}
 
 	return
+}
+
+func LoadUcfService() {
+	log.Println("[Maintenance]", "Loading unconfirmed service")
+
+	toilets := AllToiletUcfs()
+	for _, service := range toilets {
+		services.AddItem(service)
+	}
+}
+
+func init() {
+	model.OnConnected.Subscribe(LoadUcfService)
+	model.OnDisconnect.Subscribe(func() {
+		model.OnConnected.Unsubscribe(LoadUcfService)
+	})
 }

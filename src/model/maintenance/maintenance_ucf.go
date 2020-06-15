@@ -105,6 +105,25 @@ func MaintenanceUcfById(id int64) (service MaintenanceUcf, e error) {
 	return
 }
 
+//UcfInRange query the unconfirmed fuel services that are in the radius of a location
+func UcfInRange(p r2.Point, max_range float64) []MaintenanceUcf {
+	var result []MaintenanceUcf = []MaintenanceUcf{}
+	trees := services.InRange(p, max_range)
+
+	for _, tree := range trees {
+		for _, item := range tree.Items {
+			location := item.Location()
+
+			d := distance(location, p)
+			s, isFuel := item.(MaintenanceUcf)
+			if isFuel && d < max_range {
+				result = append(result, s)
+			}
+		}
+	}
+	return result
+}
+
 func (s *MaintenanceUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident >= confident {
 		var m Maintenance = Maintenance{Service: s.GetService(), Name: s.Name}
@@ -114,4 +133,20 @@ func (s *MaintenanceUcf) AfterSave(scope *gorm.Scope) (err error) {
 	}
 
 	return
+}
+
+func LoadUcfService() {
+	log.Println("[Maintenance]", "Loading unconfirmed service")
+
+	maintenances := AllMaintenanceUcfs()
+	for _, service := range maintenances {
+		services.AddItem(service)
+	}
+}
+
+func init() {
+	model.OnConnected.Subscribe(LoadUcfService)
+	model.OnDisconnect.Subscribe(func() {
+		model.OnConnected.Unsubscribe(LoadUcfService)
+	})
 }
