@@ -24,9 +24,6 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
 	validateParamsStage := stages.AddingServiceValidateStage(req)
-	parseValueStage := stages.AddingServiceParsingStage(req)
-
-	validateParamsStage.NextStage(parseValueStage)
 	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
 

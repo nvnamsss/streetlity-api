@@ -132,7 +132,7 @@ func (s *ToiletUcf) AfterSave(scope *gorm.Scope) (err error) {
 }
 
 func LoadUcfService() {
-	log.Println("[Maintenance]", "Loading unconfirmed service")
+	log.Println("[Toilet]", "Loading unconfirmed service")
 
 	toilets := AllToiletUcfs()
 	for _, service := range toilets {

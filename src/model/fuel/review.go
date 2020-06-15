@@ -17,8 +17,10 @@ type Review struct {
 	db        *gorm.DB
 }
 
+const ReviewTableName = "fuel_review"
+
 func (Review) TableName() string {
-	return "fuel_review"
+	return ReviewTableName
 }
 
 func CreateReview(service_id int64, commenter int64, score float32, body string) (e error) {
@@ -62,6 +64,14 @@ func ReviewByService(service_id, order int64, limit int) (reviews []Review, e er
 func ReviewById(review_id int64) (review Review, e error) {
 	if e := model.Db.Where("id=?", review_id).Find(&review).Error; e != nil {
 		log.Println("[Database]", "fuel review by id", e.Error())
+	}
+
+	return
+}
+
+func ReviewAverageScore(service_id int64) (average float64) {
+	if e := model.Db.Table(ReviewTableName).Select("avg(score)").Where("service_id=?", service_id).Row().Scan(&average); e != nil {
+		log.Println("[Database]", "fuel review average score", e.Error())
 	}
 
 	return

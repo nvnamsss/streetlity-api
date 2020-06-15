@@ -1,8 +1,12 @@
-package rtoilet
+package rmaintenance
 
 import (
+	"errors"
+	"log"
 	"net/http"
-	"streelity/v1/model/toilet"
+	"strconv"
+	"streelity/v1/model/atm"
+	"streelity/v1/model/maintenance"
 	"streelity/v1/router/sres"
 	"streelity/v1/router/stages"
 
@@ -13,18 +17,34 @@ import (
 func ReviewById(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Review toilet.Review
+		Review maintenance.Review
 	}
 	res.Status = true
 	p := pipeline.NewPipeline()
-	stage := stages.ReviewIdValidate(req)
+	stage := pipeline.NewStage(func() (str struct {
+		ReviewId int64
+	}, e error) {
+		form := req.PostForm
+		review_ids, ok := form["review_id"]
+		if !ok {
+			return str, errors.New("review_id param is missing")
+		}
+
+		review_id, e := strconv.ParseInt(review_ids[0], 10, 64)
+		if e != nil {
+			return str, errors.New("review_id param cannot parse to int64")
+		}
+
+		str.ReviewId = review_id
+		return
+	})
 
 	p.First = stage
 	res.Error(p.Run())
 
 	if res.Status {
 		review_id := p.GetIntFirstOrDefault("ReviewId")
-		if review, e := toilet.ReviewById(review_id); e != nil {
+		if review, e := maintenance.ReviewById(review_id); e != nil {
 			res.Error(e)
 		} else {
 			res.Review = review
@@ -33,11 +53,10 @@ func ReviewById(w http.ResponseWriter, req *http.Request) {
 
 	sres.WriteJson(w, res)
 }
-
 func UpdateReview(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Review toilet.Review
+		Review maintenance.Review
 	}
 	res.Status = true
 
@@ -52,7 +71,7 @@ func UpdateReview(w http.ResponseWriter, req *http.Request) {
 		review_id := p.GetIntFirstOrDefault("ReviewId")
 		new_body := p.GetStringFirstOrDefault("NewBody")
 
-		if review, e := toilet.ReviewById(review_id); e != nil {
+		if review, e := maintenance.ReviewById(review_id); e != nil {
 			res.Error(e)
 		} else {
 			review.Body = new_body
@@ -66,7 +85,7 @@ func UpdateReview(w http.ResponseWriter, req *http.Request) {
 func ReviewByServiceId(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Reviews []toilet.Review
+		Reviews []maintenance.Review
 	}
 	res.Status = true
 
@@ -79,7 +98,7 @@ func ReviewByServiceId(w http.ResponseWriter, req *http.Request) {
 	if res.Status {
 		service_id := p.GetIntFirstOrDefault("ServiceId")
 		order := p.GetIntFirstOrDefault("Order")
-		if reviews, e := toilet.ReviewByService(service_id, order, 5); e != nil {
+		if reviews, e := maintenance.ReviewByService(service_id, order, 5); e != nil {
 			res.Error(e)
 		} else {
 			res.Reviews = reviews
@@ -92,7 +111,7 @@ func ReviewByServiceId(w http.ResponseWriter, req *http.Request) {
 func CreateReview(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Review toilet.Review
+		Review maintenance.Review
 	}
 	res.Status = true
 	req.ParseForm()
@@ -107,7 +126,7 @@ func CreateReview(w http.ResponseWriter, req *http.Request) {
 		commenter := p.GetIntFirstOrDefault("Commenter")
 		score := p.GetFloatFirstOrDefault("Score")
 		body := p.GetStringFirstOrDefault("Body")
-		res.Error(toilet.CreateReview(service_id, commenter, float32(score), body))
+		res.Error(atm.CreateReview(service_id, commenter, float32(score), body))
 	}
 
 	sres.WriteJson(w, res)
@@ -126,13 +145,14 @@ func ReviewAverageScore(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		service_id := p.GetIntFirstOrDefault("ServiceId")
-		res.Value = toilet.ReviewAverageScore(service_id)
+		res.Value = maintenance.ReviewAverageScore(service_id)
 	}
 
 	sres.WriteJson(w, res)
 }
 
 func Handle(router *mux.Router) {
+	log.Println("[Router]", "Handling review maintenance")
 	s := router.PathPrefix("/review").Subrouter()
 
 	s.HandleFunc("/", ReviewById).Methods("GET")

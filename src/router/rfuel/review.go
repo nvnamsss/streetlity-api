@@ -186,7 +186,26 @@ func DeleteReview(w http.ResponseWriter, req *http.Request) {
 
 }
 
-func Handle(router *mux.Router) {
+func ReviewAverageScore(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		sres.Response
+		Value float64
+	}
+	res.Status = true
+	p := pipeline.NewPipeline()
+	stage := stages.ServiceIdValidate(req)
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		service_id := p.GetIntFirstOrDefault("ServiceId")
+		res.Value = fuel.ReviewAverageScore(service_id)
+	}
+
+	sres.WriteJson(w, res)
+}
+
+func HandleReview(router *mux.Router) {
 	log.Println("[Router]", "Handling review fuel")
 	s := router.PathPrefix("/review").Subrouter()
 
@@ -195,4 +214,5 @@ func Handle(router *mux.Router) {
 	s.HandleFunc("/", DeleteReview).Methods("DELETE")
 	s.HandleFunc("/query", ReviewByServiceId).Methods("GET")
 	s.HandleFunc("/create", CreateReview).Methods("POST")
+	s.HandleFunc("/score", ReviewAverageScore).Methods("GET")
 }

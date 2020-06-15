@@ -136,7 +136,7 @@ func (s *AtmUcf) AfterSave(scope *gorm.Scope) (err error) {
 }
 
 func LoadUnconfirmedService() {
-	log.Println("[Maintenance]", "Loading unconfirmed service")
+	log.Println("[ATM]", "Loading unconfirmed service")
 
 	maintenances := AllAtmUcfs()
 	for _, service := range maintenances {

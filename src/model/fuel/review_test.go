@@ -1,6 +1,7 @@
 package fuel_test
 
 import (
+	"log"
 	"streelity/v1/model"
 	"streelity/v1/model/fuel"
 	"testing"
@@ -23,4 +24,14 @@ func TestCreateReview(t *testing.T) {
 	}
 
 	t.Logf("Completed")
+}
+
+func TestReviewAverageScore(t *testing.T) {
+	model.ConnectSync()
+
+	average := fuel.ReviewAverageScore(6)
+
+	log.Println(average)
+
+	t.Error("Completed")
 }

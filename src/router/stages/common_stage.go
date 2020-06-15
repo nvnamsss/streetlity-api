@@ -308,6 +308,28 @@ func ReviewIdValidate(req *http.Request) *pipeline.Stage {
 	return stage
 }
 
+func ServiceIdValidate(req *http.Request) *pipeline.Stage {
+	stage := pipeline.NewStage(func() (str struct {
+		ServiceId int64
+	}, e error) {
+		form := req.PostForm
+		service_ids, ok := form["service_id"]
+		if !ok {
+			return str, errors.New("service_id param is missing")
+		}
+
+		service_id, e := strconv.ParseInt(service_ids[0], 10, 64)
+		if e != nil {
+			return str, errors.New("service_id param cannot parse to int64")
+		}
+
+		str.ServiceId = service_id
+		return
+	})
+
+	return stage
+}
+
 func IdValidateStage(values url.Values) *pipeline.Stage {
 	stage := pipeline.NewStage(func() (str struct {
 		Id int64

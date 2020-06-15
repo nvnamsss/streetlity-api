@@ -132,6 +132,25 @@ func CreateReview(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
+func ReviewAverageScore(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		sres.Response
+		Value float64
+	}
+	res.Status = true
+	p := pipeline.NewPipeline()
+	stage := stages.ServiceIdValidate(req)
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		service_id := p.GetIntFirstOrDefault("ServiceId")
+		res.Value = atm.ReviewAverageScore(service_id)
+	}
+
+	sres.WriteJson(w, res)
+}
+
 func Handle(router *mux.Router) {
 	log.Println("[Router]", "Handling review atm")
 	s := router.PathPrefix("/review").Subrouter()
@@ -139,4 +158,6 @@ func Handle(router *mux.Router) {
 	s.HandleFunc("/", ReviewById).Methods("GET")
 	s.HandleFunc("/", UpdateReview).Methods("POST")
 	s.HandleFunc("/create", CreateReview).Methods("POST")
+	s.HandleFunc("/query", ReviewByServiceId).Methods("GET")
+	s.HandleFunc("/score", ReviewAverageScore).Methods("GET")
 }
