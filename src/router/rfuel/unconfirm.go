@@ -16,7 +16,7 @@ func GetAllUnconfirmed(w http.ResponseWriter, req *http.Request) {
 		sres.Response
 		Services []fuel.FuelUcf
 	}
-	res.Services = fuel.AllFuelsUcf()
+	res.Services = fuel.AllUcfs()
 	sres.WriteJson(w, res)
 }
 
@@ -33,7 +33,7 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := p.GetIntFirstOrDefault("Id")
-		fuel.UpvoteFuelUcf(id)
+		fuel.UpvoteUcf(id)
 	}
 
 	sres.WriteJson(w, req)
@@ -80,7 +80,7 @@ func DeleteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 }
 
 func HandleUnconfirmed(router *mux.Router) {
-	s := router.PathPrefix("/ucf").Subrouter()
+	s := router.PathPrefix("/fuel_ucf").Subrouter()
 
 	s.HandleFunc("/", GetAllUnconfirmed).Methods("GET")
 	s.HandleFunc("/", DeleteUnconfirmed).Methods("DELETE")
