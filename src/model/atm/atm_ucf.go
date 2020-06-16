@@ -15,14 +15,14 @@ type AtmUcf struct {
 	BankId int64 `gorm:"column:bank_id"`
 }
 
-const AtmUcfTableName = "atm_ucf"
+const UcfServiceTableName = "atm_ucf"
 
 var confident int = 1
 var ucf_services spatial.RTree
 
 //TableName determine the table name in database which is using for gorm
 func (AtmUcf) TableName() string {
-	return AtmUcfTableName
+	return UcfServiceTableName
 }
 
 //Location determine the location of service as r2.Point
@@ -31,8 +31,8 @@ func (s AtmUcf) Location() r2.Point {
 	return p
 }
 
-//AllAtmUcfs query all the AtmUcf serivces
-func AllAtmUcfs() []AtmUcf {
+//AllUcfs query all the AtmUcf serivces
+func AllUcfs() []AtmUcf {
 	var services []AtmUcf
 	model.Db.Find(&services)
 
@@ -49,13 +49,13 @@ func queryAtmUcf(s AtmUcf) (service AtmUcf, e error) {
 	return
 }
 
-func AtmUcfByService(s model.ServiceUcf) (service AtmUcf, e error) {
+func UcfByService(s model.ServiceUcf) (service AtmUcf, e error) {
 	service.ServiceUcf = s
 	return queryAtmUcf(service)
 }
 
-//AtmUcfById query the AtmUcf service by specific id
-func AtmUcfById(id int64) (service AtmUcf, e error) {
+//UcfById query the AtmUcf service by specific id
+func UcfById(id int64) (service AtmUcf, e error) {
 	db := model.Db.Find(&service, id)
 	if e := db.Error; e != nil {
 		log.Println("[Database]", "Atm service", id, ":", e.Error())
@@ -69,17 +69,17 @@ func AtmUcfById(id int64) (service AtmUcf, e error) {
 	return
 }
 
-//UpvoteAtmUcf upvote the unconfirmed atm by specific id
-func UpvoteAtmUcf(id int64) error {
+//UpvoteUcf upvote the unconfirmed atm by specific id
+func UpvoteUcf(id int64) error {
 	return upvoteAtmUcf(id, 1)
 }
 
-func UpvoteAtmUcfImmediately(id int64) error {
+func UpvoteAtmImmediately(id int64) error {
 	return upvoteAtmUcf(id, confident)
 }
 
 func upvoteAtmUcf(id int64, value int) (e error) {
-	s, e := AtmUcfById(id)
+	s, e := UcfById(id)
 
 	if e != nil {
 		return e
@@ -93,10 +93,10 @@ func upvoteAtmUcf(id int64, value int) (e error) {
 	return
 }
 
-//AddAtmUcf add new AtmUcf service to the database
+//CreateUcf add new AtmUcf service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddAtmUcf(s AtmUcf) (e error) {
+func CreateUcf(s AtmUcf) (e error) {
 	var existed AtmUcf
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&existed).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
@@ -107,7 +107,7 @@ func AddAtmUcf(s AtmUcf) (e error) {
 	}
 
 	//Temporal
-	UpvoteAtmUcf(s.Id)
+	UpvoteUcf(s.Id)
 	return
 }
 
@@ -156,7 +156,7 @@ func (s *AtmUcf) AfterSave(scope *gorm.Scope) (err error) {
 func LoadUnconfirmedService() {
 	log.Println("[ATM]", "Loading unconfirmed service")
 
-	maintenances := AllAtmUcfs()
+	maintenances := AllUcfs()
 	for _, service := range maintenances {
 		ucf_services.AddItem(service)
 	}

@@ -27,8 +27,8 @@ func (s MaintenanceUcf) Location() r2.Point {
 	return p
 }
 
-//AllMaintenanceUcfs query all maintenance services
-func AllMaintenanceUcfs() []MaintenanceUcf {
+//AllUcfs query all maintenance services
+func AllUcfs() []MaintenanceUcf {
 	var services []MaintenanceUcf
 	if e := model.Db.Find(&services).Error; e != nil {
 		log.Println("[Database]", "All maintenance service", e.Error())
@@ -37,8 +37,8 @@ func AllMaintenanceUcfs() []MaintenanceUcf {
 	return services
 }
 
-//UpvoteMaintenanceUcfById upvote the unconfirmed maintainer by specific id
-func UpvoteMaintenanceUcfById(id int64) (e error) {
+//UpvoteUcfById upvote the unconfirmed maintainer by specific id
+func UpvoteUcfById(id int64) (e error) {
 	return upvoteMaintenanceUcf(id, 1)
 }
 
@@ -49,7 +49,7 @@ func UpvoteMaintenanceUcfByIdImmediately(id int64) (e error) {
 }
 
 func upvoteMaintenanceUcf(id int64, value int) (e error) {
-	s, e := MaintenanceUcfById(id)
+	s, e := UcfById(id)
 
 	if e != nil {
 		return e
@@ -63,10 +63,10 @@ func upvoteMaintenanceUcf(id int64, value int) (e error) {
 	return
 }
 
-//AddMaintenanceUcf add new unconfirmed maintainer service to the database
+//CreateUcf add new unconfirmed maintainer service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddMaintenanceUcf(s MaintenanceUcf) (e error) {
+func CreateUcf(s MaintenanceUcf) (e error) {
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&MaintenanceUcf{}).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
@@ -76,7 +76,7 @@ func AddMaintenanceUcf(s MaintenanceUcf) (e error) {
 	}
 
 	//Temporal
-	UpvoteMaintenanceUcfById(s.Id)
+	UpvoteUcfById(s.Id)
 	return
 }
 
@@ -90,16 +90,16 @@ func queryMaintenanceUcf(s MaintenanceUcf) (service MaintenanceUcf, e error) {
 	return
 }
 
-func MaintenaceUcfByService(s model.ServiceUcf) (service MaintenanceUcf, e error) {
+func UcfByService(s model.ServiceUcf) (service MaintenanceUcf, e error) {
 	service.ServiceUcf = s
 	return queryMaintenanceUcf(service)
 }
 
-func MaintenanceUcfByAddress() {
+func UcfByAddress() {
 }
 
-//MaintenanceUcfById query the unconfirmed maintainer service by specific id
-func MaintenanceUcfById(id int64) (service MaintenanceUcf, e error) {
+//UcfById query the unconfirmed maintainer service by specific id
+func UcfById(id int64) (service MaintenanceUcf, e error) {
 	db := model.Db.Find(&service, id)
 	if e := db.Error; e != nil {
 		log.Println("[Database]", "Maintenance service", id, ":", e.Error())
@@ -156,7 +156,7 @@ func (s *MaintenanceUcf) AfterSave(scope *gorm.Scope) (err error) {
 func LoadUcfService() {
 	log.Println("[Maintenance]", "Loading unconfirmed service")
 
-	maintenances := AllMaintenanceUcfs()
+	maintenances := AllUcfs()
 	for _, service := range maintenances {
 		services.AddItem(service)
 	}

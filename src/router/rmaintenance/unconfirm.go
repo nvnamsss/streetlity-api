@@ -2,7 +2,6 @@ package rmaintenance
 
 import (
 	"net/http"
-	"streelity/v1/model/fuel"
 	"streelity/v1/model/maintenance"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
@@ -34,7 +33,7 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := p.GetIntFirstOrDefault("Id")
-		fuel.UpvoteFuelUcf(id)
+		maintenance.UpvoteMaintenanceUcfById(id)
 	}
 
 	sres.WriteJson(w, req)

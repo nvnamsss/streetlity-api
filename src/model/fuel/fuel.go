@@ -33,18 +33,18 @@ func (s Fuel) Location() r2.Point {
 	return p
 }
 
-//AllFuels query all fuel services
-func AllFuels() []Fuel {
+//AllServices query all fuel services
+func AllServices() []Fuel {
 	var services []Fuel
 	model.Db.Find(&services)
 
 	return services
 }
 
-//AddFuel add new fuel service to the database
+//AddServices add new fuel service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddFuel(s Fuel) (e error) {
+func AddServices(s Fuel) (e error) {
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Fuel{}).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
@@ -66,14 +66,14 @@ func queryFuel(s Fuel) (service Fuel, e error) {
 	return
 }
 
-//FuelByService get fuel by provide model.Service
-func FuelByService(s model.Service) (services Fuel, e error) {
+//ServiceByService get fuel by provide model.Service
+func ServiceByService(s model.Service) (services Fuel, e error) {
 	services.Service = s
 	return queryFuel(services)
 }
 
-//FuelById query the fuel service by specific id
-func FuelById(id int64) (service Fuel, e error) {
+//ServiceById query the fuel service by specific id
+func ServiceById(id int64) (service Fuel, e error) {
 	db := model.Db.Find(&service, id)
 	if e := db.Error; e != nil {
 		log.Println("[Database]", "Fuel service", id, ":", e.Error())
@@ -88,9 +88,9 @@ func FuelById(id int64) (service Fuel, e error) {
 }
 
 //ToiletByIds query the toilets service by specific id
-func FuelByIds(ids ...int64) (services []Fuel) {
+func ServicesByIds(ids ...int64) (services []Fuel) {
 	for _, id := range ids {
-		s, e := FuelById(id)
+		s, e := ServiceById(id)
 		if e != nil {
 			continue
 		}
@@ -137,7 +137,7 @@ func (s Fuel) AfterCreate(scope *gorm.Scope) (e error) {
 func LoadService() {
 	log.Println("[Fuel]", "Loading service")
 
-	fuels := AllFuels()
+	fuels := AllServices()
 	for _, atm := range fuels {
 		services.AddItem(atm)
 	}

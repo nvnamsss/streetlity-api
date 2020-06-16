@@ -33,18 +33,18 @@ func (s Maintenance) Location() r2.Point {
 	return p
 }
 
-//AllMaintenances query all maintenance services
-func AllMaintenances() []Maintenance {
+//AllServices query all maintenance services
+func AllServices() []Maintenance {
 	var services []Maintenance
 	model.Db.Find(&services)
 
 	return services
 }
 
-//AddMaintenance add new maintenance service to the database
+//CreateService add new maintenance service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddMaintenance(s Maintenance) (e error) {
+func CreateService(s Maintenance) (e error) {
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Maintenance{}).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
@@ -66,8 +66,8 @@ func queryMaintenance(s Maintenance) (service Maintenance, e error) {
 	return
 }
 
-//MaintenanceById query the maintenance service by specific id
-func MaintenanceById(id int64) (service Maintenance, e error) {
+//ServiceById query the maintenance service by specific id
+func ServiceById(id int64) (service Maintenance, e error) {
 	db := model.Db.Find(&service, id)
 	if e := db.Error; e != nil {
 		log.Println("[Database]", "Maintenance service", id, ":", e.Error())
@@ -81,16 +81,16 @@ func MaintenanceById(id int64) (service Maintenance, e error) {
 	return
 }
 
-//MaintenanceByService get maintenance by provide Service
-func MaintenanceByService(s model.Service) (services Maintenance, e error) {
+//ServiceByService get maintenance by provide Service
+func ServiceByService(s model.Service) (services Maintenance, e error) {
 	services.Service = s
 	return queryMaintenance(services)
 }
 
-//MaintenanceByIds query the maintenances service by specific id
-func MaintenanceByIds(ids ...int64) (services []Maintenance) {
+//ServicesByIds query the maintenances service by specific id
+func ServicesByIds(ids ...int64) (services []Maintenance) {
 	for _, id := range ids {
-		s, e := MaintenanceById(id)
+		s, e := ServiceById(id)
 		if e != nil {
 			continue
 		}
@@ -107,8 +107,8 @@ func distance(p1 r2.Point, p2 r2.Point) float64 {
 	return math.Sqrt(x + y)
 }
 
-//MaintenancesInRange query the maintenance services which is in the radius of a location
-func MaintenancesInRange(p r2.Point, max_range float64) []Maintenance {
+//ServicesInRange query the maintenance services which is in the radius of a location
+func ServicesInRange(p r2.Point, max_range float64) []Maintenance {
 	var result []Maintenance = []Maintenance{}
 	trees := services.InRange(p, max_range)
 
@@ -126,8 +126,8 @@ func MaintenancesInRange(p r2.Point, max_range float64) []Maintenance {
 	return result
 }
 
-func UpdateMaintenance(id int64, values map[string]string) {
-	service, e := MaintenanceById(id)
+func UpdateService(id int64, values map[string]string) {
+	service, e := ServiceById(id)
 	if e != nil {
 		return
 	}
@@ -154,7 +154,7 @@ func (s Maintenance) AfterCreate(scope *gorm.Scope) (e error) {
 func LoadService() {
 	log.Println("[Maintenance]", "Loading service")
 
-	maintenances := AllMaintenances()
+	maintenances := AllServices()
 	for _, service := range maintenances {
 		services.AddItem(service)
 	}
