@@ -32,10 +32,12 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := p.GetIntFirstOrDefault("Id")
-		maintenance.UpvoteUcf(id)
+		if e := maintenance.UpvoteUcf(id); e != nil {
+			res.Error(e)
+		}
 	}
 
-	sres.WriteJson(w, req)
+	sres.WriteJson(w, res)
 }
 
 func UnconfirmedInRange(w http.ResponseWriter, req *http.Request) {

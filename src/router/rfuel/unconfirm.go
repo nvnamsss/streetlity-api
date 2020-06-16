@@ -33,7 +33,9 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := p.GetIntFirstOrDefault("Id")
-		fuel.UpvoteUcf(id)
+		if e := fuel.UpvoteUcf(id); e != nil {
+			res.Error(e)
+		}
 	}
 
 	sres.WriteJson(w, req)
