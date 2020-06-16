@@ -222,9 +222,9 @@ func ReviewByOrderValidate(req *http.Request) *pipeline.Stage {
 	}, e error) {
 		query := req.URL.Query()
 
-		_, ok := query["review_id"]
+		_, ok := query["service_id"]
 		if !ok {
-			return str, errors.New("review_id param is missing")
+			return str, errors.New("service_id param is missing")
 		}
 
 		_, ok = query["order"]
@@ -237,9 +237,9 @@ func ReviewByOrderValidate(req *http.Request) *pipeline.Stage {
 			return str, errors.New("limit param is missing")
 		}
 
-		review_id, e := strconv.ParseInt(query["review_id"][0], 10, 64)
+		review_id, e := strconv.ParseInt(query["service_id"][0], 10, 64)
 		if e != nil {
-			return str, errors.New("review_id cannot parse to int64")
+			return str, errors.New("service_id cannot parse to int64")
 		}
 
 		order, e := strconv.ParseInt(query["order"][0], 10, 64)
