@@ -226,7 +226,7 @@ func HandleToilet(router *mux.Router) {
 	r.HandleFunc("", addToilet).Methods("POST")
 	r.Use(middleware.Authenticate)
 
-	rtoilet.HandleUnconfirmed(s)
+	rtoilet.HandleUnconfirmed(router)
 	// r = s.PathPrefix("/upvote").Subrouter()
 	// r.HandleFunc("", updateToilet).Methods("POST")
 	// r.Use(middleware.Authenticate)

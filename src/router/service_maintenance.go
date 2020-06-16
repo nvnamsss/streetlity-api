@@ -433,7 +433,7 @@ func HandleMaintenance(router *mux.Router) {
 	r.HandleFunc("", addMaintenance).Methods("POST")
 	r.Use(middleware.Authenticate)
 
-	rmaintenance.HandleUnconfirmed(s)
+	rmaintenance.HandleUnconfirmed(router)
 
 	// r = s.PathPrefix("/upvote").Subrouter()
 	// r.HandleFunc("", upvoteMaintenance).Methods("POST")

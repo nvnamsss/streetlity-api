@@ -268,7 +268,7 @@ func HandleAtm(router *mux.Router) {
 	r.HandleFunc("", addAtm).Methods("POST")
 	r.Use(middleware.Authenticate)
 
-	ratm.HandleUnconfirmed(s)
+	ratm.HandleUnconfirmed(router)
 	// r = s.PathPrefix("/upvote").Subrouter()
 	// r.HandleFunc("", upvoteAtm).Methods("POST")
 	// r.Use(middleware.Authenticate)
