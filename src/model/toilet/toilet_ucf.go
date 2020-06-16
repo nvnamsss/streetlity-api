@@ -35,17 +35,17 @@ func AllToiletUcfs() []ToiletUcf {
 	return services
 }
 
-//UpvoteToiletUcf upvote the unconfirmed toilet by specific id
-func UpvoteToiletUcf(id int64) error {
+//UpvoteUcf upvote the unconfirmed toilet by specific id
+func UpvoteUcf(id int64) error {
 	return upvoteToiletUcf(id, 1)
 }
 
-func UpvoteToiletUcfImmediately(id int64) error {
+func UpvoteUcfImmediately(id int64) error {
 	return upvoteToiletUcf(id, confident)
 }
 
 func upvoteToiletUcf(id int64, value int) (e error) {
-	s, e := ToiletUcfById(id)
+	s, e := UcfById(id)
 
 	if e != nil {
 		return
@@ -69,13 +69,13 @@ func queryToiletUcf(s ToiletUcf) (service ToiletUcf, e error) {
 	return
 }
 
-func ToiletUcfByService(s model.ServiceUcf) (service ToiletUcf, e error) {
+func UcfByService(s model.ServiceUcf) (service ToiletUcf, e error) {
 	service.ServiceUcf = s
 	return queryToiletUcf(service)
 }
 
-//ToiletUcfById query the unconfirmed toilet service by specific id
-func ToiletUcfById(id int64) (service ToiletUcf, e error) {
+//UcfById query the unconfirmed toilet service by specific id
+func UcfById(id int64) (service ToiletUcf, e error) {
 	db := model.Db.Find(&service, id)
 	if e := db.Error; e != nil {
 		log.Println("[Database]", "Toilet service", id, ":", e.Error())
@@ -89,10 +89,10 @@ func ToiletUcfById(id int64) (service ToiletUcf, e error) {
 	return
 }
 
-//AddToiletUcf add new ToiletUcf service to the database
+//CreateUcf add new ToiletUcf service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddToiletUcf(s ToiletUcf) (e error) {
+func CreateUcf(s ToiletUcf) (e error) {
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&ToiletUcf{}).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
@@ -102,7 +102,7 @@ func AddToiletUcf(s ToiletUcf) (e error) {
 	}
 
 	//Temporal
-	UpvoteToiletUcf(s.Id)
+	UpvoteUcf(s.Id)
 	return
 }
 
@@ -123,6 +123,16 @@ func UcfInRange(p r2.Point, max_range float64) []ToiletUcf {
 		}
 	}
 	return result
+}
+
+func DeleteUcf(id int64) (e error) {
+	var ucf ToiletUcf
+	ucf.Id = id
+	if e := model.Db.Delete(&ucf).Error; e != nil {
+		log.Println("[Database]", "delete ucf fuel", e.Error())
+	}
+
+	return
 }
 
 //AfterSave automatically run everytime the update transaction is done

@@ -1,9 +1,8 @@
-package rmaintenance
+package ratm
 
 import (
 	"net/http"
 	"streelity/v1/model/fuel"
-	"streelity/v1/model/maintenance"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
 
@@ -15,9 +14,9 @@ import (
 func GetAllUnconfirmed(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Services []maintenance.MaintenanceUcf
+		Services []fuel.FuelUcf
 	}
-	res.Services = maintenance.AllMaintenanceUcfs()
+	res.Services = fuel.AllFuelsUcf()
 	sres.WriteJson(w, res)
 }
 
@@ -43,7 +42,7 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 func UnconfirmedInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Services []maintenance.MaintenanceUcf
+		Services []fuel.FuelUcf
 	}
 
 	res.Status = true
@@ -56,7 +55,7 @@ func UnconfirmedInRange(w http.ResponseWriter, req *http.Request) {
 	if res.Status {
 		location := r2.Point{X: p.GetFloatFirstOrDefault("Lat"), Y: p.GetFloatFirstOrDefault("Lon")}
 		r := p.GetFloatFirstOrDefault("Range")
-		res.Services = maintenance.UcfInRange(location, r)
+		res.Services = fuel.UcfInRange(location, r)
 	}
 
 	sres.WriteJson(w, res)
@@ -73,7 +72,7 @@ func DeleteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := p.GetIntFirstOrDefault("Id")
-		if e := maintenance.DeleteUcf(id); e != nil {
+		if e := fuel.DeleteUcf(id); e != nil {
 			res.Error(e)
 		}
 	}

@@ -130,6 +130,16 @@ func UcfInRange(p r2.Point, max_range float64) []MaintenanceUcf {
 	return result
 }
 
+func DeleteUcf(id int64) (e error) {
+	var ucf MaintenanceUcf
+	ucf.Id = id
+	if e := model.Db.Delete(&ucf).Error; e != nil {
+		log.Println("[Database]", "delete ucf fuel", e.Error())
+	}
+
+	return
+}
+
 func (s *MaintenanceUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident >= confident {
 		var m Maintenance = Maintenance{Service: s.GetService(), Name: s.Name}

@@ -1,9 +1,8 @@
-package rmaintenance
+package rtoilet
 
 import (
 	"net/http"
-	"streelity/v1/model/fuel"
-	"streelity/v1/model/maintenance"
+	"streelity/v1/model/toilet"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
 
@@ -15,9 +14,9 @@ import (
 func GetAllUnconfirmed(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Services []maintenance.MaintenanceUcf
+		Services []toilet.ToiletUcf
 	}
-	res.Services = maintenance.AllMaintenanceUcfs()
+	res.Services = toilet.AllToiletUcfs()
 	sres.WriteJson(w, res)
 }
 
@@ -34,7 +33,7 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := p.GetIntFirstOrDefault("Id")
-		fuel.UpvoteFuelUcf(id)
+		toilet.UpvoteToiletUcf(id)
 	}
 
 	sres.WriteJson(w, req)
@@ -43,7 +42,7 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 func UnconfirmedInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Services []maintenance.MaintenanceUcf
+		Services []toilet.ToiletUcf
 	}
 
 	res.Status = true
@@ -56,7 +55,7 @@ func UnconfirmedInRange(w http.ResponseWriter, req *http.Request) {
 	if res.Status {
 		location := r2.Point{X: p.GetFloatFirstOrDefault("Lat"), Y: p.GetFloatFirstOrDefault("Lon")}
 		r := p.GetFloatFirstOrDefault("Range")
-		res.Services = maintenance.UcfInRange(location, r)
+		res.Services = toilet.UcfInRange(location, r)
 	}
 
 	sres.WriteJson(w, res)
@@ -73,7 +72,7 @@ func DeleteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := p.GetIntFirstOrDefault("Id")
-		if e := maintenance.DeleteUcf(id); e != nil {
+		if e := toilet.DeleteUcf(id); e != nil {
 			res.Error(e)
 		}
 	}
@@ -81,7 +80,7 @@ func DeleteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 }
 
 func HandleUnconfirmed(router *mux.Router) {
-	s := router.PathPrefix("/maintenance_ucf").Subrouter()
+	s := router.PathPrefix("/toilet_ucf").Subrouter()
 
 	s.HandleFunc("/", GetAllUnconfirmed).Methods("GET")
 	s.HandleFunc("/", DeleteUnconfirmed).Methods("DELETE")

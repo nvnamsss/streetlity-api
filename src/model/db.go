@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"streelity/v1/config"
@@ -42,6 +43,21 @@ var OnConnected *event.Event = event.NewEvent()
 // 	}
 
 // }
+func GetById(tablename string, id interface{}, ref interface{}) (e error) {
+	db := Db.Table(tablename).Where("id=?", id).Find(&ref)
+
+	if db.RowsAffected == 0 {
+		e := errors.New("record was not found")
+		log.Println("[Database]", e.Error())
+	}
+
+	return
+}
+
+func Delete(tablename string, id interface{}) (e error) {
+
+	return
+}
 
 func connect() {
 	connectionString := fmt.Sprintf("%s:%s@tcp(%s)/%s",

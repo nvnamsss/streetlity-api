@@ -128,6 +128,16 @@ func UcfInRange(p r2.Point, max_range float64) []AtmUcf {
 	return result
 }
 
+func DeleteUcf(id int64) (e error) {
+	var ucf AtmUcf
+	ucf.Id = id
+	if e := model.Db.Delete(&ucf).Error; e != nil {
+		log.Println("[Database]", "delete ucf fuel", e.Error())
+	}
+
+	return
+}
+
 func (s *AtmUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident >= confident {
 		var a Atm = Atm{Service: s.GetService(), BankId: s.BankId}
