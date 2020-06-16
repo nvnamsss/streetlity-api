@@ -2,7 +2,7 @@ package router
 
 import (
 	"log"
-	"streelity/v1/router/middleware"
+	"streelity/v1/middleware"
 
 	"github.com/gorilla/mux"
 )
