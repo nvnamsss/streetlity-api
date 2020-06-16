@@ -8,6 +8,7 @@ import (
 	"streelity/v1/middleware"
 	"streelity/v1/model"
 	"streelity/v1/model/toilet"
+	"streelity/v1/router/rtoilet"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
 
@@ -39,7 +40,7 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 		s.Note = note
 		s.SetImages(images...)
 		s.Address = address
-		err := toilet.AddToiletUcf(s)
+		err := toilet.CreateUcf(s)
 
 		if err != nil {
 			res.Status = false
@@ -73,7 +74,7 @@ func upvoteToilet(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		var id int64 = p.GetInt("Id")[0]
-		res.Error(toilet.UpvoteToiletUcf(id))
+		res.Error(toilet.UpvoteUcf(id))
 	}
 
 	sres.WriteJson(w, res)
@@ -225,7 +226,8 @@ func HandleToilet(router *mux.Router) {
 	r.HandleFunc("", addToilet).Methods("POST")
 	r.Use(middleware.Authenticate)
 
-	r = s.PathPrefix("/upvote").Subrouter()
-	r.HandleFunc("", updateToilet).Methods("POST")
-	r.Use(middleware.Authenticate)
+	rtoilet.HandleUnconfirmed(s)
+	// r = s.PathPrefix("/upvote").Subrouter()
+	// r.HandleFunc("", updateToilet).Methods("POST")
+	// r.Use(middleware.Authenticate)
 }

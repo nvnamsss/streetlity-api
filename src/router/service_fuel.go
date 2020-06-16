@@ -349,7 +349,8 @@ func HandleFuel(router *mux.Router) {
 	r.HandleFunc("", addFuel).Methods("POST")
 	r.Use(middleware.Authenticate)
 
-	r = s.PathPrefix("/upvote").Subrouter()
-	r.HandleFunc("", upvoteFuel).Methods("POST")
-	r.Use(middleware.Authenticate)
+	rfuel.HandleUnconfirmed(s)
+	// r = s.PathPrefix("/upvote").Subrouter()
+	// r.HandleFunc("", upvoteFuel).Methods("POST")
+	// r.Use(middleware.Authenticate)
 }

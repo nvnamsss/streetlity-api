@@ -33,7 +33,7 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := p.GetIntFirstOrDefault("Id")
-		toilet.UpvoteToiletUcf(id)
+		toilet.UpvoteUcf(id)
 	}
 
 	sres.WriteJson(w, req)

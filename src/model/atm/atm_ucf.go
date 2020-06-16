@@ -15,12 +15,14 @@ type AtmUcf struct {
 	BankId int64 `gorm:"column:bank_id"`
 }
 
+const AtmUcfTableName = "atm_ucf"
+
 var confident int = 1
 var ucf_services spatial.RTree
 
 //TableName determine the table name in database which is using for gorm
 func (AtmUcf) TableName() string {
-	return "atm_ucf"
+	return AtmUcfTableName
 }
 
 //Location determine the location of service as r2.Point

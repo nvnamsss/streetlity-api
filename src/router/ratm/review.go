@@ -151,7 +151,7 @@ func ReviewAverageScore(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
-func Handle(router *mux.Router) {
+func HandleReview(router *mux.Router) {
 	log.Println("[Router]", "Handling review atm")
 	s := router.PathPrefix("/review").Subrouter()
 

@@ -15,11 +15,13 @@ type Atm struct {
 	BankId int64 `gorm:"column:bank_id"`
 }
 
+const AtmTableName = "atm"
+
 var tag string = "[ATM]"
 
 //TableName determine the table name in database which is using for gorm
 func (Atm) TableName() string {
-	return "atm"
+	return AtmTableName
 }
 
 var services spatial.RTree

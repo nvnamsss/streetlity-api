@@ -48,14 +48,14 @@ func GetById(tablename string, id interface{}, ref interface{}) (e error) {
 
 	if db.RowsAffected == 0 {
 		e := errors.New("record was not found")
-		log.Println("[Database]", e.Error())
+		log.Println("[Database]", "get", tablename, e.Error())
 	}
 
 	return
 }
 
-func Delete(tablename string, id interface{}) (e error) {
-
+func DeleteTable(tablename string, entity map[string]string) (e error) {
+	Db.Table(tablename).Where("")
 	return
 }
 

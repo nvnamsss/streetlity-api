@@ -59,9 +59,10 @@ func ReviewByService(service_id, order int64, limit int) (reviews []Review, e er
 }
 
 func ReviewById(review_id int64) (review Review, e error) {
-	if e := model.Db.Where("id=?", review_id).Find(&review).Error; e != nil {
-		log.Println("[Database]", "toilet review by id", e.Error())
-	}
+	e = model.GetById(ReviewTableName, review_id, &review)
+	// if e := model.Db.Where("id=?", review_id).Find(&review).Error; e != nil {
+	// 	log.Println("[Database]", "toilet review by id", e.Error())
+	// }
 
 	return
 }

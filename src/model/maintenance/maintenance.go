@@ -20,10 +20,12 @@ type Maintenance struct {
 	// Lon float32 `gorm:"column:lon"`
 }
 
+const ServiceTableName = "maintenance"
+
 var services spatial.RTree
 
 func (Maintenance) TableName() string {
-	return "maintenance"
+	return ServiceTableName
 }
 
 func (s Maintenance) Location() r2.Point {

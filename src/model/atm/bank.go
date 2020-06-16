@@ -1,9 +1,12 @@
 package atm
 
 import (
+	"errors"
 	"log"
 	"streelity/v1/model"
 )
+
+const BankTableName = "bank"
 
 type Bank struct {
 	Id   int64
@@ -11,7 +14,7 @@ type Bank struct {
 }
 
 func (Bank) TableName() string {
-	return "bank"
+	return BankTableName
 }
 
 func AllBanks() []Bank {
@@ -21,7 +24,13 @@ func AllBanks() []Bank {
 	return banks
 }
 
-func AddBank(s Bank) (e error) {
+func CreateBank(s Bank) (e error) {
+	if _, e = BankByName(s.Name); e == nil {
+		e = errors.New("Bank was existed")
+		log.Println("[Database]", "Create new bank", e.Error())
+		return
+	}
+
 	if e = model.Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", "Add bank", e.Error())
 		return
@@ -32,8 +41,15 @@ func AddBank(s Bank) (e error) {
 
 func BankByName(name string) (bank Bank, e error) {
 	bank.Name = name
-	if e = model.Db.Find(&bank).Error; e != nil {
+	db := model.Db.Find(&bank)
+
+	if e := db.Error; e != nil {
 		log.Println("[Database]", "Get bank", e.Error())
+	}
+
+	if db.RowsAffected == 0 {
+		e := errors.New("Bank was not found")
+		log.Println("[Database]", e.Error())
 	}
 
 	return

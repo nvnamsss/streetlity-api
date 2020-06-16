@@ -9,6 +9,8 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+const UcfServiceTableName = "maintenance_ucf"
+
 var confident int = 5
 
 type MaintenanceUcf struct {
@@ -17,7 +19,7 @@ type MaintenanceUcf struct {
 }
 
 func (MaintenanceUcf) TableName() string {
-	return "maintenance_ucf"
+	return UcfServiceTableName
 }
 
 func (s MaintenanceUcf) Location() r2.Point {

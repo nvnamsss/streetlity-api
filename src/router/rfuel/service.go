@@ -2,7 +2,6 @@ package rfuel
 
 import (
 	"net/http"
-	"streelity/v1/model"
 	"streelity/v1/model/fuel"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
@@ -53,10 +52,12 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		address := p.GetStringFirstOrDefault("Address")
 		note := p.GetStringFirstOrDefault("Note")
 		images := p.GetString("Images")
-		ucf := fuel.FuelUcf{model.ServiceUcf{Lat: float32(lat), Lon: float32(lon), Address: address, Note: note, Images: ""}}
-		for _, image := range images {
-			ucf.Images += image + ";"
-		}
+		var ucf fuel.FuelUcf
+		ucf.Lat = float32(lat)
+		ucf.Lon = float32(lon)
+		ucf.Address = address
+		ucf.Note = note
+		ucf.SetImages(images...)
 
 		if e := fuel.AddFuelUcf(ucf); e != nil {
 			res.Error(e)
@@ -66,7 +67,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
-func HandleFuel(router *mux.Router) {
+func HandleService(router *mux.Router) {
 	s := router.PathPrefix("/fuel").Subrouter()
 
 	s.HandleFunc("/", CreateService).Methods("POST")

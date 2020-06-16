@@ -21,9 +21,11 @@ type Fuel struct {
 
 var services spatial.RTree
 
+const ServiceTableName = "fuel"
+
 //Determine table name
 func (Fuel) TableName() string {
-	return "fuel"
+	return ServiceTableName
 }
 
 func (s Fuel) Location() r2.Point {

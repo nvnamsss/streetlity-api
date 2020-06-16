@@ -9,6 +9,7 @@ import (
 	"streelity/v1/middleware"
 	"streelity/v1/model"
 	"streelity/v1/model/maintenance"
+	"streelity/v1/router/rmaintenance"
 	"streelity/v1/sres"
 	"streelity/v1/srpc"
 	"streelity/v1/stages"
@@ -428,13 +429,14 @@ func HandleMaintenance(router *mux.Router) {
 	s.HandleFunc("/order", orderMaintenance).Methods("POST")
 	s.HandleFunc("/accept", acceptOrderMaintenance).Methods("POST")
 	s.HandleFunc("/", getMaintenance).Methods("GET")
-
 	r := s.PathPrefix("/add").Subrouter()
 	r.HandleFunc("", addMaintenance).Methods("POST")
 	r.Use(middleware.Authenticate)
 
-	r = s.PathPrefix("/upvote").Subrouter()
-	r.HandleFunc("", upvoteMaintenance).Methods("POST")
-	r.Use(middleware.Authenticate)
+	rmaintenance.HandleUnconfirmed(s)
+
+	// r = s.PathPrefix("/upvote").Subrouter()
+	// r.HandleFunc("", upvoteMaintenance).Methods("POST")
+	// r.Use(middleware.Authenticate)
 
 }

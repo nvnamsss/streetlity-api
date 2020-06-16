@@ -8,6 +8,7 @@ import (
 	"streelity/v1/middleware"
 	"streelity/v1/model"
 	"streelity/v1/model/atm"
+	"streelity/v1/router/ratm"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
 
@@ -67,47 +68,6 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 			res.Message = err.Error()
 		} else {
 			res.Message = "Create new atm is succeed"
-		}
-	}
-
-	sres.WriteJson(w, res)
-}
-
-func addBank(w http.ResponseWriter, req *http.Request) {
-	var res struct {
-		sres.Response
-		Bank atm.Bank
-	}
-
-	req.ParseForm()
-	form := req.PostForm
-
-	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	validateParamsStage := pipeline.NewStage(func() (str struct{ Name string }, e error) {
-		name, nameOk := form["name"]
-		if !nameOk {
-			e = errors.New("name param is missing")
-		} else {
-			str.Name = name[0]
-		}
-
-		return
-	})
-
-	pipe.First = validateParamsStage
-	res.Error(pipe.Run())
-
-	if res.Status {
-		var s atm.Bank
-		s.Name = pipe.GetString("Name")[0]
-		err := atm.AddBank(s)
-
-		if err != nil {
-			res.Status = false
-			res.Message = err.Error()
-		} else {
-			res.Message = "Add new bank successfully"
-			res.Bank, _ = atm.BankByName(s.Name)
 		}
 	}
 
@@ -300,16 +260,17 @@ func HandleAtm(router *mux.Router) {
 	s.HandleFunc("/all", getAtms).Methods("GET")
 	s.HandleFunc("/update", updateAtm).Methods("POST")
 	s.HandleFunc("/range", getAtmInRange).Methods("GET")
-	s.HandleFunc("/bank/all", getBanks).Methods("GET")
-	s.HandleFunc("/bank/add", addBank).Methods("POST")
 	s.HandleFunc("/", getAtm).Methods("GET")
+
+	ratm.HandleBank(s)
 
 	r := s.PathPrefix("/add").Subrouter()
 	r.HandleFunc("", addAtm).Methods("POST")
 	r.Use(middleware.Authenticate)
 
-	r = s.PathPrefix("/upvote").Subrouter()
-	r.HandleFunc("", upvoteAtm).Methods("POST")
-	r.Use(middleware.Authenticate)
+	ratm.HandleUnconfirmed(s)
+	// r = s.PathPrefix("/upvote").Subrouter()
+	// r.HandleFunc("", upvoteAtm).Methods("POST")
+	// r.Use(middleware.Authenticate)
 
 }

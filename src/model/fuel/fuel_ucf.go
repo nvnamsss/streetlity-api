@@ -10,6 +10,8 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
+const UcfServiceTableName = "fuel_ucf"
+
 var confident int = 5
 var ucf_services spatial.RTree
 
@@ -19,7 +21,7 @@ type FuelUcf struct {
 }
 
 func (FuelUcf) TableName() string {
-	return "fuel_ucf"
+	return UcfServiceTableName
 }
 
 func (s FuelUcf) Location() r2.Point {
