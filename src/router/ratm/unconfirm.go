@@ -80,7 +80,7 @@ func DeleteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 }
 
 func HandleUnconfirmed(router *mux.Router) {
-	s := router.PathPrefix("/maintenance_ucf").Subrouter()
+	s := router.PathPrefix("/atm_ucf").Subrouter()
 
 	s.HandleFunc("/", GetAllUnconfirmed).Methods("GET")
 	s.HandleFunc("/", DeleteUnconfirmed).Methods("DELETE")

@@ -107,7 +107,7 @@ func UcfById(id int64) (service MaintenanceUcf, e error) {
 
 	if db.RowsAffected == 0 {
 		e = errors.New("Ucf Maintenance service was not found")
-		log.Println("[Database]", "maintenance ucf", e.Error())
+		log.Println("[Database]", e.Error())
 	}
 
 	return
