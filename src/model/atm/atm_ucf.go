@@ -54,8 +54,14 @@ func AtmUcfByService(s model.ServiceUcf) (service AtmUcf, e error) {
 
 //AtmUcfById query the AtmUcf service by specific id
 func AtmUcfById(id int64) (service AtmUcf, e error) {
-	if e = model.Db.Find(&service, id).Error; e != nil {
-		log.Println("[Database]", e)
+	db := model.Db.Find(&service, id)
+	if e := db.Error; e != nil {
+		log.Println("[Database]", "Atm service", id, ":", e.Error())
+	}
+
+	if db.RowsAffected == 0 {
+		e = errors.New("Ucf Atm service was not found")
+		log.Println("[Database]", "Atm ucf", e.Error())
 	}
 
 	return

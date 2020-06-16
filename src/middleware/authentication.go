@@ -4,7 +4,7 @@ import (
 	"log"
 	"net/http"
 	"streelity/v1/model"
-	"streelity/v1/router/sres"
+	"streelity/v1/sres"
 )
 
 //Authenticate middleware

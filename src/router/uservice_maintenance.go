@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 	"streelity/v1/model/maintenance"
-	"streelity/v1/router/sres"
+	"streelity/v1/sres"
 
 	"github.com/nvnamsss/goinf/pipeline"
 )

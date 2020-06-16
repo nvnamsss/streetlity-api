@@ -66,8 +66,14 @@ func queryMaintenance(s Maintenance) (service Maintenance, e error) {
 
 //MaintenanceById query the maintenance service by specific id
 func MaintenanceById(id int64) (service Maintenance, e error) {
-	if e = model.Db.Find(&service, id).Error; e != nil {
-		log.Println("[Database]", e)
+	db := model.Db.Find(&service, id)
+	if e := db.Error; e != nil {
+		log.Println("[Database]", "Maintenance service", id, ":", e.Error())
+	}
+
+	if db.RowsAffected == 0 {
+		e = errors.New("Ucf Maintenance service was not found")
+		log.Println("[Database]", "Maintenance ucf", e.Error())
 	}
 
 	return

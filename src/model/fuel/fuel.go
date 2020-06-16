@@ -72,9 +72,14 @@ func FuelByService(s model.Service) (services Fuel, e error) {
 
 //FuelById query the fuel service by specific id
 func FuelById(id int64) (service Fuel, e error) {
-	if e = model.Db.Find(&service, id).Error; e != nil {
-		log.Println("[Database]", e.Error())
-		return service, errors.New("Problem occured when query")
+	db := model.Db.Find(&service, id)
+	if e := db.Error; e != nil {
+		log.Println("[Database]", "Fuel service", id, ":", e.Error())
+	}
+
+	if db.RowsAffected == 0 {
+		e = errors.New("Fuel service was not found")
+		log.Println("[Database]", "fuel", e.Error())
 	}
 
 	return

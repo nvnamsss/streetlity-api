@@ -97,8 +97,14 @@ func UcfInRange(p r2.Point, max_range float64) []FuelUcf {
 
 //FuelUcfById query the fuel service by specific id
 func FuelUcfById(id int64) (service FuelUcf, e error) {
-	if e = model.Db.Find(&service, id).Error; e != nil {
-		log.Println("[Database]", e.Error())
+	db := model.Db.Find(&service, id)
+	if e := db.Error; e != nil {
+		log.Println("[Database]", "Fuel service", id, ":", e.Error())
+	}
+
+	if db.RowsAffected == 0 {
+		e = errors.New("Ucf Fuel service was not found")
+		log.Println("[Database]", "fuel ucf", e.Error())
 	}
 
 	return

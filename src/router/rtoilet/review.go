@@ -3,8 +3,8 @@ package rtoilet
 import (
 	"net/http"
 	"streelity/v1/model/toilet"
-	"streelity/v1/router/sres"
-	"streelity/v1/router/stages"
+	"streelity/v1/sres"
+	"streelity/v1/stages"
 
 	"github.com/gorilla/mux"
 	"github.com/nvnamsss/goinf/pipeline"

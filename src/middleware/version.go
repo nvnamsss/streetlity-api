@@ -4,7 +4,7 @@ import (
 	"errors"
 	"net/http"
 	"regexp"
-	"streelity/v1/router/sres"
+	"streelity/v1/sres"
 
 	"github.com/gorilla/mux"
 )

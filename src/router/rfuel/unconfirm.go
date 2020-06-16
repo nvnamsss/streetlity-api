@@ -3,8 +3,8 @@ package rfuel
 import (
 	"net/http"
 	"streelity/v1/model/fuel"
-	"streelity/v1/router/sres"
-	"streelity/v1/router/stages"
+	"streelity/v1/sres"
+	"streelity/v1/stages"
 
 	"github.com/golang/geo/r2"
 	"github.com/gorilla/mux"

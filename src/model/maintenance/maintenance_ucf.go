@@ -98,8 +98,14 @@ func MaintenanceUcfByAddress() {
 
 //MaintenanceUcfById query the unconfirmed maintainer service by specific id
 func MaintenanceUcfById(id int64) (service MaintenanceUcf, e error) {
-	if e := model.Db.Find(&service, id).Error; e != nil {
+	db := model.Db.Find(&service, id)
+	if e := db.Error; e != nil {
 		log.Println("[Database]", "Maintenance service", id, ":", e.Error())
+	}
+
+	if db.RowsAffected == 0 {
+		e = errors.New("Ucf Maintenance service was not found")
+		log.Println("[Database]", "maintenance ucf", e.Error())
 	}
 
 	return

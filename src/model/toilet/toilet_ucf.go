@@ -76,8 +76,14 @@ func ToiletUcfByService(s model.ServiceUcf) (service ToiletUcf, e error) {
 
 //ToiletUcfById query the unconfirmed toilet service by specific id
 func ToiletUcfById(id int64) (service ToiletUcf, e error) {
-	if e := model.Db.Find(&service, id).Error; e != nil {
-		log.Println("[Database]", e.Error())
+	db := model.Db.Find(&service, id)
+	if e := db.Error; e != nil {
+		log.Println("[Database]", "Toilet service", id, ":", e.Error())
+	}
+
+	if db.RowsAffected == 0 {
+		e = errors.New("Ucf Toilet service was not found")
+		log.Println("[Database]", "Toilet ucf", e.Error())
 	}
 
 	return

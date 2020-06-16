@@ -4,8 +4,8 @@ import (
 	"log"
 	"net/http"
 	"streelity/v1/model/fuel"
-	"streelity/v1/router/sres"
-	"streelity/v1/router/stages"
+	"streelity/v1/sres"
+	"streelity/v1/stages"
 
 	"github.com/gorilla/mux"
 	"github.com/nvnamsss/goinf/pipeline"
