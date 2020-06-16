@@ -61,7 +61,7 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 		s.Address = address
 		s.SetImages(images...)
 		s.BankId = pipe.GetInt("BankId")[0]
-		err := atm.AddAtmUcf(s)
+		err := atm.CreateUcf(s)
 
 		if err != nil {
 			res.Status = false
@@ -95,7 +95,7 @@ func upvoteAtm(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		var id int64 = p.GetInt("Id")[0]
-		res.Error(atm.UpvoteAtmUcf(id))
+		res.Error(atm.UpvoteUcf(id))
 	}
 
 	sres.WriteJson(w, res)
@@ -116,7 +116,7 @@ func getAtms(w http.ResponseWriter, req *http.Request) {
 	}
 
 	if res.Status {
-		res.Atms = atm.AllAtms()
+		res.Atms = atm.AllServices()
 	}
 
 	sres.WriteJson(w, res)
@@ -191,7 +191,7 @@ func getAtmInRange(w http.ResponseWriter, req *http.Request) {
 		max_range := pipe.GetFloat("Range")[0]
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		res.Atms = atm.AtmsInRange(location, max_range)
+		res.Atms = atm.ServicesInRange(location, max_range)
 	}
 
 	sres.WriteJson(w, res)
@@ -229,7 +229,7 @@ func getAtm(w http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		if m, e := atm.AtmByService(s); e == nil {
+		if m, e := atm.ServiceByService(s); e == nil {
 			res.Service = m
 		} else {
 			res.Error(e)

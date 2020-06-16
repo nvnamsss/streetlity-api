@@ -143,7 +143,7 @@ func DeleteUcf(id int64) (e error) {
 func (s *AtmUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident >= confident {
 		var a Atm = Atm{Service: s.GetService(), BankId: s.BankId}
-		AddAtm(a)
+		CreateService(a)
 		scope.DB().Delete(s)
 		log.Println("[Unconfirmed Atm]", "Confident is enough. Added", a)
 	} else {

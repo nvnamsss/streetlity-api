@@ -16,7 +16,7 @@ func GetAllUnconfirmed(w http.ResponseWriter, req *http.Request) {
 		sres.Response
 		Services []maintenance.MaintenanceUcf
 	}
-	res.Services = maintenance.AllMaintenanceUcfs()
+	res.Services = maintenance.AllUcfs()
 	sres.WriteJson(w, res)
 }
 
@@ -33,7 +33,7 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := p.GetIntFirstOrDefault("Id")
-		maintenance.UpvoteMaintenanceUcfById(id)
+		maintenance.UpvoteUcfById(id)
 	}
 
 	sres.WriteJson(w, req)

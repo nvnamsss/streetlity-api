@@ -55,7 +55,9 @@ func GetById(tablename string, id interface{}, ref interface{}) (e error) {
 }
 
 func DeleteTable(tablename string, entity map[string]string) (e error) {
-	Db.Table(tablename).Where("")
+	var query string
+
+	Db.Table(tablename).Where(query)
 	return
 }
 

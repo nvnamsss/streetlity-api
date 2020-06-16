@@ -24,7 +24,7 @@ func GetService(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := p.GetIntFirstOrDefault("Id")
-		if service, e := fuel.FuelById(id); e != nil {
+		if service, e := fuel.ServiceById(id); e != nil {
 			res.Error(e)
 		} else {
 			res.Service = service
@@ -59,7 +59,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		ucf.Note = note
 		ucf.SetImages(images...)
 
-		if e := fuel.AddFuelUcf(ucf); e != nil {
+		if e := fuel.CreateUcf(ucf); e != nil {
 			res.Error(e)
 		}
 	}

@@ -107,8 +107,8 @@ func distance(p1 r2.Point, p2 r2.Point) float64 {
 	return math.Sqrt(x + y)
 }
 
-//FuelsInRange query the fuel services which is in the radius of a location
-func FuelsInRange(p r2.Point, max_range float64) []Fuel {
+//ServicesInRange query the fuel services which is in the radius of a location
+func ServicesInRange(p r2.Point, max_range float64) []Fuel {
 	var result []Fuel = []Fuel{}
 	trees := services.InRange(p, max_range)
 

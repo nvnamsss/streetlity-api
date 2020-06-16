@@ -145,7 +145,7 @@ func DeleteUcf(id int64) (e error) {
 func (s *MaintenanceUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident >= confident {
 		var m Maintenance = Maintenance{Service: s.GetService(), Name: s.Name}
-		AddMaintenance(m)
+		CreateService(m)
 		scope.DB().Delete(s)
 		log.Println("[Unconfirmed Maintenance]", "Confident is enough. Added", m)
 	}

@@ -78,7 +78,7 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 		reason := p.GetString("Reason")[0]
 		note := p.GetStringFirstOrDefault("Note")
 
-		services := maintenance.MaintenanceByIds(service_ids...)
+		services := maintenance.ServicesByIds(service_ids...)
 		maintenanceIds := []string{}
 		for _, s := range services {
 			maintenanceIds = append(maintenanceIds, s.Owner)
@@ -193,7 +193,7 @@ func updateMaintenance(w http.ResponseWriter, req *http.Request) {
 			values[key] = value[0]
 		}
 
-		maintenance.UpdateMaintenance(id, values)
+		maintenance.UpdateService(id, values)
 	}
 
 	sres.WriteJson(w, res)
@@ -229,7 +229,7 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 		if ok {
 			s.Name = name[0]
 		}
-		err := maintenance.AddMaintenanceUcf(s)
+		err := maintenance.CreateUcf(s)
 
 		if err != nil {
 			res.Status = false
@@ -252,7 +252,7 @@ func getMaintenances(w http.ResponseWriter, req *http.Request) {
 
 	res.Status = true
 
-	res.Maintenance = maintenance.AllMaintenances()
+	res.Maintenance = maintenance.AllServices()
 
 	sres.WriteJson(w, res)
 }
@@ -288,7 +288,7 @@ func getMaintenanceById(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := pipe.GetInt("Id")[0]
-		s, e := maintenance.MaintenanceById(id)
+		s, e := maintenance.ServiceById(id)
 		res.Error(e)
 		if res.Status {
 			res.Maintenance = s
@@ -369,7 +369,7 @@ func getMaintenanceInRange(w http.ResponseWriter, req *http.Request) {
 		max_range := pipe.GetFloat("Range")[0]
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		res.Maintenances = maintenance.MaintenancesInRange(location, max_range)
+		res.Maintenances = maintenance.ServicesInRange(location, max_range)
 	}
 
 	sres.WriteJson(w, res)
@@ -407,7 +407,7 @@ func getMaintenance(w http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		if m, e := maintenance.MaintenanceByService(s); e == nil {
+		if m, e := maintenance.ServiceByService(s); e == nil {
 			res.Service = m
 		} else {
 			res.Error(e)

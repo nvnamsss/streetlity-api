@@ -30,7 +30,7 @@ func (s FuelUcf) Location() r2.Point {
 }
 
 //AllUcf query all unconfirmed fuel services
-func AllUcf() []FuelUcf {
+func AllUcfs() []FuelUcf {
 	var services []FuelUcf
 	model.Db.Find(&services)
 
@@ -136,7 +136,7 @@ func upvoteFuelUcf(id int64, value int) (e error) {
 func (s *FuelUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident >= confident {
 		var f Fuel = Fuel{Service: s.GetService()}
-		AddFuel(f)
+		AddServices(f)
 		scope.DB().Delete(s)
 		log.Println("[Unconfirmed Fuel]", "Confident is enough. Added", f)
 	} else {
@@ -149,7 +149,7 @@ func (s *FuelUcf) AfterSave(scope *gorm.Scope) (err error) {
 func LoadUnconfirmedService() {
 	log.Println("[Fuel]", "Loading unconfirmed service")
 
-	fuels := AllUcf()
+	fuels := AllUcfs()
 	for _, fuel := range fuels {
 		ucf_services.AddItem(fuel)
 	}

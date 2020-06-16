@@ -108,7 +108,7 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 		s.Note = note
 		s.Address = address
 		s.SetImages(images...)
-		err := fuel.AddFuelUcf(s)
+		err := fuel.CreateUcf(s)
 
 		if err != nil {
 			res.Status = false
@@ -180,7 +180,7 @@ func getFuels(w http.ResponseWriter, req *http.Request) {
 
 	res.Status = true
 
-	res.Fuels = fuel.AllFuels()
+	res.Fuels = fuel.AllServices()
 
 	log.Println("[GetFuels]", res.Fuels)
 
@@ -258,7 +258,7 @@ func getFuelInRange(w http.ResponseWriter, req *http.Request) {
 		max_range := pipe.GetFloat("Range")[0]
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		res.Fuels = fuel.FuelsInRange(location, max_range)
+		res.Fuels = fuel.ServicesInRange(location, max_range)
 	}
 
 	sres.WriteJson(w, res)
@@ -285,7 +285,7 @@ func upvoteFuel(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		var id int64 = p.GetInt("Id")[0]
-		res.Error(fuel.UpvoteFuelUcf(id))
+		res.Error(fuel.UpvoteUcf(id))
 	}
 
 	sres.WriteJson(w, res)
@@ -323,7 +323,7 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		if m, e := fuel.FuelByService(s); e == nil {
+		if m, e := fuel.ServiceByService(s); e == nil {
 			res.Service = m
 		} else {
 			res.Error(e)
