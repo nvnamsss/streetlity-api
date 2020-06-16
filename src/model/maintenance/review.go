@@ -60,6 +60,7 @@ func ReviewByService(service_id, order int64, limit int) (reviews []Review, e er
 
 func ReviewById(review_id int64) (review Review, e error) {
 	e = model.GetById(ReviewTableName, review_id, &review)
+	review.db = model.Db
 	// if e := model.Db.Where("id=?", review_id).Find(&review).Error; e != nil {
 	// 	log.Println("[Database]", "maintenance review by id", e.Error())
 	// }
