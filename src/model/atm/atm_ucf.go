@@ -74,7 +74,7 @@ func UpvoteUcf(id int64) error {
 	return upvoteAtmUcf(id, 1)
 }
 
-func UpvoteAtmImmediately(id int64) error {
+func UpvoteUcfImmediately(id int64) error {
 	return upvoteAtmUcf(id, confident)
 }
 
@@ -107,7 +107,8 @@ func CreateUcf(s AtmUcf) (e error) {
 	}
 
 	//Temporal
-	UpvoteUcf(s.Id)
+	UpvoteUcfImmediately(s.Id)
+
 	return
 }
 

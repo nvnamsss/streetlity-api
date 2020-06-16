@@ -40,14 +40,18 @@ func AllUcfs() []FuelUcf {
 //CreateUcf add new fuel service to the database
 //
 //return error if there is something wrong when doing transaction
-func CreateUcf(s FuelUcf) (e error) {
+func CreateUcf(s FuelUcf) (ucf FuelUcf, e error) {
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&FuelUcf{}).Error; e == nil {
-		return errors.New("The service location is existed or some problems is occured")
+		return ucf, errors.New("The service location is existed or some problems is occured")
 	}
 
 	if e = model.Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", e.Error())
+	} else {
+		ucf = s
 	}
+
+	UpvoteUcfImmediately(ucf.Id)
 	return
 }
 

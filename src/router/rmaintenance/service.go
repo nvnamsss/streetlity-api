@@ -1,8 +1,9 @@
-package rfuel
+package rmaintenance
 
 import (
 	"net/http"
 	"streelity/v1/model/fuel"
+	"streelity/v1/model/maintenance"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
 
@@ -38,9 +39,10 @@ func GetService(w http.ResponseWriter, req *http.Request) {
 func CreateService(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Service fuel.FuelUcf
+		Service maintenance.MaintenanceUcf
 	}
 	res.Status = true
+
 	p := pipeline.NewPipeline()
 	stage := stages.AddingServiceValidateStage(req)
 	p.First = stage
@@ -60,7 +62,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		ucf.Note = note
 		ucf.SetImages(images...)
 
-		if service, e := fuel.CreateUcf(ucf); e != nil {
+		if service, e := maintenance.CreateUcf(ucf); e != nil {
 			res.Error(e)
 		} else {
 			res.Service = service
@@ -76,3 +78,5 @@ func HandleService(router *mux.Router) {
 	s.HandleFunc("/", CreateService).Methods("POST")
 	s.HandleFunc("/", GetService).Methods("GET")
 }
+
+

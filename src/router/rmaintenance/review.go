@@ -151,12 +151,29 @@ func ReviewAverageScore(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
+func DeleteReview(w http.ResponseWriter, req *http.Request) {
+	var res sres.Response = sres.Response{Status: true}
+	p := pipeline.NewPipeline()
+	stage := stages.ReviewIdValidate(req)
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		review_id := p.GetIntFirstOrDefault("ReviewId")
+		if e := maintenance.DeleteReview(review_id); e != nil {
+			res.Error(e)
+		}
+	}
+	sres.WriteJson(w, res)
+}
+
 func HandleReview(router *mux.Router) {
 	log.Println("[Router]", "Handling review maintenance")
 	s := router.PathPrefix("/review").Subrouter()
 
 	s.HandleFunc("/", ReviewById).Methods("GET")
 	s.HandleFunc("/", UpdateReview).Methods("POST")
+	s.HandleFunc("/", DeleteReview).Methods("DELETE")
 	s.HandleFunc("/create", CreateReview).Methods("POST")
 	s.HandleFunc("/query", ReviewByServiceId).Methods("GET")
 	s.HandleFunc("/score", ReviewAverageScore).Methods("GET")

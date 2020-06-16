@@ -112,7 +112,19 @@ func CreateReview(w http.ResponseWriter, req *http.Request) {
 }
 
 func DeleteReview(w http.ResponseWriter, req *http.Request) {
+	var res sres.Response = sres.Response{Status: true}
+	p := pipeline.NewPipeline()
+	stage := stages.ReviewIdValidate(req)
+	p.First = stage
+	res.Error(p.Run())
 
+	if res.Status {
+		review_id := p.GetIntFirstOrDefault("ReviewId")
+		if e := fuel.DeleteReview(review_id); e != nil {
+			res.Error(e)
+		}
+	}
+	sres.WriteJson(w, res)
 }
 
 func ReviewAverageScore(w http.ResponseWriter, req *http.Request) {
