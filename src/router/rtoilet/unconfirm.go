@@ -16,14 +16,13 @@ func GetAllUnconfirmed(w http.ResponseWriter, req *http.Request) {
 		sres.Response
 		Services []toilet.ToiletUcf
 	}
+	res.Status = true
 	res.Services = toilet.AllToiletUcfs()
 	sres.WriteJson(w, res)
 }
 
 func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
-	var res struct {
-		sres.Response
-	}
+	var res sres.Response = sres.Response{Status: true}
 
 	req.ParseForm()
 	p := pipeline.NewPipeline()
@@ -44,7 +43,6 @@ func UnconfirmedInRange(w http.ResponseWriter, req *http.Request) {
 		sres.Response
 		Services []toilet.ToiletUcf
 	}
-
 	res.Status = true
 
 	p := pipeline.NewPipeline()

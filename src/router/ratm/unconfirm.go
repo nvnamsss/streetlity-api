@@ -16,14 +16,14 @@ func GetAllUnconfirmed(w http.ResponseWriter, req *http.Request) {
 		sres.Response
 		Services []atm.AtmUcf
 	}
+	res.Status = true
+
 	res.Services = atm.AllUcfs()
 	sres.WriteJson(w, res)
 }
 
 func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
-	var res struct {
-		sres.Response
-	}
+	var res sres.Response = sres.Response{Status: true}
 
 	req.ParseForm()
 	p := pipeline.NewPipeline()
