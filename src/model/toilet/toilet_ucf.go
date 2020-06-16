@@ -83,7 +83,7 @@ func UcfById(id int64) (service ToiletUcf, e error) {
 
 	if db.RowsAffected == 0 {
 		e = errors.New("Ucf Toilet service was not found")
-		log.Println("[Database]", "Toilet ucf", e.Error())
+		log.Println("[Database]", e.Error())
 	}
 
 	return

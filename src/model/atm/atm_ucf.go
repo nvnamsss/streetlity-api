@@ -63,7 +63,7 @@ func UcfById(id int64) (service AtmUcf, e error) {
 
 	if db.RowsAffected == 0 {
 		e = errors.New("Ucf Atm service was not found")
-		log.Println("[Database]", "Atm ucf", e.Error())
+		log.Println("[Database]", e.Error())
 	}
 
 	return

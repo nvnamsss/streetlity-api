@@ -38,7 +38,7 @@ func AllUcfs() []MaintenanceUcf {
 }
 
 //UpvoteUcfById upvote the unconfirmed maintainer by specific id
-func UpvoteUcfById(id int64) (e error) {
+func UpvoteUcf(id int64) (e error) {
 	return upvoteMaintenanceUcf(id, 1)
 }
 
@@ -76,7 +76,7 @@ func CreateUcf(s MaintenanceUcf) (e error) {
 	}
 
 	//Temporal
-	UpvoteUcfById(s.Id)
+	UpvoteUcf(s.Id)
 	return
 }
 
