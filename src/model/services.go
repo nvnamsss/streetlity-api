@@ -35,7 +35,7 @@ type Service struct {
 	Images  string  `gorm:"column:images"`
 }
 
-func (s Service) GetImages() (images []string) {
+func (s Service) GetImagesArray() (images []string) {
 	reg, e := regexp.Compile(";")
 	if e != nil {
 		log.Println("[Database]", "wrong images data", s.Images)
@@ -46,7 +46,21 @@ func (s Service) GetImages() (images []string) {
 	return
 }
 
-func (s ServiceUcf) GetImages() (images []string) {
+func (s Service) SetImages(images ...string) {
+	len := len(images)
+	if len == 0 {
+		return
+	}
+
+	imgString := images[0]
+	for loop := 1; loop < len; loop++ {
+		imgString += ";" + images[loop]
+	}
+
+	s.Images = imgString
+}
+
+func (s ServiceUcf) GetImagesArray() (images []string) {
 	reg, e := regexp.Compile(";")
 	if e != nil {
 		log.Println("[Database]", "wrong images data", s.Images)
@@ -55,6 +69,20 @@ func (s ServiceUcf) GetImages() (images []string) {
 
 	images = reg.Split(s.Images, -1)
 	return
+}
+
+func (s ServiceUcf) SetImages(images ...string) {
+	len := len(images)
+	if len == 0 {
+		return
+	}
+
+	imgString := images[0]
+	for loop := 1; loop < len; loop++ {
+		imgString += ";" + images[loop]
+	}
+
+	s.Images = imgString
 }
 
 var services spatial.RTree

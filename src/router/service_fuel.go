@@ -102,10 +102,12 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 		lon := pipe.GetFloat("Lon")[0]
 		note := pipe.GetString("Note")[0]
 		address := pipe.GetString("Address")[0]
+		images := pipe.GetString("Images")
 		s.Lat = float32(lat)
 		s.Lon = float32(lon)
 		s.Note = note
 		s.Address = address
+		s.SetImages(images...)
 		err := fuel.AddFuelUcf(s)
 
 		if err != nil {
@@ -166,75 +168,6 @@ func getFuelReview(w http.ResponseWriter, req *http.Request) {
 
 		fuel.ReviewByService(review_id, order, 5)
 	}
-}
-
-func addFuelReview(w http.ResponseWriter, req *http.Request) {
-	var res struct {
-		sres.Response
-		Review fuel.Review
-	}
-	res.Status = true
-	req.ParseForm()
-	p := pipeline.NewPipeline()
-	stage := pipeline.NewStage(func() (str struct {
-		ServiceId int64
-		Commenter int64
-		Score     float32
-		Body      string
-	}, e error) {
-		form := req.PostForm
-
-		if _, ok := form["service_id"]; !ok {
-			return str, errors.New("service_id param is missing")
-		}
-
-		if _, ok := form["commenter"]; !ok {
-			return str, errors.New("commenter param is missing")
-		}
-
-		if _, ok := form["score"]; !ok {
-			return str, errors.New("score param is missing")
-		}
-
-		if _, ok := form["body"]; !ok {
-			return str, errors.New("body param is missing")
-		}
-
-		if i, e := strconv.ParseInt(form["service_id"][0], 10, 64); e == nil {
-			str.ServiceId = i
-		} else {
-			return str, errors.New("service_id cannot parse to int")
-		}
-
-		if i, e := strconv.ParseInt(form["commenter"][0], 10, 64); e == nil {
-			str.Commenter = i
-		} else {
-			return str, errors.New("commenter cannot parse to int")
-		}
-
-		if f, e := strconv.ParseFloat(form["score"][0], 32); e == nil {
-			str.Score = float32(f)
-		} else {
-			return str, errors.New("score cannot parse to float")
-		}
-
-		str.Body = form["body"][0]
-
-		return
-	})
-
-	p.First = stage
-	res.Error(p.Run())
-
-	if res.Status {
-		service_id := p.GetIntFirstOrDefault("ServiceId")
-		commenter := p.GetIntFirstOrDefault("Commenter")
-		score := p.GetFloatFirstOrDefault("Score")
-		body := p.GetStringFirstOrDefault("Body")
-		res.Error(fuel.CreateReview(service_id, commenter, float32(score), body))
-	}
-
-	sres.WriteJson(w, res)
 }
 
 /*NON-AUTH REQUIRED*/

@@ -89,7 +89,7 @@ func ReviewByServiceId(w http.ResponseWriter, req *http.Request) {
 	res.Status = true
 
 	p := pipeline.NewPipeline()
-	stage := stages.ReviewByOrderValidate(req)
+	stage := stages.QueryReviewByOrderValidate(req)
 
 	p.First = stage
 	res.Error(p.Run())
@@ -123,10 +123,10 @@ func CreateReview(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		service_id := p.GetIntFirstOrDefault("ServiceId")
-		commenter := p.GetIntFirstOrDefault("Commenter")
+		reviewer := p.GetStringFirstOrDefault("Reviewer")
 		score := p.GetFloatFirstOrDefault("Score")
 		body := p.GetStringFirstOrDefault("Body")
-		res.Error(atm.CreateReview(service_id, commenter, float32(score), body))
+		res.Error(atm.CreateReview(service_id, reviewer, float32(score), body))
 	}
 
 	sres.WriteJson(w, res)

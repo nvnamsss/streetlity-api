@@ -166,7 +166,7 @@ func QueryServiceValidateStage(req *http.Request) *pipeline.Stage {
 func ReviewValidateStage(req *http.Request) *pipeline.Stage {
 	stage := pipeline.NewStage(func() (str struct {
 		ServiceId int64
-		Commenter int64
+		Reviewer  string
 		Score     float32
 		Body      string
 	}, e error) {
@@ -176,8 +176,8 @@ func ReviewValidateStage(req *http.Request) *pipeline.Stage {
 			return str, errors.New("service_id param is missing")
 		}
 
-		if _, ok := form["commenter"]; !ok {
-			return str, errors.New("commenter param is missing")
+		if _, ok := form["reviewer"]; !ok {
+			return str, errors.New("reviewer param is missing")
 		}
 
 		if _, ok := form["score"]; !ok {
@@ -194,18 +194,13 @@ func ReviewValidateStage(req *http.Request) *pipeline.Stage {
 			return str, errors.New("service_id cannot parse to int")
 		}
 
-		if i, e := strconv.ParseInt(form["commenter"][0], 10, 64); e == nil {
-			str.Commenter = i
-		} else {
-			return str, errors.New("commenter cannot parse to int")
-		}
-
 		if f, e := strconv.ParseFloat(form["score"][0], 32); e == nil {
 			str.Score = float32(f)
 		} else {
 			return str, errors.New("score cannot parse to float")
 		}
 
+		str.Reviewer = form["reviewer"][0]
 		str.Body = form["body"][0]
 
 		return
@@ -214,7 +209,7 @@ func ReviewValidateStage(req *http.Request) *pipeline.Stage {
 	return stage
 }
 
-func ReviewByOrderValidate(req *http.Request) *pipeline.Stage {
+func QueryReviewByOrderValidate(req *http.Request) *pipeline.Stage {
 	stage := pipeline.NewStage(func() (str struct {
 		ServiceId int64
 		Order     int64

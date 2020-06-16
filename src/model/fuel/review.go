@@ -9,12 +9,8 @@ import (
 )
 
 type Review struct {
-	Id        int64
-	ServiceId int64   `gorm:"column:service_id"`
-	Reviewer  int64   `gorm:"column:reviewer"`
-	Score     float32 `gorm:"column:score"`
-	Body      string  `gorm:"column:body"`
-	db        *gorm.DB
+	model.Review
+	db *gorm.DB
 }
 
 const ReviewTableName = "fuel_review"
@@ -23,10 +19,10 @@ func (Review) TableName() string {
 	return ReviewTableName
 }
 
-func CreateReview(service_id int64, commenter int64, score float32, body string) (e error) {
+func CreateReview(service_id int64, reviewer string, score float32, body string) (e error) {
 	var review Review = Review{}
 	review.ServiceId = service_id
-	review.Reviewer = commenter
+	review.Reviewer = reviewer
 	review.Score = score
 	review.Body = body
 
@@ -38,7 +34,8 @@ func CreateReview(service_id int64, commenter int64, score float32, body string)
 }
 
 func DeleteReview(review_id int64) (e error) {
-	var review Review = Review{Id: review_id}
+	var review Review
+	review.Id = review_id
 	if e := model.Db.Delete(&review).Error; e != nil {
 		log.Println("[Database]", "delete fuel review", e.Error())
 	}

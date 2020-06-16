@@ -33,9 +33,11 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 		lon := pipe.GetFloat("Lon")[0]
 		note := pipe.GetString("Note")[0]
 		address := pipe.GetString("Address")[0]
+		images := pipe.GetString("Images")
 		s.Lat = float32(lat)
 		s.Lon = float32(lon)
 		s.Note = note
+		s.SetImages(images...)
 		s.Address = address
 		err := toilet.AddToiletUcf(s)
 

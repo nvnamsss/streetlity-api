@@ -223,9 +223,7 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 		s.Lat = float32(lat)
 		s.Lon = float32(lon)
 		s.Note = note
-		for _, image := range images {
-			s.Images += image + ";"
-		}
+		s.SetImages(images...)
 		s.Address = address
 		if ok {
 			s.Name = name[0]
