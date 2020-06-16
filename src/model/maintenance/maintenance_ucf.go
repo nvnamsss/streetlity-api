@@ -9,8 +9,6 @@ import (
 	"github.com/jinzhu/gorm"
 )
 
-const UcfServiceTableName = "maintenance_ucf"
-
 var confident int = 5
 
 type MaintenanceUcf struct {
@@ -19,7 +17,7 @@ type MaintenanceUcf struct {
 }
 
 func (MaintenanceUcf) TableName() string {
-	return UcfServiceTableName
+	return "maintenance_ucf"
 }
 
 func (s MaintenanceUcf) Location() r2.Point {
@@ -37,14 +35,14 @@ func AllUcfs() []MaintenanceUcf {
 	return services
 }
 
-//UpvoteUcfById upvote the unconfirmed maintainer by specific id
+//UpvoteUcf upvote the unconfirmed maintainer by specific id
 func UpvoteUcf(id int64) (e error) {
 	return upvoteMaintenanceUcf(id, 1)
 }
 
 //UpvoteMaintenanceUcfById upvote the unconfirmed maintainer by specific id
 //with out caring about the remaining confident
-func UpvoteMaintenanceUcfByIdImmediately(id int64) (e error) {
+func UpvoteUcfImmediately(id int64) (e error) {
 	return upvoteMaintenanceUcf(id, confident)
 }
 
@@ -66,17 +64,19 @@ func upvoteMaintenanceUcf(id int64, value int) (e error) {
 //CreateUcf add new unconfirmed maintainer service to the database
 //
 //return error if there is something wrong when doing transaction
-func CreateUcf(s MaintenanceUcf) (e error) {
+func CreateUcf(s MaintenanceUcf) (ucf MaintenanceUcf, e error) {
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&MaintenanceUcf{}).Error; e == nil {
-		return errors.New("The service location is existed or some problems is occured")
+		return ucf, errors.New("The service location is existed or some problems is occured")
 	}
 
 	if e = model.Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", "Add maintenance service:", e.Error())
+	} else {
+		ucf = s
 	}
 
 	//Temporal
-	UpvoteUcf(s.Id)
+	UpvoteUcfImmediately(s.Id)
 	return
 }
 
@@ -90,24 +90,34 @@ func queryMaintenanceUcf(s MaintenanceUcf) (service MaintenanceUcf, e error) {
 	return
 }
 
-func UcfByService(s model.ServiceUcf) (service MaintenanceUcf, e error) {
+func UcfServiceByService(s model.ServiceUcf) (service MaintenanceUcf, e error) {
 	service.ServiceUcf = s
 	return queryMaintenanceUcf(service)
 }
 
-func UcfByAddress() {
+func MaintenanceUcfByAddress() {
 }
 
 //UcfById query the unconfirmed maintainer service by specific id
 func UcfById(id int64) (service MaintenanceUcf, e error) {
 	db := model.Db.Find(&service, id)
 	if e := db.Error; e != nil {
-		log.Println("[Database]", "Maintenance service", id, ":", e.Error())
+		log.Println("[Database]", "Fuel service", id, ":", e.Error())
 	}
 
 	if db.RowsAffected == 0 {
-		e = errors.New("Ucf Maintenance service was not found")
-		log.Println("[Database]", e.Error())
+		e = errors.New("Ucf Fuel service was not found")
+		log.Println("[Database]", "fuel ucf", e.Error())
+	}
+
+	return
+}
+
+func DeleteUcf(id int64) (e error) {
+	var ucf MaintenanceUcf
+	ucf.Id = id
+	if e := model.Db.Delete(&ucf).Error; e != nil {
+		log.Println("[Database]", "delete ucf fuel", e.Error())
 	}
 
 	return
@@ -123,23 +133,13 @@ func UcfInRange(p r2.Point, max_range float64) []MaintenanceUcf {
 			location := item.Location()
 
 			d := distance(location, p)
-			s, isFuel := item.(MaintenanceUcf)
-			if isFuel && d < max_range {
+			s, isService := item.(MaintenanceUcf)
+			if isService && d < max_range {
 				result = append(result, s)
 			}
 		}
 	}
 	return result
-}
-
-func DeleteUcf(id int64) (e error) {
-	var ucf MaintenanceUcf
-	ucf.Id = id
-	if e := model.Db.Delete(&ucf).Error; e != nil {
-		log.Println("[Database]", "delete ucf fuel", e.Error())
-	}
-
-	return
 }
 
 func (s *MaintenanceUcf) AfterSave(scope *gorm.Scope) (err error) {

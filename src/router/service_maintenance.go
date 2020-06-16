@@ -229,7 +229,7 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 		if ok {
 			s.Name = name[0]
 		}
-		err := maintenance.CreateUcf(s)
+		_, err := maintenance.CreateUcf(s)
 
 		if err != nil {
 			res.Status = false

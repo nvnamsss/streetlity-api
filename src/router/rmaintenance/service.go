@@ -55,7 +55,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		address := p.GetStringFirstOrDefault("Address")
 		note := p.GetStringFirstOrDefault("Note")
 		images := p.GetString("Images")
-		var ucf fuel.FuelUcf
+		var ucf maintenance.MaintenanceUcf
 		ucf.Lat = float32(lat)
 		ucf.Lon = float32(lon)
 		ucf.Address = address
@@ -78,5 +78,3 @@ func HandleService(router *mux.Router) {
 	s.HandleFunc("/", CreateService).Methods("POST")
 	s.HandleFunc("/", GetService).Methods("GET")
 }
-
-

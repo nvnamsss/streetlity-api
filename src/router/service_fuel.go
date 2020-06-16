@@ -108,7 +108,7 @@ func addFuel(w http.ResponseWriter, req *http.Request) {
 		s.Note = note
 		s.Address = address
 		s.SetImages(images...)
-		err := fuel.CreateUcf(s)
+		_, err := fuel.CreateUcf(s)
 
 		if err != nil {
 			res.Status = false
