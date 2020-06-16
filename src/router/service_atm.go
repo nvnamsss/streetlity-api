@@ -61,7 +61,7 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 		s.Address = address
 		s.SetImages(images...)
 		s.BankId = pipe.GetInt("BankId")[0]
-		err := atm.CreateUcf(s)
+		_, err := atm.CreateUcf(s)
 
 		if err != nil {
 			res.Status = false

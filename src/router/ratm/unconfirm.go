@@ -85,6 +85,7 @@ func HandleUnconfirmed(router *mux.Router) {
 	s := router.PathPrefix("/atm_ucf").Subrouter()
 
 	s.HandleFunc("/", GetAllUnconfirmed).Methods("GET")
+	s.HandleFunc("/", UpdateReview).Methods("POST")
 	s.HandleFunc("/", DeleteUnconfirmed).Methods("DELETE")
 	s.HandleFunc("/range", UnconfirmedInRange).Methods("GET")
 	s.HandleFunc("/upvote", UpvoteUnconfirmed).Methods("POST")

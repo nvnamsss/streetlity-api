@@ -40,7 +40,7 @@ func addToilet(w http.ResponseWriter, req *http.Request) {
 		s.Note = note
 		s.SetImages(images...)
 		s.Address = address
-		err := toilet.CreateUcf(s)
+		_, err := toilet.CreateUcf(s)
 
 		if err != nil {
 			res.Status = false
@@ -90,7 +90,7 @@ func getAllToilets(w http.ResponseWriter, req *http.Request) {
 	res.Status = true
 
 	if res.Status {
-		res.Toilets = toilet.AllToilets()
+		res.Toilets = toilet.AllServices()
 	}
 
 	sres.WriteJson(w, res)
@@ -165,7 +165,7 @@ func getToiletInRange(w http.ResponseWriter, req *http.Request) {
 		max_range := pipe.GetFloat("Range")[0]
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		res.Toilets = toilet.ToiletsInRange(location, max_range)
+		res.Toilets = toilet.ServicesInRange(location, max_range)
 	}
 
 	sres.WriteJson(w, res)
@@ -203,7 +203,7 @@ func getToilet(w http.ResponseWriter, req *http.Request) {
 			break
 		}
 
-		if m, e := toilet.ToiletByService(s); e == nil {
+		if m, e := toilet.ServiceByService(s); e == nil {
 			res.Service = m
 		} else {
 			res.Error(e)

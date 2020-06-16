@@ -63,7 +63,7 @@ func UnconfirmedInRange(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
-func DeleteUcf(w http.ResponseWriter, req *http.Request) {
+func DeleteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 	var res sres.Response = sres.Response{Status: true}
 
 	req.ParseForm()
@@ -85,7 +85,7 @@ func HandleUnconfirmed(router *mux.Router) {
 	s := router.PathPrefix("/fuel_ucf").Subrouter()
 
 	s.HandleFunc("/", GetAllUnconfirmed).Methods("GET")
-	s.HandleFunc("/", DeleteUcf).Methods("DELETE")
+	s.HandleFunc("/", DeleteUnconfirmed).Methods("DELETE")
 	s.HandleFunc("/range", UnconfirmedInRange).Methods("GET")
 	s.HandleFunc("/upvote", UpvoteUnconfirmed).Methods("POST")
 }

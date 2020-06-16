@@ -173,6 +173,7 @@ func HandleReview(router *mux.Router) {
 
 	s.HandleFunc("/", ReviewById).Methods("GET")
 	s.HandleFunc("/", UpdateReview).Methods("POST")
+	s.HandleFunc("/", DeleteReview).Methods("DELETE")
 	s.HandleFunc("/create", CreateReview).Methods("POST")
 	s.HandleFunc("/query", ReviewByServiceId).Methods("GET")
 	s.HandleFunc("/score", ReviewAverageScore).Methods("GET")

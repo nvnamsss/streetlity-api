@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"streelity/v1/model/atm"
 	"streelity/v1/model/maintenance"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
@@ -126,7 +125,7 @@ func CreateReview(w http.ResponseWriter, req *http.Request) {
 		reviewer := p.GetStringFirstOrDefault("Reviewer")
 		score := p.GetFloatFirstOrDefault("Score")
 		body := p.GetStringFirstOrDefault("Body")
-		res.Error(atm.CreateReview(service_id, reviewer, float32(score), body))
+		res.Error(maintenance.CreateReview(service_id, reviewer, float32(score), body))
 	}
 
 	sres.WriteJson(w, res)

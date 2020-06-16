@@ -28,17 +28,17 @@ func (s Toilet) Location() r2.Point {
 }
 
 //AllAtms query all the atm serivces
-func AllToilets() []Toilet {
+func AllServices() []Toilet {
 	var services []Toilet
 	model.Db.Find(&services)
 
 	return services
 }
 
-//AddToilet add new toilet service to the database
+//CreateService add new toilet service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddToilet(s Toilet) (e error) {
+func CreateService(s Toilet) (e error) {
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Toilet{}).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
@@ -60,13 +60,13 @@ func queryToilet(s Toilet) (service Toilet, e error) {
 	return
 }
 
-//ToiletByService get toilet by provide a Service
-func ToiletByService(s model.Service) (services Toilet, e error) {
+//ServiceByService get toilet by provide a Service
+func ServiceByService(s model.Service) (services Toilet, e error) {
 	services.Service = s
 	return queryToilet(services)
 }
 
-func ToiletById(id int64) (service Toilet, e error) {
+func ServiceById(id int64) (service Toilet, e error) {
 	db := model.Db.Find(&service, id)
 	if e := db.Error; e != nil {
 		log.Println("[Database]", "Toilet service", id, ":", e.Error())
@@ -80,10 +80,10 @@ func ToiletById(id int64) (service Toilet, e error) {
 	return
 }
 
-//ToiletByIds query the toilets service by specific id
-func ToiletByIds(ids ...int64) (services []Toilet) {
+//ServicesByIds query the toilets service by specific id
+func ServicesByIds(ids ...int64) (services []Toilet) {
 	for _, id := range ids {
-		s, e := ToiletById(id)
+		s, e := ServiceById(id)
 		if e != nil {
 			continue
 		}
@@ -99,8 +99,8 @@ func distance(p1 r2.Point, p2 r2.Point) float64 {
 	return math.Sqrt(x + y)
 }
 
-//ToiletsInRange query the toilet services which is in the radius of a location
-func ToiletsInRange(p r2.Point, max_range float64) []Toilet {
+//ServicesInRange query the toilet services which is in the radius of a location
+func ServicesInRange(p r2.Point, max_range float64) []Toilet {
 	var result []Toilet = []Toilet{}
 	trees := services.InRange(p, max_range)
 
@@ -131,7 +131,7 @@ func (s Toilet) AfterCreate(scope *gorm.Scope) (e error) {
 func LoadService() {
 	log.Println("[Toilet]", "Loading service")
 
-	toilets := AllToilets()
+	toilets := AllServices()
 	for _, service := range toilets {
 		services.AddItem(service)
 	}

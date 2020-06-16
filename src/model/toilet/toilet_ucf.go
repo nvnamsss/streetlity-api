@@ -92,13 +92,15 @@ func UcfById(id int64) (service ToiletUcf, e error) {
 //CreateUcf add new ToiletUcf service to the database
 //
 //return error if there is something wrong when doing transaction
-func CreateUcf(s ToiletUcf) (e error) {
+func CreateUcf(s ToiletUcf) (ucf ToiletUcf, e error) {
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&ToiletUcf{}).Error; e == nil {
-		return errors.New("The service location is existed or some problems is occured")
+		return ucf, errors.New("The service location is existed or some problems is occured")
 	}
 
 	if e = model.Db.Create(&s).Error; e != nil {
 		log.Println("[Database]", e.Error())
+	} else {
+		ucf = s
 	}
 
 	//Temporal
@@ -139,7 +141,7 @@ func DeleteUcf(id int64) (e error) {
 func (s *ToiletUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident >= confident {
 		var t Toilet = Toilet{Service: s.GetService()}
-		AddToilet(t)
+		CreateService(t)
 		scope.DB().Delete(s)
 		log.Println("[Unconfirmed Toilet]", "Confident is enough. Added", t)
 	}
