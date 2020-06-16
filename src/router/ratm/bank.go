@@ -51,7 +51,7 @@ func CreateBank(w http.ResponseWriter, req *http.Request) {
 	if res.Status {
 		var s atm.Bank
 		s.Name = pipe.GetString("Name")[0]
-		err := atm.AddBank(s)
+		err := atm.CreateBank(s)
 
 		if err != nil {
 			res.Status = false
