@@ -25,7 +25,8 @@ func AllBanks() []Bank {
 }
 
 func CreateBank(s Bank) (e error) {
-	if _, e = BankByName(s.Name); e == nil {
+	db := model.Db.Where("name=?", s.Name).Find(&s)
+	if e = db.Error; e == nil || db.RowsAffected > 0 {
 		e = errors.New("Bank was existed")
 		log.Println("[Database]", "Create new bank", e.Error())
 		return
@@ -40,15 +41,14 @@ func CreateBank(s Bank) (e error) {
 }
 
 func BankByName(name string) (bank Bank, e error) {
-	bank.Name = name
-	db := model.Db.Find(&bank)
+	db := model.Db.Where("name=?", name).First(&bank)
 
 	if e := db.Error; e != nil {
 		log.Println("[Database]", "Get bank", e.Error())
 	}
 
 	if db.RowsAffected == 0 {
-		e := errors.New("Bank was not found")
+		e = errors.New("Bank was not found")
 		log.Println("[Database]", e.Error())
 	}
 
