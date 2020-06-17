@@ -29,6 +29,7 @@ func CreateBank(w http.ResponseWriter, req *http.Request) {
 		sres.Response
 		Bank atm.Bank
 	}
+	res.Status = true
 
 	req.ParseForm()
 	form := req.PostForm
