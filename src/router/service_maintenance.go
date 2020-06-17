@@ -244,19 +244,6 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 
 /*NON-AUTH REQUIRED*/
 
-func getMaintenances(w http.ResponseWriter, req *http.Request) {
-	var res struct {
-		sres.Response
-		Maintenance []maintenance.Maintenance
-	}
-
-	res.Status = true
-
-	res.Maintenance = maintenance.AllServices()
-
-	sres.WriteJson(w, res)
-}
-
 func getMaintenanceById(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
@@ -421,11 +408,11 @@ func getMaintenance(w http.ResponseWriter, req *http.Request) {
 func HandleMaintenance(router *mux.Router) {
 	log.Println("[Router]", "Handling fuel")
 	s := router.PathPrefix("/maintenance").Subrouter()
-	s.HandleFunc("/all", getMaintenances).Methods("GET")
-	s.HandleFunc("/update", updateMaintenance).Methods("POST")
-	s.HandleFunc("/range", getMaintenanceInRange).Methods("GET")
-	s.HandleFunc("/id", getMaintenanceById).Methods("GET")
-	s.HandleFunc("/add", addMaintenance).Methods("POST")
+	// s.HandleFunc("/all", getMaintenances).Methods("GET")
+	// s.HandleFunc("/update", updateMaintenance).Methods("POST")
+	// s.HandleFunc("/range", getMaintenanceInRange).Methods("GET")
+	// s.HandleFunc("/id", getMaintenanceById).Methods("GET")
+	// s.HandleFunc("/add", addMaintenance).Methods("POST")
 	s.HandleFunc("/order", orderMaintenance).Methods("POST")
 	s.HandleFunc("/accept", acceptOrderMaintenance).Methods("POST")
 	s.HandleFunc("/", getMaintenance).Methods("GET")
@@ -433,6 +420,8 @@ func HandleMaintenance(router *mux.Router) {
 	r.HandleFunc("", addMaintenance).Methods("POST")
 	r.Use(middleware.Authenticate)
 
+	s = rmaintenance.HandleService(router)
+	rmaintenance.HandleReview(s)
 	rmaintenance.HandleUnconfirmed(router)
 
 	// r = s.PathPrefix("/upvote").Subrouter()

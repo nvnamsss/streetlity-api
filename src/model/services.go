@@ -71,7 +71,7 @@ func (s ServiceUcf) GetImagesArray() (images []string) {
 	return
 }
 
-func (s ServiceUcf) SetImages(images ...string) {
+func (s *ServiceUcf) SetImages(images ...string) {
 	len := len(images)
 	if len == 0 {
 		return
@@ -131,6 +131,7 @@ func (s ServiceUcf) GetService() (service Service) {
 	service.Lon = s.Lon
 	service.Note = s.Note
 	service.Address = s.Address
+	service.Images = s.Images
 
 	return
 }

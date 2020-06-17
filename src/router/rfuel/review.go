@@ -147,7 +147,7 @@ func ReviewAverageScore(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
-func HandleReview(router *mux.Router) {
+func HandleReview(router *mux.Router) *mux.Router {
 	log.Println("[Router]", "Handling review fuel")
 	s := router.PathPrefix("/review").Subrouter()
 
@@ -157,4 +157,6 @@ func HandleReview(router *mux.Router) {
 	s.HandleFunc("/query", ReviewByServiceId).Methods("GET")
 	s.HandleFunc("/create", CreateReview).Methods("POST")
 	s.HandleFunc("/score", ReviewAverageScore).Methods("GET")
+
+	return s
 }

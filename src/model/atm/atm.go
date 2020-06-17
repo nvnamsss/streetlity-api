@@ -33,11 +33,12 @@ func (s Atm) Location() r2.Point {
 }
 
 //AllServices query all the atm serivces
-func AllServices() []Atm {
-	var services []Atm
-	model.Db.Find(&services)
+func AllServices() (services []Atm, e error) {
+	if e = model.Db.Find(&services).Error; e != nil {
+		log.Println("[Database]", e.Error())
+	}
 
-	return services
+	return
 }
 
 func queryAtm(s Atm) (service Atm, e error) {
@@ -129,7 +130,7 @@ func ServicesInRange(p r2.Point, max_range float64) []Atm {
 func LoadService() {
 	log.Println("[ATM]", "Loading service")
 
-	atms := AllServices()
+	atms, _ := AllServices()
 	for _, atm := range atms {
 		services.AddItem(atm)
 	}

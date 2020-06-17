@@ -28,11 +28,12 @@ func (s Toilet) Location() r2.Point {
 }
 
 //AllAtms query all the atm serivces
-func AllServices() []Toilet {
-	var services []Toilet
-	model.Db.Find(&services)
+func AllServices() (services []Toilet, e error) {
+	if e = model.Db.Find(&services).Error; e != nil {
+		log.Println("[Database]", e.Error())
+	}
 
-	return services
+	return
 }
 
 //CreateService add new toilet service to the database
@@ -131,7 +132,7 @@ func (s Toilet) AfterCreate(scope *gorm.Scope) (e error) {
 func LoadService() {
 	log.Println("[Toilet]", "Loading service")
 
-	toilets := AllServices()
+	toilets, _ := AllServices()
 	for _, service := range toilets {
 		services.AddItem(service)
 	}

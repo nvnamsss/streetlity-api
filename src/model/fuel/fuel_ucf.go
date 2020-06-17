@@ -41,6 +41,10 @@ func AllUcfs() []FuelUcf {
 //
 //return error if there is something wrong when doing transaction
 func CreateUcf(s FuelUcf) (ucf FuelUcf, e error) {
+	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Fuel{}).Error; e == nil {
+		return ucf, errors.New("The service location is existed or some problems is occured")
+	}
+
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&FuelUcf{}).Error; e == nil {
 		return ucf, errors.New("The service location is existed or some problems is occured")
 	}
@@ -140,7 +144,7 @@ func upvoteFuelUcf(id int64, value int) (e error) {
 func (s *FuelUcf) AfterSave(scope *gorm.Scope) (err error) {
 	if s.Confident >= confident {
 		var f Fuel = Fuel{Service: s.GetService()}
-		AddServices(f)
+		CreateServices(f)
 		scope.DB().Delete(s)
 		log.Println("[Unconfirmed Fuel]", "Confident is enough. Added", f)
 	} else {

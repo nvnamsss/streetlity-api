@@ -149,7 +149,7 @@ func DeleteReview(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
-func HandleReview(router *mux.Router) {
+func HandleReview(router *mux.Router) *mux.Router {
 	s := router.PathPrefix("/review").Subrouter()
 
 	s.HandleFunc("/", ReviewById).Methods("GET")
@@ -157,4 +157,6 @@ func HandleReview(router *mux.Router) {
 	s.HandleFunc("/create", CreateReview).Methods("POST")
 	s.HandleFunc("/query", ReviewByServiceId).Methods("GET")
 	s.HandleFunc("/score", ReviewAverageScore).Methods("GET")
+
+	return s
 }

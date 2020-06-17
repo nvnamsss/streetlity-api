@@ -81,11 +81,13 @@ func DeleteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
-func HandleUnconfirmed(router *mux.Router) {
+func HandleUnconfirmed(router *mux.Router) *mux.Router {
 	s := router.PathPrefix("/fuel_ucf").Subrouter()
 
 	s.HandleFunc("/", GetAllUnconfirmed).Methods("GET")
 	s.HandleFunc("/", DeleteUnconfirmed).Methods("DELETE")
 	s.HandleFunc("/range", UnconfirmedInRange).Methods("GET")
 	s.HandleFunc("/upvote", UpvoteUnconfirmed).Methods("POST")
+
+	return s
 }

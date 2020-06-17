@@ -98,6 +98,10 @@ func upvoteAtmUcf(id int64, value int) (e error) {
 //return error if there is something wrong when doing transaction
 func CreateUcf(s AtmUcf) (ucf AtmUcf, e error) {
 	var existed AtmUcf
+	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&AtmUcf{}).Error; e == nil {
+		return ucf, errors.New("The service location is existed or some problems is occured")
+	}
+
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&existed).Error; e == nil {
 		return ucf, errors.New("The service location is existed or some problems is occured")
 	}

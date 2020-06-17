@@ -65,6 +65,10 @@ func upvoteMaintenanceUcf(id int64, value int) (e error) {
 //
 //return error if there is something wrong when doing transaction
 func CreateUcf(s MaintenanceUcf) (ucf MaintenanceUcf, e error) {
+	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Maintenance{}).Error; e == nil {
+		return ucf, errors.New("The service location is existed")
+	}
+
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&MaintenanceUcf{}).Error; e == nil {
 		return ucf, errors.New("The service location is existed or some problems is occured")
 	}

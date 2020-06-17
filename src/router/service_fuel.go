@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"streelity/v1/middleware"
 	"streelity/v1/model"
 	"streelity/v1/model/fuel"
 	"streelity/v1/router/rfuel"
@@ -172,21 +171,6 @@ func getFuelReview(w http.ResponseWriter, req *http.Request) {
 
 /*NON-AUTH REQUIRED*/
 
-func getFuels(w http.ResponseWriter, req *http.Request) {
-	var res struct {
-		sres.Response
-		Fuels []fuel.Fuel
-	}
-
-	res.Status = true
-
-	res.Fuels = fuel.AllServices()
-
-	log.Println("[GetFuels]", res.Fuels)
-
-	sres.WriteJson(w, res)
-}
-
 //getFuelInRange process the in-range query. the request must provide there
 //
 // Parameters:
@@ -336,19 +320,20 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 
 func HandleFuel(router *mux.Router) {
 	log.Println("[Router]", "Handling fuel")
-	s := router.PathPrefix("/fuel").Subrouter()
-	s.HandleFunc("/all", getFuels).Methods("GET")
-	s.HandleFunc("/update", updateFuel).Methods("POST")
-	s.HandleFunc("/range", getFuelInRange).Methods("GET")
-	s.HandleFunc("/", getFuel).Methods("GET")
+	// s := router.PathPrefix("/fuel").Subrouter()
+	// s.HandleFunc("/all", getFuels).Methods("GET")
+	// s.HandleFunc("/update", updateFuel).Methods("POST")
+	// s.HandleFunc("/range", getFuelInRange).Methods("GET")
+	// s.HandleFunc("/", getFuel).Methods("GET")
 
-	rfuel.HandleReview(s)
 	// s.HandleFunc("/review", addFuelReview).Methods("POST")
 
-	r := s.PathPrefix("/add").Subrouter()
-	r.HandleFunc("", addFuel).Methods("POST")
-	r.Use(middleware.Authenticate)
+	// r := s.PathPrefix("/add").Subrouter()
+	// r.HandleFunc("", addFuel).Methods("POST")
+	// r.Use(middleware.Authenticate)
 
+	s := rfuel.HandleService(router)
+	rfuel.HandleReview(s)
 	rfuel.HandleUnconfirmed(router)
 	// r = s.PathPrefix("/upvote").Subrouter()
 	// r.HandleFunc("", upvoteFuel).Methods("POST")

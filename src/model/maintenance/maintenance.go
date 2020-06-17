@@ -34,11 +34,12 @@ func (s Maintenance) Location() r2.Point {
 }
 
 //AllServices query all maintenance services
-func AllServices() []Maintenance {
-	var services []Maintenance
-	model.Db.Find(&services)
+func AllServices() (services []Maintenance, e error) {
+	if e = model.Db.Find(&services).Error; e != nil {
+		log.Println("[Database]", e.Error())
+	}
 
-	return services
+	return
 }
 
 //CreateService add new maintenance service to the database
@@ -154,7 +155,7 @@ func (s Maintenance) AfterCreate(scope *gorm.Scope) (e error) {
 func LoadService() {
 	log.Println("[Maintenance]", "Loading service")
 
-	maintenances := AllServices()
+	maintenances, _ := AllServices()
 	for _, service := range maintenances {
 		services.AddItem(service)
 	}

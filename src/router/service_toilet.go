@@ -5,14 +5,12 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"streelity/v1/middleware"
 	"streelity/v1/model"
 	"streelity/v1/model/toilet"
 	"streelity/v1/router/rtoilet"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
 
-	"github.com/golang/geo/r2"
 	"github.com/gorilla/mux"
 	"github.com/nvnamsss/goinf/pipeline"
 )
@@ -81,94 +79,8 @@ func upvoteToilet(w http.ResponseWriter, req *http.Request) {
 }
 
 /*NON-AUTH REQUIRED*/
-
-func getAllToilets(w http.ResponseWriter, req *http.Request) {
-	var res struct {
-		sres.Response
-		Toilets []toilet.Toilet
-	}
-	res.Status = true
-
-	if res.Status {
-		res.Toilets = toilet.AllServices()
-	}
-
-	sres.WriteJson(w, res)
-}
-
 func updateToilet(w http.ResponseWriter, req *http.Request) {
 
-}
-
-func getToiletInRange(w http.ResponseWriter, req *http.Request) {
-	var res struct {
-		sres.Response
-		Toilets []toilet.Toilet
-	}
-
-	res.Status = true
-	query := req.URL.Query()
-	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-
-	validateParamsStage := pipeline.NewStage(func() error {
-		location, locationOk := query["location"]
-		if !locationOk {
-			return errors.New("location param is missing")
-		} else {
-			if len(location) < 2 {
-				return errors.New("location param must have 2 values")
-			}
-		}
-
-		_, rangeOk := query["range"]
-		if !rangeOk {
-			return errors.New("range param is missing")
-		}
-
-		return nil
-	})
-
-	parseValueStage := pipeline.NewStage(func() (str struct {
-		Lat   float64
-		Lon   float64
-		Range float64
-	}, e error) {
-		var (
-			latErr   error
-			lonErr   error
-			rangeErr error
-		)
-
-		str.Lat, latErr = strconv.ParseFloat(query["location"][0], 64)
-		str.Lon, lonErr = strconv.ParseFloat(query["location"][1], 64)
-		str.Range, rangeErr = strconv.ParseFloat(query["range"][0], 64)
-		if latErr != nil {
-			return str, errors.New("cannot parse location[0] to float")
-		}
-		if lonErr != nil {
-			return str, errors.New("cannot parse location[1] to float")
-		}
-		if rangeErr != nil {
-			return str, errors.New("cannot parse range to float")
-		}
-		return str, nil
-	})
-
-	validateParamsStage.NextStage(parseValueStage)
-	pipe.First = validateParamsStage
-
-	res.Error(pipe.Run())
-
-	if res.Status {
-		lat := pipe.GetFloat("Lat")[0]
-		lon := pipe.GetFloat("Lon")[0]
-		max_range := pipe.GetFloat("Range")[0]
-		var location r2.Point = r2.Point{X: lat, Y: lon}
-
-		res.Toilets = toilet.ServicesInRange(location, max_range)
-	}
-
-	sres.WriteJson(w, res)
 }
 
 func getToilet(w http.ResponseWriter, req *http.Request) {
@@ -216,16 +128,18 @@ func getToilet(w http.ResponseWriter, req *http.Request) {
 
 func HandleToilet(router *mux.Router) {
 	log.Println("[Router]", "Handling Toilet")
-	s := router.PathPrefix("/toilet").Subrouter()
-	s.HandleFunc("/all", getAllToilets).Methods("GET")
-	s.HandleFunc("/update", updateToilet).Methods("POST")
-	s.HandleFunc("/range", getToiletInRange).Methods("GET")
-	s.HandleFunc("/", getToilet).Methods("GET")
+	// s := router.PathPrefix("/toilet").Subrouter()
+	// s.HandleFunc("/all", getAllToilets).Methods("GET")
+	// s.HandleFunc("/update", updateToilet).Methods("POST")
+	// s.HandleFunc("/range", getToiletInRange).Methods("GET")
+	// s.HandleFunc("/", getToilet).Methods("GET")
 
-	r := s.PathPrefix("/add").Subrouter()
-	r.HandleFunc("", addToilet).Methods("POST")
-	r.Use(middleware.Authenticate)
+	// r := s.PathPrefix("/add").Subrouter()
+	// r.HandleFunc("", addToilet).Methods("POST")
+	// r.Use(middleware.Authenticate)
 
+	s := rtoilet.HandleService(router)
+	rtoilet.HandleReview(s)
 	rtoilet.HandleUnconfirmed(router)
 	// r = s.PathPrefix("/upvote").Subrouter()
 	// r.HandleFunc("", updateToilet).Methods("POST")

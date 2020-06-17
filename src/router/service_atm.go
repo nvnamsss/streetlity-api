@@ -5,7 +5,6 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"streelity/v1/middleware"
 	"streelity/v1/model"
 	"streelity/v1/model/atm"
 	"streelity/v1/router/ratm"
@@ -102,25 +101,6 @@ func upvoteAtm(w http.ResponseWriter, req *http.Request) {
 }
 
 /*NON-AUTH REQUIRED*/
-
-func getAtms(w http.ResponseWriter, req *http.Request) {
-	var res struct {
-		sres.Response
-		Atms []atm.Atm
-	}
-	res.Status = true
-
-	if !res.Status {
-		res.Write(w)
-		return
-	}
-
-	if res.Status {
-		res.Atms = atm.AllServices()
-	}
-
-	sres.WriteJson(w, res)
-}
 
 func getAtmById(w http.ResponseWriter, req *http.Request) {
 
@@ -256,18 +236,19 @@ func getBanks(w http.ResponseWriter, req *http.Request) {
 
 func HandleAtm(router *mux.Router) {
 	log.Println("[Router]", "Handling Atm")
-	s := router.PathPrefix("/atm").Subrouter()
-	s.HandleFunc("/all", getAtms).Methods("GET")
-	s.HandleFunc("/update", updateAtm).Methods("POST")
-	s.HandleFunc("/range", getAtmInRange).Methods("GET")
-	s.HandleFunc("/", getAtm).Methods("GET")
+	// s := router.PathPrefix("/atm").Subrouter()
+	// s.HandleFunc("/all", getAtms).Methods("GET")
+	// s.HandleFunc("/update", updateAtm).Methods("POST")
+	// s.HandleFunc("/range", getAtmInRange).Methods("GET")
+	// s.HandleFunc("/", getAtm).Methods("GET")
 
+	// r := s.PathPrefix("/add").Subrouter()
+	// r.HandleFunc("", addAtm).Methods("POST")
+	// r.Use(middleware.Authenticate)
+
+	s := ratm.HandleService(router)
+	ratm.HandleReview(s)
 	ratm.HandleBank(s)
-
-	r := s.PathPrefix("/add").Subrouter()
-	r.HandleFunc("", addAtm).Methods("POST")
-	r.Use(middleware.Authenticate)
-
 	ratm.HandleUnconfirmed(router)
 	// r = s.PathPrefix("/upvote").Subrouter()
 	// r.HandleFunc("", upvoteAtm).Methods("POST")

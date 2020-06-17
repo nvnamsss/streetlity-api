@@ -34,17 +34,18 @@ func (s Fuel) Location() r2.Point {
 }
 
 //AllServices query all fuel services
-func AllServices() []Fuel {
-	var services []Fuel
-	model.Db.Find(&services)
+func AllServices() (services []Fuel, e error) {
+	if e = model.Db.Find(&services).Error; e != nil {
+		log.Println("[Database]", e.Error())
+	}
 
-	return services
+	return
 }
 
-//AddServices add new fuel service to the database
+//CreateServices add new fuel service to the database
 //
 //return error if there is something wrong when doing transaction
-func AddServices(s Fuel) (e error) {
+func CreateServices(s Fuel) (e error) {
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Fuel{}).Error; e == nil {
 		return errors.New("The service location is existed or some problems is occured")
 	}
@@ -137,7 +138,7 @@ func (s Fuel) AfterCreate(scope *gorm.Scope) (e error) {
 func LoadService() {
 	log.Println("[Fuel]", "Loading service")
 
-	fuels := AllServices()
+	fuels, _ := AllServices()
 	for _, atm := range fuels {
 		services.AddItem(atm)
 	}

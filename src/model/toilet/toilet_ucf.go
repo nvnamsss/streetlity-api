@@ -93,6 +93,10 @@ func UcfById(id int64) (service ToiletUcf, e error) {
 //
 //return error if there is something wrong when doing transaction
 func CreateUcf(s ToiletUcf) (ucf ToiletUcf, e error) {
+	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Toilet{}).Error; e == nil {
+		return ucf, errors.New("The service location is existed or some problems is occured")
+	}
+
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&ToiletUcf{}).Error; e == nil {
 		return ucf, errors.New("The service location is existed or some problems is occured")
 	}
