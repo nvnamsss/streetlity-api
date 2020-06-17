@@ -44,7 +44,8 @@ var OnConnected *event.Event = event.NewEvent()
 
 // }
 func GetById(tablename string, id interface{}, ref interface{}) (e error) {
-	db := Db.Table(tablename).Where("id=?", id).Find(&ref)
+	db := Db.Table(tablename).Where("id=?", id).First(ref)
+	e = db.Error
 
 	if db.RowsAffected == 0 {
 		e := errors.New("record was not found")

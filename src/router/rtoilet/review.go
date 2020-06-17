@@ -56,7 +56,8 @@ func UpdateReview(w http.ResponseWriter, req *http.Request) {
 			res.Error(e)
 		} else {
 			review.Body = new_body
-			review.Save()
+			res.Error(review.Save())
+			res.Review = review
 		}
 	}
 

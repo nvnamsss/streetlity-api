@@ -77,7 +77,7 @@ func ReviewAverageScore(service_id int64) (average float64) {
 }
 
 func (r Review) Save() (e error) {
-	if e := r.db.Save(&r).Error; e != nil {
+	if e = r.db.Save(&r).Error; e != nil {
 		log.Println("[Database]", "save fuel review", e.Error())
 	}
 
