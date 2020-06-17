@@ -3,7 +3,6 @@ package rfuel
 import (
 	"net/http"
 	"streelity/v1/model/fuel"
-	"streelity/v1/model/toilet"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
 
@@ -91,7 +90,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 func ServiceInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Toilets []toilet.Toilet
+		Services []fuel.Fuel
 	}
 	res.Status = true
 	pipe := pipeline.NewPipeline()
@@ -106,7 +105,7 @@ func ServiceInRange(w http.ResponseWriter, req *http.Request) {
 		max_range := pipe.GetFloatFirstOrDefault("Range")
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		res.Toilets = toilet.ServicesInRange(location, max_range)
+		res.Services = fuel.ServicesInRange(location, max_range)
 	}
 
 	sres.WriteJson(w, res)
@@ -118,8 +117,7 @@ func HandleService(router *mux.Router) *mux.Router {
 	s.HandleFunc("/", CreateService).Methods("POST")
 	s.HandleFunc("/", GetService).Methods("GET")
 	s.HandleFunc("/all", AllServices).Methods("GET")
-	s.HandleFunc("/upvote", UpvoteUnconfirmed).Methods("POST")
 	s.HandleFunc("/create", CreateService).Methods("POST")
-
+	s.HandleFunc("/range", ServiceInRange).Methods("GET")
 	return s
 }

@@ -117,8 +117,8 @@ func HandleService(router *mux.Router) *mux.Router {
 	s.HandleFunc("/", CreateService).Methods("POST")
 	s.HandleFunc("/", GetService).Methods("GET")
 	s.HandleFunc("/all", AllServices).Methods("GET")
-	s.HandleFunc("/upvote", UpvoteUnconfirmed).Methods("POST")
 	s.HandleFunc("/create", CreateService).Methods("POST")
+	s.HandleFunc("/range", ServiceInRange).Methods("GET")
 
 	return s
 }
