@@ -1,6 +1,7 @@
 package rmaintenance
 
 import (
+	"errors"
 	"net/http"
 	"streelity/v1/model/fuel"
 	"streelity/v1/model/maintenance"
@@ -62,6 +63,18 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 
 	p := pipeline.NewPipeline()
 	stage := stages.AddingServiceValidateStage(req)
+	nameStage := pipeline.NewStage(func() (str struct {
+		Name string
+	}, e error) {
+		form := req.PostForm
+		names, ok := form["name"]
+		if !ok {
+			return str, errors.New("name param is missing")
+		}
+		Name = names[0]
+		return
+	})
+	stage.NextStage(nameStage)
 	p.First = stage
 
 	res.Error(p.Run())
@@ -71,12 +84,14 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		lon := p.GetFloatFirstOrDefault("Lon")
 		address := p.GetStringFirstOrDefault("Address")
 		note := p.GetStringFirstOrDefault("Note")
+		name := p.GetStringFirstOrDefault("Name")
 		images := p.GetString("Images")
 		var ucf maintenance.MaintenanceUcf
 		ucf.Lat = float32(lat)
 		ucf.Lon = float32(lon)
 		ucf.Address = address
 		ucf.Note = note
+		ucf.Name = name
 		ucf.SetImages(images...)
 
 		if service, e := maintenance.CreateUcf(ucf); e != nil {
@@ -97,6 +112,7 @@ func ServiceInRange(w http.ResponseWriter, req *http.Request) {
 	res.Status = true
 	pipe := pipeline.NewPipeline()
 	stage := stages.InRangeServiceValidateStage(req)
+
 	pipe.First = stage
 
 	res.Error(pipe.Run())
