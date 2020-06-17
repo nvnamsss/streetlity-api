@@ -108,7 +108,11 @@ func CreateReview(w http.ResponseWriter, req *http.Request) {
 		reviewer := p.GetStringFirstOrDefault("Reviewer")
 		score := p.GetFloatFirstOrDefault("Score")
 		body := p.GetStringFirstOrDefault("Body")
-		res.Error(toilet.CreateReview(service_id, reviewer, float32(score), body))
+		if review, e := toilet.CreateReview(service_id, reviewer, float32(score), body); e != nil {
+			res.Error(e)
+		} else {
+			res.Review = review
+		}
 	}
 
 	sres.WriteJson(w, res)

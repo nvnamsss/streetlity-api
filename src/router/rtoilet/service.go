@@ -90,7 +90,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 func ServiceInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Toilets []toilet.Toilet
+		Services []toilet.Toilet
 	}
 	res.Status = true
 	pipe := pipeline.NewPipeline()
@@ -105,7 +105,7 @@ func ServiceInRange(w http.ResponseWriter, req *http.Request) {
 		max_range := pipe.GetFloatFirstOrDefault("Range")
 		var location r2.Point = r2.Point{X: lat, Y: lon}
 
-		res.Toilets = toilet.ServicesInRange(location, max_range)
+		res.Services = toilet.ServicesInRange(location, max_range)
 	}
 
 	sres.WriteJson(w, res)
@@ -119,5 +119,6 @@ func HandleService(router *mux.Router) *mux.Router {
 	s.HandleFunc("/all", AllServices).Methods("GET")
 	s.HandleFunc("/range", ServiceInRange).Methods("GET")
 	s.HandleFunc("/create", CreateService).Methods("POST")
+
 	return s
 }

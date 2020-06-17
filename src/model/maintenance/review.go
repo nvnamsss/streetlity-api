@@ -13,14 +13,13 @@ type Review struct {
 	db *gorm.DB
 }
 
-const ReviewTableName = "maintenace_review"
+const ReviewTableName = "maintenance_review"
 
 func (Review) TableName() string {
 	return ReviewTableName
 }
 
-func CreateReview(service_id int64, reviewer string, score float32, body string) (e error) {
-	var review Review = Review{}
+func CreateReview(service_id int64, reviewer string, score float32, body string) (review Review, e error) {
 	review.ServiceId = service_id
 	review.Reviewer = reviewer
 	review.Score = score
