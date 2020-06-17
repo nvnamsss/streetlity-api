@@ -18,7 +18,7 @@ func TestCreateReview(t *testing.T) {
 		score := gofakeit.Float32Range(0, 5)
 		body := gofakeit.Sentence(100)
 
-		if e := fuel.CreateReview(service_id, reviewer, score, body); e != nil {
+		if _, e := fuel.CreateReview(service_id, reviewer, score, body); e != nil {
 			t.Error(e)
 		}
 	}
