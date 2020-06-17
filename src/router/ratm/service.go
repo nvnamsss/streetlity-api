@@ -1,7 +1,9 @@
 package ratm
 
 import (
+	"errors"
 	"net/http"
+	"strconv"
 	"streelity/v1/model/atm"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
@@ -60,6 +62,24 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 	res.Status = true
 	p := pipeline.NewPipeline()
 	stage := stages.AddingServiceValidateStage(req)
+	bankStage := pipeline.NewStage(func() (str struct {
+		BankId int64
+	}, e error) {
+		form := req.PostForm
+		ids, ok := form["bank_id"]
+		if !ok {
+			return str, errors.New("bank_id param is missing")
+		}
+
+		if id, e := strconv.ParseInt(ids[0], 10, 64); e != nil {
+			return str, errors.New("bank_id cannot parse to int64")
+		} else {
+			str.BankId = id
+		}
+
+		return
+	})
+	stage.NextStage(bankStage)
 	p.First = stage
 
 	res.Error(p.Run())
@@ -70,11 +90,13 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		address := p.GetStringFirstOrDefault("Address")
 		note := p.GetStringFirstOrDefault("Note")
 		images := p.GetString("Images")
+		bank_id := p.GetIntFirstOrDefault("BankId")
 		var ucf atm.AtmUcf
 		ucf.Lat = float32(lat)
 		ucf.Lon = float32(lon)
 		ucf.Address = address
 		ucf.Note = note
+		ucf.BankId = bank_id
 		ucf.SetImages(images...)
 
 		if service, e := atm.CreateUcf(ucf); e != nil {
