@@ -114,7 +114,7 @@ func ServiceInRange(w http.ResponseWriter, req *http.Request) {
 }
 
 func HandleService(router *mux.Router) *mux.Router {
-	s := router.PathPrefix("/fuel").Subrouter()
+	s := router.PathPrefix("/maintenance").Subrouter()
 
 	s.HandleFunc("/", CreateService).Methods("POST")
 	s.HandleFunc("/", GetService).Methods("GET")
