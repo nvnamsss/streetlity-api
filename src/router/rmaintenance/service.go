@@ -71,7 +71,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		if !ok {
 			return str, errors.New("name param is missing")
 		}
-		Name = names[0]
+		str.Name = names[0]
 		return
 	})
 	stage.NextStage(nameStage)
