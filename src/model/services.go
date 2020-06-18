@@ -46,7 +46,7 @@ func (s Service) GetImagesArray() (images []string) {
 	return
 }
 
-func (s Service) SetImages(images ...string) {
+func (s *Service) SetImages(images ...string) {
 	len := len(images)
 	if len == 0 {
 		return

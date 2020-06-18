@@ -20,12 +20,14 @@ type MaintenanceOrder struct {
 	Status          int    `json:"Status"`
 }
 
+const RequestOrderPath = "/order/request"
+
 func RequestOrder(values url.Values) (res struct {
 	Status  bool             `json:"Status"`
 	Message string           `json:"Message"`
 	Order   MaintenanceOrder `json:"Order"`
 }, e error) {
-	host := "http://" + config.Config.MaintenanceHost + "/order/"
+	host := "http://" + config.Config.MaintenanceHost + RequestOrderPath
 	resp, e := http.PostForm(host, values)
 
 	if e != nil {

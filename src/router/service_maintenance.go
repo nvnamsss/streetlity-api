@@ -34,15 +34,15 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 	}, e error) {
 		form := req.PostForm
 
-		commonUsers, ok := form["commonUser"]
+		commonUsers, ok := form["common_user"]
 		if !ok {
-			return str, errors.New("commonUser param is misisng")
+			return str, errors.New("common_user param is misisng")
 		}
 
-		ids, ok := form["id"]
+		ids, ok := form["service_id"]
 
 		if !ok {
-			return str, errors.New("id param is missing")
+			return str, errors.New("service_id param is missing")
 		}
 
 		reasons, ok := form["reason"]
@@ -73,28 +73,33 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 	res.Error(p.Run())
 
 	if res.Status {
-		commonUser := p.GetString("CommonUser")[0]
+		common_user := p.GetString("CommonUser")[0]
 		service_ids := p.GetInt("ServiceId")
 		reason := p.GetString("Reason")[0]
 		note := p.GetStringFirstOrDefault("Note")
 
 		services := maintenance.ServicesByIds(service_ids...)
-		maintenanceIds := []string{}
+		maintenance_users := []string{}
 		for _, s := range services {
-			maintenanceIds = append(maintenanceIds, s.Owner)
+			maintenance_users = append(maintenance_users, s.Owner)
 		}
 
-		if len(maintenanceIds) == 0 {
+		if len(maintenance_users) == 0 {
 			res.Error(errors.New("cannot find any suitable maintenance user"))
 		} else {
-			order, e := srpc.RequestOrder(url.Values{
-				"maintenanceUser": maintenanceIds,
-				"commonUser":      {commonUser},
-				"reason":          {reason},
-				"note":            {note},
-			})
-			log.Println(order)
-			res.Error(e)
+			if order, e := srpc.RequestOrder(url.Values{
+				"maintenance_users": maintenance_users,
+				"common_user":       {common_user},
+				"reason":            {reason},
+				"note":              {note},
+			}); e != nil {
+				log.Println("hi mom")
+				res.Error(e)
+			} else {
+				log.Println(order)
+				res.Status = order.Status
+				res.Message = order.Message
+			}
 		}
 
 	}
