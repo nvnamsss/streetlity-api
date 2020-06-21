@@ -3,7 +3,6 @@ package rmaintenance
 import (
 	"errors"
 	"net/http"
-	"streelity/v1/model/fuel"
 	"streelity/v1/model/maintenance"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
@@ -16,7 +15,7 @@ import (
 func GetService(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Service fuel.Fuel
+		Service maintenance.Maintenance
 	}
 	res.Status = true
 
@@ -28,7 +27,7 @@ func GetService(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		id := p.GetIntFirstOrDefault("Id")
-		if service, e := fuel.ServiceById(id); e != nil {
+		if service, e := maintenance.ServiceById(id); e != nil {
 			res.Error(e)
 		} else {
 			res.Service = service
@@ -62,6 +61,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 	res.Status = true
 
 	p := pipeline.NewPipeline()
+	req.ParseForm()
 	stage := stages.AddingServiceValidateStage(req)
 	nameStage := pipeline.NewStage(func() (str struct {
 		Name string
@@ -104,6 +104,23 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
+func SetOwner(w http.ResponseWriter, req *http.Request) {
+	var res sres.Response = sres.Response{Status: true}
+	p := pipeline.NewPipeline()
+	stage := stages.SetOwnerValidate(req)
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		service_id := p.GetInt("ServiceId")[0]
+		owner := p.GetString("Owner")[0]
+		values := make(map[string]string)
+		values["owner"] = owner
+		maintenance.UpdateService(service_id, values)
+	}
+	sres.WriteJson(w, res)
+}
+
 func ServiceInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
@@ -134,6 +151,7 @@ func HandleService(router *mux.Router) *mux.Router {
 
 	s.HandleFunc("/", CreateService).Methods("POST")
 	s.HandleFunc("/", GetService).Methods("GET")
+	s.HandleFunc("/owner", SetOwner).Methods("POST")
 	s.HandleFunc("/all", AllServices).Methods("GET")
 	s.HandleFunc("/create", CreateService).Methods("POST")
 	s.HandleFunc("/range", ServiceInRange).Methods("GET")
