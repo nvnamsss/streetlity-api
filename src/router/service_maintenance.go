@@ -6,7 +6,6 @@ import (
 	"net/http"
 	"net/url"
 	"strconv"
-	"streelity/v1/middleware"
 	"streelity/v1/model"
 	"streelity/v1/model/maintenance"
 	"streelity/v1/router/rmaintenance"
@@ -413,25 +412,10 @@ func getMaintenance(w http.ResponseWriter, req *http.Request) {
 
 func HandleMaintenance(router *mux.Router) {
 	log.Println("[Router]", "Handling fuel")
-	s := router.PathPrefix("/maintenance").Subrouter()
-	// s.HandleFunc("/all", getMaintenances).Methods("GET")
-	// s.HandleFunc("/update", updateMaintenance).Methods("POST")
-	// s.HandleFunc("/range", getMaintenanceInRange).Methods("GET")
-	// s.HandleFunc("/id", getMaintenanceById).Methods("GET")
-	// s.HandleFunc("/add", addMaintenance).Methods("POST")
-	s.HandleFunc("/order", orderMaintenance).Methods("POST")
-	s.HandleFunc("/accept", acceptOrderMaintenance).Methods("POST")
-	s.HandleFunc("/", getMaintenance).Methods("GET")
-	r := s.PathPrefix("/add").Subrouter()
-	r.HandleFunc("", addMaintenance).Methods("POST")
-	r.Use(middleware.Authenticate)
-
-	s = rmaintenance.HandleService(router)
+	s := rmaintenance.HandleService(router)
 	rmaintenance.HandleReview(s)
 	rmaintenance.HandleUnconfirmed(router)
-
-	// r = s.PathPrefix("/upvote").Subrouter()
-	// r.HandleFunc("", upvoteMaintenance).Methods("POST")
-	// r.Use(middleware.Authenticate)
-
+	s.HandleFunc("/order", orderMaintenance).Methods("POST")
+	s.HandleFunc("/accept", acceptOrderMaintenance).Methods("POST")
+	// s.HandleFunc("/", getMaintenance).Methods("GET")
 }

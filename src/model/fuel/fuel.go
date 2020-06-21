@@ -75,7 +75,7 @@ func ServiceByService(s model.Service) (services Fuel, e error) {
 
 //ServiceById query the fuel service by specific id
 func ServiceById(id int64) (service Fuel, e error) {
-	db := model.Db.Find(&service, id)
+	db := model.Db.Where("id=?", id).First(&service)
 	if e := db.Error; e != nil {
 		log.Println("[Database]", "Fuel service", id, ":", e.Error())
 	}

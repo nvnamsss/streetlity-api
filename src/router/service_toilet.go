@@ -128,20 +128,7 @@ func getToilet(w http.ResponseWriter, req *http.Request) {
 
 func HandleToilet(router *mux.Router) {
 	log.Println("[Router]", "Handling Toilet")
-	// s := router.PathPrefix("/toilet").Subrouter()
-	// s.HandleFunc("/all", getAllToilets).Methods("GET")
-	// s.HandleFunc("/update", updateToilet).Methods("POST")
-	// s.HandleFunc("/range", getToiletInRange).Methods("GET")
-	// s.HandleFunc("/", getToilet).Methods("GET")
-
-	// r := s.PathPrefix("/add").Subrouter()
-	// r.HandleFunc("", addToilet).Methods("POST")
-	// r.Use(middleware.Authenticate)
-
 	s := rtoilet.HandleService(router)
 	rtoilet.HandleReview(s)
 	rtoilet.HandleUnconfirmed(router)
-	// r = s.PathPrefix("/upvote").Subrouter()
-	// r.HandleFunc("", updateToilet).Methods("POST")
-	// r.Use(middleware.Authenticate)
 }

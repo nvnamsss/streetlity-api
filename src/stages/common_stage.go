@@ -2,6 +2,7 @@ package stages
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"net/url"
 	"strconv"
@@ -14,7 +15,6 @@ the pipeline in request handle*/
 
 //ServiceValidateStage create the validated stage for adding a new service
 func AddingServiceValidateStage(req *http.Request) *pipeline.Stage {
-	req.ParseForm()
 	s := pipeline.NewStage(func() (str struct {
 		Lat     float64
 		Lon     float64
@@ -23,6 +23,7 @@ func AddingServiceValidateStage(req *http.Request) *pipeline.Stage {
 		Images  []string
 	}, e error) {
 		form := req.PostForm
+		log.Println("[Pipeline]", form)
 		location, locationOk := form["location"]
 		_, addressOk := form["address"]
 		if !locationOk {

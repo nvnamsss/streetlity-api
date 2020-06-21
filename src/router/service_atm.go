@@ -236,22 +236,8 @@ func getBanks(w http.ResponseWriter, req *http.Request) {
 
 func HandleAtm(router *mux.Router) {
 	log.Println("[Router]", "Handling Atm")
-	// s := router.PathPrefix("/atm").Subrouter()
-	// s.HandleFunc("/all", getAtms).Methods("GET")
-	// s.HandleFunc("/update", updateAtm).Methods("POST")
-	// s.HandleFunc("/range", getAtmInRange).Methods("GET")
-	// s.HandleFunc("/", getAtm).Methods("GET")
-
-	// r := s.PathPrefix("/add").Subrouter()
-	// r.HandleFunc("", addAtm).Methods("POST")
-	// r.Use(middleware.Authenticate)
-
 	s := ratm.HandleService(router)
 	ratm.HandleReview(s)
 	ratm.HandleBank(s)
 	ratm.HandleUnconfirmed(router)
-	// r = s.PathPrefix("/upvote").Subrouter()
-	// r.HandleFunc("", upvoteAtm).Methods("POST")
-	// r.Use(middleware.Authenticate)
-
 }

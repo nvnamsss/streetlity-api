@@ -52,6 +52,7 @@ func ReviewById(w http.ResponseWriter, req *http.Request) {
 
 	sres.WriteJson(w, res)
 }
+
 func UpdateReview(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response

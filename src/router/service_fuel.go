@@ -320,22 +320,7 @@ func getFuel(w http.ResponseWriter, req *http.Request) {
 
 func HandleFuel(router *mux.Router) {
 	log.Println("[Router]", "Handling fuel")
-	// s := router.PathPrefix("/fuel").Subrouter()
-	// s.HandleFunc("/all", getFuels).Methods("GET")
-	// s.HandleFunc("/update", updateFuel).Methods("POST")
-	// s.HandleFunc("/range", getFuelInRange).Methods("GET")
-	// s.HandleFunc("/", getFuel).Methods("GET")
-
-	// s.HandleFunc("/review", addFuelReview).Methods("POST")
-
-	// r := s.PathPrefix("/add").Subrouter()
-	// r.HandleFunc("", addFuel).Methods("POST")
-	// r.Use(middleware.Authenticate)
-
 	s := rfuel.HandleService(router)
 	rfuel.HandleReview(s)
 	rfuel.HandleUnconfirmed(router)
-	// r = s.PathPrefix("/upvote").Subrouter()
-	// r.HandleFunc("", upvoteFuel).Methods("POST")
-	// r.Use(middleware.Authenticate)
 }
