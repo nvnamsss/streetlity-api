@@ -81,7 +81,9 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 		services := maintenance.ServicesByIds(service_ids...)
 		maintenance_users := []string{}
 		for _, s := range services {
-			maintenance_users = append(maintenance_users, s.Owner)
+			if s.Owner != "" {
+				maintenance_users = append(maintenance_users, s.Owner)
+			}
 		}
 
 		if len(maintenance_users) == 0 {
@@ -93,7 +95,6 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 				"reason":            {reason},
 				"note":              {note},
 			}); e != nil {
-				log.Println("hi mom")
 				res.Error(e)
 			} else {
 				log.Println(order)

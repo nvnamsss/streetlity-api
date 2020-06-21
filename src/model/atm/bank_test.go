@@ -8,7 +8,20 @@ import (
 
 func TestCreateBank(t *testing.T) {
 	model.ConnectSync()
-	names := []string{"Agribank", "Vietcombank", "Shinhanbank", "VPBank", "OceanBank", "VietinBank"}
+	names := []string{"Agribank",
+		"Vietcombank",
+		"Shinhanbank",
+		"VPBank",
+		"OceanBank",
+		"VietinBank",
+		"HDBank",
+		"VIBank",
+		"EximBank",
+		"Sacombank",
+		"DongABank",
+		"NamABank",
+		"SaigonBank",
+		"TPBank"}
 
 	for _, name := range names {
 		atm.CreateBank(atm.Bank{Name: name})
