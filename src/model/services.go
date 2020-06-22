@@ -1,6 +1,7 @@
 package model
 
 import (
+	"errors"
 	"log"
 	"math"
 	"regexp"
@@ -133,5 +134,27 @@ func (s ServiceUcf) GetService() (service Service) {
 	service.Address = s.Address
 	service.Images = s.Images
 
+	return
+}
+
+func GetServiceByLocation(tablename string, lat, lon float64, ref interface{}) (e error) {
+	db := Db.Table(tablename).Where("lat=? AND lon=?", lat, lon).First(ref)
+	e = db.Error
+
+	if db.RowsAffected == 0 {
+		e := errors.New("record was not found")
+		log.Println("[Database]", "get by location", tablename, e.Error())
+	}
+	return
+}
+
+func GetServiceByAddress(tablename string, address, ref interface{}) (e error) {
+	db := Db.Table(tablename).Where("MATCH(address) AGAINST('?')", address).Find(ref)
+	e = db.Error
+
+	if db.RowsAffected == 0 {
+		e := errors.New("record was not found")
+		log.Println("[Database]", "get by address", tablename, e.Error())
+	}
 	return
 }

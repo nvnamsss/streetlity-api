@@ -23,6 +23,7 @@ type Maintenance struct {
 const ServiceTableName = "maintenance"
 
 var services spatial.RTree
+var map_services map[int64]Maintenance
 
 func (Maintenance) TableName() string {
 	return ServiceTableName
@@ -69,16 +70,27 @@ func queryMaintenance(s Maintenance) (service Maintenance, e error) {
 
 //ServiceById query the maintenance service by specific id
 func ServiceById(id int64) (service Maintenance, e error) {
-	db := model.Db.Find(&service, id)
-	if e := db.Error; e != nil {
-		log.Println("[Database]", "Maintenance service", id, ":", e.Error())
-	}
+	e = model.GetById(ServiceTableName, id, &service)
+	// db := model.Db.Find(&service, id)
+	// if e := db.Error; e != nil {
+	// 	log.Println("[Database]", "Maintenance service", id, ":", e.Error())
+	// }
 
-	if db.RowsAffected == 0 {
-		e = errors.New("Ucf Maintenance service was not found")
-		log.Println("[Database]", "Maintenance ucf", e.Error())
-	}
+	// if db.RowsAffected == 0 {
+	// 	e = errors.New("Ucf Maintenance service was not found")
+	// 	log.Println("[Database]", "Maintenance ucf", e.Error())
+	// }
 
+	return
+}
+
+func ServiceByLocation(lat, lon float64) (service Maintenance, e error) {
+	e = model.GetServiceByLocation(ServiceTableName, lat, lon, &service)
+	return
+}
+
+func ServiceByAddres(address string) (service Maintenance, e error) {
+	e = model.GetServiceByAddress(ServiceTableName, address, &service)
 	return
 }
 
@@ -120,7 +132,7 @@ func ServicesInRange(p r2.Point, max_range float64) []Maintenance {
 			d := distance(location, p)
 			s, isMaintenance := item.(Maintenance)
 			if isMaintenance && d < max_range {
-				result = append(result, s)
+				result = append(result, map_services[s.Id])
 			}
 		}
 	}
@@ -143,9 +155,17 @@ func UpdateService(id int64, values map[string]string) {
 	}
 }
 
+func (s *Maintenance) AfterSave(scope *gorm.Scope) (err error) {
+	map_services[s.Id] = *s
+
+	return
+}
+
 func (s Maintenance) AfterCreate(scope *gorm.Scope) (e error) {
 	if e = services.AddItem(s); e != nil {
 		log.Println("[Database]", "After create maintenance", e.Error())
+	} else {
+		map_services[s.Id] = s
 	}
 
 	log.Println("[Database]", "New maintennace added")
@@ -158,6 +178,7 @@ func LoadService() {
 	maintenances, _ := AllServices()
 	for _, service := range maintenances {
 		services.AddItem(service)
+		map_services[service.Id] = service
 	}
 }
 

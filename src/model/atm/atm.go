@@ -59,16 +59,7 @@ func ServiceByService(s model.Service) (services Atm, e error) {
 
 //ServiceById query the atm service by specific id
 func ServiceById(id int64) (service Atm, e error) {
-	db := model.Db.Find(&service, id)
-	if e := db.Error; e != nil {
-		log.Println("[Database]", "Atm service", id, ":", e.Error())
-	}
-
-	if db.RowsAffected == 0 {
-		e = errors.New("Atm service was not found")
-		log.Println("[Database]", "atm", e.Error())
-	}
-
+	e = model.GetById(ServiceTableName, id, &service)
 	return
 }
 

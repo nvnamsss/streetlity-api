@@ -104,14 +104,14 @@ func MaintenanceUcfByAddress() {
 
 //UcfById query the unconfirmed maintainer service by specific id
 func UcfById(id int64) (service MaintenanceUcf, e error) {
-	db := model.Db.Find(&service, id)
+	db := model.Db.Where("id=?", id).First(&service, id)
 	if e := db.Error; e != nil {
-		log.Println("[Database]", "Fuel service", id, ":", e.Error())
+		log.Println("[Database]", "Maintenance service", id, ":", e.Error())
 	}
 
 	if db.RowsAffected == 0 {
-		e = errors.New("Ucf Fuel service was not found")
-		log.Println("[Database]", "fuel ucf", e.Error())
+		e = errors.New("Ucf Maintenance service was not found")
+		log.Println("[Database]", "Maintenance ucf", e.Error())
 	}
 
 	return

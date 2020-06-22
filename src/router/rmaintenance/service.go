@@ -37,6 +37,49 @@ func GetService(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
+func QueryService(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		sres.Response
+		Service maintenance.Maintenance
+	}
+	res.Status = true
+	p := pipeline.NewPipeline()
+	stage := stages.QueryMaintenanceValidate(req)
+	p.First = stage
+	res.Error(p.Run())
+	if res.Status {
+		c := p.GetInt("Case")[0]
+		switch c {
+		case 1:
+			id := p.GetInt("Id")[0]
+			if service, e := maintenance.ServiceById(id); e != nil {
+				res.Error(e)
+			} else {
+				res.Service = service
+			}
+			break
+		case 2:
+			lat := p.GetFloat("Lat")[0]
+			lon := p.GetFloat("Lon")[0]
+			if service, e := maintenance.ServiceByLocation(lat, lon); e != nil {
+				res.Error(e)
+			} else {
+				res.Service = service
+			}
+			break
+		case 3:
+			address := p.GetString("address")[0]
+			if service, e := maintenance.ServiceByAddres(address); e != nil {
+				res.Error(e)
+			} else {
+				res.Service = service
+			}
+			break
+		}
+	}
+	sres.WriteJson(w, res)
+}
+
 func AllServices(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response

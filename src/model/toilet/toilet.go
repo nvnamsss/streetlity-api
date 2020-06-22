@@ -17,9 +17,11 @@ type Toilet struct {
 
 var services spatial.RTree
 
+const ServiceTableName = "toilet"
+
 //TableName determine the table name in database which is using for gorm
 func (Toilet) TableName() string {
-	return "toilet"
+	return ServiceTableName
 }
 
 func (s Toilet) Location() r2.Point {
@@ -68,16 +70,7 @@ func ServiceByService(s model.Service) (services Toilet, e error) {
 }
 
 func ServiceById(id int64) (service Toilet, e error) {
-	db := model.Db.Find(&service, id)
-	if e := db.Error; e != nil {
-		log.Println("[Database]", "Toilet service", id, ":", e.Error())
-	}
-
-	if db.RowsAffected == 0 {
-		e = errors.New("Ucf Toilet service was not found")
-		log.Println("[Database]", "Toilet ucf", e.Error())
-	}
-
+	e = model.GetById(ServiceTableName, id, &service)
 	return
 }
 
