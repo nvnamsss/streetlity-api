@@ -8,6 +8,7 @@ import (
 	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
+	"github.com/jinzhu/gorm"
 )
 
 type Atm struct {
@@ -15,16 +16,16 @@ type Atm struct {
 	BankId int64 `gorm:"column:bank_id"`
 }
 
-const ServiceTableName = "atm"
-
+var map_services map[int64]Atm
+var services spatial.RTree
 var tag string = "[ATM]"
+
+const ServiceTableName = "atm"
 
 //TableName determine the table name in database which is using for gorm
 func (Atm) TableName() string {
 	return ServiceTableName
 }
-
-var services spatial.RTree
 
 //Location determine the location of service as r2.Point
 func (s Atm) Location() r2.Point {
@@ -93,6 +94,19 @@ func CreateService(s Atm) (e error) {
 	return nil
 }
 
+func (s *Atm) AfterSave(scope *gorm.Scope) (err error) {
+	map_services[s.Id] = *s
+	return
+}
+
+func (s Atm) AfterCreate(scope *gorm.Scope) (e error) {
+	if e = services.AddItem(s); e != nil {
+		log.Println("[Database]", "After create atm", e.Error())
+	}
+
+	return
+}
+
 func distance(p1 r2.Point, p2 r2.Point) float64 {
 	x := math.Pow(p1.X-p2.X, 2)
 	y := math.Pow(p1.Y-p2.Y, 2)
@@ -111,7 +125,7 @@ func ServicesInRange(p r2.Point, max_range float64) []Atm {
 			d := distance(location, p)
 			s, isFuel := item.(Atm)
 			if isFuel && d < max_range {
-				result = append(result, s)
+				result = append(result, map_services[s.Id])
 			}
 		}
 	}
@@ -120,10 +134,11 @@ func ServicesInRange(p r2.Point, max_range float64) []Atm {
 
 func LoadService() {
 	log.Println("[ATM]", "Loading service")
-
+	map_services = make(map[int64]Atm)
 	atms, _ := AllServices()
 	for _, atm := range atms {
 		services.AddItem(atm)
+		map_services[atm.Id] = atm
 	}
 }
 

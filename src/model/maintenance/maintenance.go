@@ -157,7 +157,6 @@ func UpdateService(id int64, values map[string]string) {
 
 func (s *Maintenance) AfterSave(scope *gorm.Scope) (err error) {
 	map_services[s.Id] = *s
-
 	return
 }
 
@@ -174,7 +173,7 @@ func (s Maintenance) AfterCreate(scope *gorm.Scope) (e error) {
 
 func LoadService() {
 	log.Println("[Maintenance]", "Loading service")
-
+	map_services = make(map[int64]Maintenance)
 	maintenances, _ := AllServices()
 	for _, service := range maintenances {
 		services.AddItem(service)

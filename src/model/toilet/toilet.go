@@ -16,6 +16,7 @@ type Toilet struct {
 }
 
 var services spatial.RTree
+var map_services map[int64]Toilet
 
 const ServiceTableName = "toilet"
 
@@ -106,12 +107,17 @@ func ServicesInRange(p r2.Point, max_range float64) []Toilet {
 				location := item.Location()
 				d := distance(location, p)
 				if d < max_range {
-					result = append(result, s)
+					result = append(result, map_services[s.Id])
 				}
 			}
 		}
 	}
 	return result
+}
+
+func (s *Toilet) AfterSave(scope *gorm.Scope) (err error) {
+	map_services[s.Id] = *s
+	return
 }
 
 func (s Toilet) AfterCreate(scope *gorm.Scope) (e error) {
@@ -124,7 +130,7 @@ func (s Toilet) AfterCreate(scope *gorm.Scope) (e error) {
 
 func LoadService() {
 	log.Println("[Toilet]", "Loading service")
-
+	map_services = make(map[int64]Toilet)
 	toilets, _ := AllServices()
 	for _, service := range toilets {
 		services.AddItem(service)

@@ -20,6 +20,7 @@ type Fuel struct {
 }
 
 var services spatial.RTree
+var map_services map[int64]Fuel
 
 const ServiceTableName = "fuel"
 
@@ -120,11 +121,16 @@ func ServicesInRange(p r2.Point, max_range float64) []Fuel {
 			d := distance(location, p)
 			s, isFuel := item.(Fuel)
 			if isFuel && d < max_range {
-				result = append(result, s)
+				result = append(result, map_services[s.Id])
 			}
 		}
 	}
 	return result
+}
+
+func (s *Fuel) AfterSave(scope *gorm.Scope) (err error) {
+	map_services[s.Id] = *s
+	return
 }
 
 func (s Fuel) AfterCreate(scope *gorm.Scope) (e error) {
@@ -137,10 +143,11 @@ func (s Fuel) AfterCreate(scope *gorm.Scope) (e error) {
 
 func LoadService() {
 	log.Println("[Fuel]", "Loading service")
-
+	map_services = make(map[int64]Fuel)
 	fuels, _ := AllServices()
 	for _, atm := range fuels {
 		services.AddItem(atm)
+		map_services[atm.Id] = atm
 	}
 }
 
