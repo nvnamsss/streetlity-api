@@ -347,3 +347,20 @@ func IdValidateStage(values url.Values) *pipeline.Stage {
 
 	return stage
 }
+
+func UpvoteTypeStage(req *http.Request) *pipeline.Stage {
+	req.ParseForm()
+	stage := pipeline.NewStage(func() (str struct {
+		UpvoteType string
+	}, e error) {
+		form := req.PostForm
+		types, ok := form["upvote_type"]
+		if !ok {
+			return str, errors.New("upvote_type param is missing")
+		}
+		str.UpvoteType = types[0]
+		return
+	})
+
+	return stage
+}

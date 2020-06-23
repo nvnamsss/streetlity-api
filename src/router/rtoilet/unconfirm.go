@@ -11,6 +11,30 @@ import (
 	"github.com/nvnamsss/goinf/pipeline"
 )
 
+func GetUnconfirmed(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		sres.Response
+		Service toilet.ToiletUcf
+	}
+	res.Status = true
+
+	p := pipeline.NewPipeline()
+	stage := stages.IdValidateStage(req.URL.Query())
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		id := p.GetInt("Id")[0]
+		if service, e := toilet.UcfById(id); e != nil {
+			res.Error(e)
+		} else {
+			res.Service = service
+		}
+	}
+
+	sres.WriteJson(w, res)
+}
+
 func GetAllUnconfirmed(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
@@ -27,14 +51,27 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	p := pipeline.NewPipeline()
 	stage := stages.IdValidateStage(req.PostForm)
+	type_stage := stages.UpvoteTypeStage(req)
+	stage.NextStage(type_stage)
 	p.First = stage
 	res.Error(p.Run())
 
 	if res.Status {
 		id := p.GetIntFirstOrDefault("Id")
-		if e := toilet.UpvoteUcf(id); e != nil {
-			res.Error(e)
+		t := p.GetString("UpvoteType")[0]
+
+		switch t {
+		case "Immediately":
+			if e := toilet.UpvoteUcfImmediately(id); e != nil {
+				res.Error(e)
+			}
+			break
+		default:
+			if e := toilet.UpvoteUcf(id); e != nil {
+				res.Error(e)
+			}
 		}
+
 	}
 
 	sres.WriteJson(w, res)
@@ -82,6 +119,7 @@ func DeleteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 func HandleUnconfirmed(router *mux.Router) *mux.Router {
 	s := router.PathPrefix("/toilet_ucf").Subrouter()
 
+	s.HandleFunc("/", GetUnconfirmed).Methods("GET")
 	s.HandleFunc("/", GetAllUnconfirmed).Methods("GET")
 	s.HandleFunc("/", DeleteUnconfirmed).Methods("DELETE")
 	s.HandleFunc("/range", UnconfirmedInRange).Methods("GET")

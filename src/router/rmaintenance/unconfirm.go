@@ -11,6 +11,30 @@ import (
 	"github.com/nvnamsss/goinf/pipeline"
 )
 
+func GetUnconfirmed(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		sres.Response
+		Service maintenance.MaintenanceUcf
+	}
+	res.Status = true
+
+	p := pipeline.NewPipeline()
+	stage := stages.IdValidateStage(req.URL.Query())
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		id := p.GetInt("Id")[0]
+		if service, e := maintenance.UcfById(id); e != nil {
+			res.Error(e)
+		} else {
+			res.Service = service
+		}
+	}
+
+	sres.WriteJson(w, res)
+}
+
 func GetAllUnconfirmed(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
@@ -27,13 +51,28 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	p := pipeline.NewPipeline()
 	stage := stages.IdValidateStage(req.PostForm)
+	type_stage := stages.UpvoteTypeStage(req)
+	stage.NextStage(type_stage)
 	p.First = stage
 	res.Error(p.Run())
 
 	if res.Status {
-		id := p.GetIntFirstOrDefault("Id")
-		if e := maintenance.UpvoteUcf(id); e != nil {
-			res.Error(e)
+		if res.Status {
+			id := p.GetIntFirstOrDefault("Id")
+			t := p.GetString("UpvoteType")[0]
+
+			switch t {
+			case "Immediately":
+				if e := maintenance.UpvoteUcfImmediately(id); e != nil {
+					res.Error(e)
+				}
+				break
+			default:
+				if e := maintenance.UpvoteUcf(id); e != nil {
+					res.Error(e)
+				}
+			}
+
 		}
 	}
 
@@ -82,9 +121,10 @@ func DeleteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 func HandleUnconfirmed(router *mux.Router) *mux.Router {
 	s := router.PathPrefix("/maintenance_ucf").Subrouter()
 
-	s.HandleFunc("/", GetAllUnconfirmed).Methods("GET")
+	s.HandleFunc("/", GetUnconfirmed).Methods("GET")
 	s.HandleFunc("/", UpdateReview).Methods("POST")
 	s.HandleFunc("/", DeleteUnconfirmed).Methods("DELETE")
+	s.HandleFunc("/all", GetAllUnconfirmed).Methods("GET")
 	s.HandleFunc("/range", UnconfirmedInRange).Methods("GET")
 	s.HandleFunc("/upvote", UpvoteUnconfirmed).Methods("POST")
 

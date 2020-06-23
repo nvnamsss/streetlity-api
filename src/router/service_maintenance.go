@@ -121,19 +121,13 @@ func acceptOrderMaintenance(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 	p := pipeline.NewPipeline()
 	vStage := pipeline.NewStage(func() (str struct {
-		User      string
-		OrderId   int64
-		Timestamp int64
+		User    string
+		OrderId int64
 	}, e error) {
 		form := req.PostForm
 		_, ok := form["user"]
 		if !ok {
 			return str, errors.New("user param is missing")
-		}
-
-		timestamps, ok := form["timestamp"]
-		if !ok {
-			return str, errors.New("timestamp param is missing")
 		}
 
 		ids, ok := form["orderId"]
@@ -147,15 +141,8 @@ func acceptOrderMaintenance(w http.ResponseWriter, req *http.Request) {
 			return str, errors.New("cannot parse orderId to int")
 		}
 
-		timestamp, e := strconv.ParseInt(timestamps[0], 10, 64)
-
-		if e != nil {
-			return str, errors.New("cannot parse timestamp to int")
-		}
-
 		str.User = form["user"][0]
 		str.OrderId = id
-		str.Timestamp = timestamp
 
 		return
 	})
@@ -164,11 +151,10 @@ func acceptOrderMaintenance(w http.ResponseWriter, req *http.Request) {
 	res.Error(p.Run())
 
 	if res.Status {
-		user := p.GetString("User")[0]
-		id := p.GetInt("OrderId")[0]
-		timestamp := p.GetInt("Timestamp")[0]
+		// user := p.GetString("User")[0]
+		// id := p.GetInt("OrderId")[0]
 
-		maintenance.UpdateMaintenanceHistory(id, user, timestamp)
+		// maintenance.UpdateMaintenanceHistory(id, user)
 	}
 
 	sres.WriteJson(w, res)
