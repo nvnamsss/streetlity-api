@@ -89,6 +89,16 @@ func ServiceById(id int64) (service Fuel, e error) {
 	return
 }
 
+func ServiceByLocation(lat, lon float64) (service Fuel, e error) {
+	e = model.GetServiceByLocation(ServiceTableName, lat, lon, &service)
+	return
+}
+
+func ServiceByAddres(address string) (service Fuel, e error) {
+	e = model.GetServiceByAddress(ServiceTableName, address, &service)
+	return
+}
+
 //ToiletByIds query the toilets service by specific id
 func ServicesByIds(ids ...int64) (services []Fuel) {
 	for _, id := range ids {

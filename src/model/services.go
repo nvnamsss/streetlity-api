@@ -149,8 +149,6 @@ func GetServiceByLocation(tablename string, lat, lon float64, ref interface{}) (
 }
 
 func GetServiceByAddress(tablename string, address string, ref interface{}) (e error) {
-	// var v string = string("%") + address + string("%")
-	// db := Db.Table(tablename).Where(`MATCH(address) AGAINST('?')`, address).First(ref)
 	db := Db.Table(tablename).Where("address LIKE ?", "%"+address+"%").First(ref)
 	e = db.Error
 

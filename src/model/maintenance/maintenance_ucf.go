@@ -84,6 +84,25 @@ func CreateUcf(s MaintenanceUcf) (ucf MaintenanceUcf, e error) {
 	return
 }
 
+func CreateUcfAlt(s MaintenanceUcf) (ucf MaintenanceUcf, e error) {
+	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Maintenance{}).Error; e == nil {
+		return ucf, errors.New("The service location is existed")
+	}
+
+	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&MaintenanceUcf{}).Error; e == nil {
+		return ucf, errors.New("The service location is existed or some problems is occured")
+	}
+
+	if e = model.Db.Create(&s).Error; e != nil {
+		log.Println("[Database]", "Add maintenance service:", e.Error())
+	} else {
+		ucf = s
+	}
+
+	//Temporal
+	return
+}
+
 func queryMaintenanceUcf(s MaintenanceUcf) (service MaintenanceUcf, e error) {
 	service = s
 

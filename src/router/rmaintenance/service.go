@@ -44,7 +44,7 @@ func QueryService(w http.ResponseWriter, req *http.Request) {
 	}
 	res.Status = true
 	p := pipeline.NewPipeline()
-	stage := stages.QueryMaintenanceValidate(req)
+	stage := stages.QueryServiceValidateStage(req)
 	p.First = stage
 	res.Error(p.Run())
 	if res.Status {
@@ -108,11 +108,15 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 	stage := stages.AddingServiceValidateStage(req)
 	nameStage := pipeline.NewStage(func() (str struct {
 		Name string
+		Alt  string
 	}, e error) {
 		form := req.PostForm
 		names, ok := form["name"]
 		if !ok {
 			return str, errors.New("name param is missing")
+		}
+		if alts, ok := form["alt"]; ok {
+			str.Alt = alts[0]
 		}
 		str.Name = names[0]
 		return
@@ -137,11 +141,21 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		ucf.Name = name
 		ucf.SetImages(images...)
 
-		if service, e := maintenance.CreateUcf(ucf); e != nil {
-			res.Error(e)
+		alt := p.GetStringFirstOrDefault("Alt")
+		if alt == "" {
+			if service, e := maintenance.CreateUcf(ucf); e != nil {
+				res.Error(e)
+			} else {
+				res.Service = service
+			}
 		} else {
-			res.Service = service
+			if service, e := maintenance.CreateUcfAlt(ucf); e != nil {
+				res.Error(e)
+			} else {
+				res.Service = service
+			}
 		}
+
 	}
 
 	sres.WriteJson(w, res)

@@ -29,6 +29,7 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 		CommonUser string
 		Reason     string
 		Note       string
+		Phone      string
 		ServiceId  []int64
 	}, e error) {
 		form := req.PostForm
@@ -49,6 +50,11 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 			return str, errors.New("reason param is missing")
 		}
 
+		phones, ok := form["phone"]
+		if !ok {
+			return str, errors.New("phone param is missing")
+		}
+
 		notes, ok := form["note"]
 		if ok {
 			str.Note = notes[0]
@@ -65,6 +71,7 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 
 		str.CommonUser = commonUsers[0]
 		str.Reason = reasons[0]
+		str.Phone = phones[0]
 
 		return
 	})
@@ -76,7 +83,7 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 		service_ids := p.GetInt("ServiceId")
 		reason := p.GetString("Reason")[0]
 		note := p.GetStringFirstOrDefault("Note")
-
+		phone := p.GetString("Phone")[0]
 		services := maintenance.ServicesByIds(service_ids...)
 		maintenance_users := []string{}
 		for _, s := range services {
@@ -92,6 +99,7 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 				"maintenance_users": maintenance_users,
 				"common_user":       {common_user},
 				"reason":            {reason},
+				"phone":             {phone},
 				"note":              {note},
 			}); e != nil {
 				res.Error(e)

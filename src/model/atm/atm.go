@@ -64,6 +64,16 @@ func ServiceById(id int64) (service Atm, e error) {
 	return
 }
 
+func ServiceByLocation(lat, lon float64) (service Atm, e error) {
+	e = model.GetServiceByLocation(ServiceTableName, lat, lon, &service)
+	return
+}
+
+func ServiceByAddres(address string) (service Atm, e error) {
+	e = model.GetServiceByAddress(ServiceTableName, address, &service)
+	return
+}
+
 //ServicesByIds query the atm services by specific ids
 func ServicesByIds(ids ...int64) (services []Atm) {
 	for _, id := range ids {
