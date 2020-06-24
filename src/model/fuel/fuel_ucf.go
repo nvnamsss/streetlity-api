@@ -74,6 +74,27 @@ func UcfByService(s model.ServiceUcf) (service FuelUcf, e error) {
 	return queryFuelUcf(service)
 }
 
+//UcfById query the fuel service by specific id
+func UcfById(id int64) (service FuelUcf, e error) {
+	e = model.GetById(UcfServiceTableName, id, &service)
+	return
+}
+
+func UcfByLocation(lat, lon float64) (service FuelUcf, e error) {
+	e = model.GetServiceByLocation(UcfServiceTableName, lat, lon, &service)
+	return
+}
+
+func UcfByAddress(address string) (service FuelUcf, e error) {
+	e = model.GetServiceByAddress(UcfServiceTableName, address, &service)
+	return
+}
+
+func UcfsByAddress(address string) (services []FuelUcf, e error) {
+	e = model.GetServiceByAddress(UcfServiceTableName, address, &services)
+	return
+}
+
 func DeleteUcf(id int64) (e error) {
 	ucf := FuelUcf{model.ServiceUcf{Id: id}}
 	if e := model.Db.Delete(&ucf).Error; e != nil {
@@ -100,21 +121,6 @@ func UcfInRange(p r2.Point, max_range float64) []FuelUcf {
 		}
 	}
 	return result
-}
-
-//UcfById query the fuel service by specific id
-func UcfById(id int64) (service FuelUcf, e error) {
-	db := model.Db.Find(&service, id)
-	if e := db.Error; e != nil {
-		log.Println("[Database]", "Fuel service", id, ":", e.Error())
-	}
-
-	if db.RowsAffected == 0 {
-		e = errors.New("Ucf Fuel service was not found")
-		log.Println("[Database]", "fuel ucf", e.Error())
-	}
-
-	return
 }
 
 //UpvoteFuelUcf upvote the unconfirmed fuel by specific id

@@ -16,8 +16,10 @@ type MaintenanceUcf struct {
 	Name string `gorm:"column:name"`
 }
 
+const UcfServiceTableName = "maintenance_ucf"
+
 func (MaintenanceUcf) TableName() string {
-	return "maintenance_ucf"
+	return UcfServiceTableName
 }
 
 func (s MaintenanceUcf) Location() r2.Point {
@@ -133,6 +135,21 @@ func UcfById(id int64) (service MaintenanceUcf, e error) {
 		log.Println("[Database]", "Maintenance ucf", e.Error())
 	}
 
+	return
+}
+
+func UcfByLocation(lat, lon float64) (service MaintenanceUcf, e error) {
+	e = model.GetServiceByLocation(UcfServiceTableName, lat, lon, &service)
+	return
+}
+
+func UcfByAddress(address string) (service MaintenanceUcf, e error) {
+	e = model.GetServiceByAddress(UcfServiceTableName, address, &service)
+	return
+}
+
+func UcfsByAddress(address string) (services []MaintenanceUcf, e error) {
+	e = model.GetServiceByAddress(UcfServiceTableName, address, &services)
 	return
 }
 

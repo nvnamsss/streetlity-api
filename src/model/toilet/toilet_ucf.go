@@ -17,6 +17,8 @@ type ToiletUcf struct {
 var confident int = 5
 var ucf_services spatial.RTree
 
+const UcfServiceTableName = "toilet_ucf"
+
 //TableName determine the table name in database which is using for gorm
 func (ToiletUcf) TableName() string {
 	return "toilet_ucf"
@@ -76,16 +78,22 @@ func UcfByService(s model.ServiceUcf) (service ToiletUcf, e error) {
 
 //UcfById query the unconfirmed toilet service by specific id
 func UcfById(id int64) (service ToiletUcf, e error) {
-	db := model.Db.Find(&service, id)
-	if e := db.Error; e != nil {
-		log.Println("[Database]", "Toilet service", id, ":", e.Error())
-	}
+	e = model.GetById(UcfServiceTableName, id, &service)
+	return
+}
 
-	if db.RowsAffected == 0 {
-		e = errors.New("Ucf Toilet service was not found")
-		log.Println("[Database]", e.Error())
-	}
+func UcfByLocation(lat, lon float64) (service ToiletUcf, e error) {
+	e = model.GetServiceByLocation(UcfServiceTableName, lat, lon, &service)
+	return
+}
 
+func UcfByAddress(address string) (service ToiletUcf, e error) {
+	e = model.GetServiceByAddress(UcfServiceTableName, address, &service)
+	return
+}
+
+func UcfsByAddress(address string) (services []ToiletUcf, e error) {
+	e = model.GetServiceByAddress(UcfServiceTableName, address, &services)
 	return
 }
 

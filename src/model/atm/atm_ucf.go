@@ -56,16 +56,22 @@ func UcfByService(s model.ServiceUcf) (service AtmUcf, e error) {
 
 //UcfById query the AtmUcf service by specific id
 func UcfById(id int64) (service AtmUcf, e error) {
-	db := model.Db.Find(&service, id)
-	if e := db.Error; e != nil {
-		log.Println("[Database]", "Atm service", id, ":", e.Error())
-	}
+	e = model.GetById(UcfServiceTableName, id, &service)
+	return
+}
 
-	if db.RowsAffected == 0 {
-		e = errors.New("Ucf Atm service was not found")
-		log.Println("[Database]", e.Error())
-	}
+func UcfByLocation(lat, lon float64) (service AtmUcf, e error) {
+	e = model.GetServiceByLocation(UcfServiceTableName, lat, lon, &service)
+	return
+}
 
+func UcfByAddress(address string) (service AtmUcf, e error) {
+	e = model.GetServiceByAddress(UcfServiceTableName, address, &service)
+	return
+}
+
+func UcfsByAddress(address string) (services []AtmUcf, e error) {
+	e = model.GetServiceByAddress(UcfServiceTableName, address, &services)
 	return
 }
 

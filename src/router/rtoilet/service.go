@@ -17,31 +17,6 @@ func GetService(w http.ResponseWriter, req *http.Request) {
 		Service toilet.Toilet
 	}
 	res.Status = true
-
-	p := pipeline.NewPipeline()
-	stage := stages.IdValidateStage(req.URL.Query())
-	p.First = stage
-
-	res.Error(p.Run())
-
-	if res.Status {
-		id := p.GetIntFirstOrDefault("Id")
-		if service, e := toilet.ServiceById(id); e != nil {
-			res.Error(e)
-		} else {
-			res.Service = service
-		}
-	}
-
-	sres.WriteJson(w, res)
-}
-
-func QueryService(w http.ResponseWriter, req *http.Request) {
-	var res struct {
-		sres.Response
-		Service toilet.Toilet
-	}
-	res.Status = true
 	p := pipeline.NewPipeline()
 	stage := stages.QueryServiceValidateStage(req)
 	p.First = stage
@@ -159,7 +134,6 @@ func HandleService(router *mux.Router) *mux.Router {
 
 	s.HandleFunc("/", CreateService).Methods("POST")
 	s.HandleFunc("/", GetService).Methods("GET")
-	s.HandleFunc("/query", QueryService).Methods("GET")
 	s.HandleFunc("/all", AllServices).Methods("GET")
 	s.HandleFunc("/range", ServiceInRange).Methods("GET")
 	s.HandleFunc("/create", CreateService).Methods("POST")

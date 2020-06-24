@@ -1,4 +1,4 @@
-package router_test
+package middleware_test
 
 import (
 	"errors"

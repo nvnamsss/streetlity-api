@@ -94,6 +94,11 @@ func ServiceByAddres(address string) (service Maintenance, e error) {
 	return
 }
 
+func ServicesByAddress(address string) (services []Maintenance, e error) {
+	e = model.GetServiceByAddress(ServiceTableName, address, &services)
+	return
+}
+
 //ServiceByService get maintenance by provide Service
 func ServiceByService(s model.Service) (services Maintenance, e error) {
 	services.Service = s

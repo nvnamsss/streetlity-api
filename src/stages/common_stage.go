@@ -165,6 +165,23 @@ func QueryServiceValidateStage(req *http.Request) *pipeline.Stage {
 	return stage
 }
 
+func QueryServicesValidateStage(req *http.Request) *pipeline.Stage {
+	stage := pipeline.NewStage(func() (str struct {
+		Address string
+	}, e error) {
+		query := req.URL.Query()
+		addresses, ok := query["address"]
+		if !ok {
+			return str, errors.New("address param is missing")
+		}
+
+		str.Address = addresses[0]
+		return
+	})
+
+	return stage
+}
+
 func ReviewValidateStage(req *http.Request) *pipeline.Stage {
 	stage := pipeline.NewStage(func() (str struct {
 		ServiceId int64
