@@ -409,6 +409,7 @@ func HandleMaintenance(router *mux.Router) {
 	s := rmaintenance.HandleService(router)
 	rmaintenance.HandleReview(s)
 	rmaintenance.HandleUnconfirmed(router)
+	rmaintenance.HandleHistory(s)
 	s.HandleFunc("/order", orderMaintenance).Methods("POST")
 	s.HandleFunc("/accept", acceptOrderMaintenance).Methods("POST")
 	// s.HandleFunc("/", getMaintenance).Methods("GET")

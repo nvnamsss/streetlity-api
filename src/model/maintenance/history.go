@@ -12,8 +12,10 @@ type MaintenanceHistory struct {
 	Timestamp       int64  `gorm:"type:datetime"`
 }
 
+const HistoryTableName = "maintenance_history"
+
 func (MaintenanceHistory) TableName() string {
-	return "maintenance_history"
+	return HistoryTableName
 }
 
 func AddMaintenanceHistory(h MaintenanceHistory) (e error) {
@@ -51,24 +53,28 @@ func queryMaintenanceHistory(h MaintenanceHistory) (history MaintenanceHistory, 
 	return
 }
 
-func MaintenanceHistoriesByMUser(mUser string) (histories []MaintenanceHistory, e error) {
-	if e = model.Db.Where("maintenance_user=?", mUser).Find(&histories).Error; e != nil {
+func HistoriesByMUser(maintenance_user string) (histories []MaintenanceHistory, e error) {
+	if e = model.Db.Where("maintenance_user=?", maintenance_user).Find(&histories).Error; e != nil {
 		log.Println("[Database]", "query M history by M user", e.Error())
 	}
 
 	return
 }
 
-func MaintenanceHistoryById(id int64) (h MaintenanceHistory, e error) {
-	if e := model.Db.Find(&h, id).Error; e != nil {
-		log.Println("[Database]", "Maintenance history with id:", id, ":", e.Error())
+func HistoriesByCUser(common_user string) (histories []MaintenanceHistory, e error) {
+	if e = model.Db.Where("common_user=?", common_user).Find(&histories).Error; e != nil {
+		log.Println("[Database]", "histories by c", e.Error())
 	}
+	return
+}
 
+func HistoryById(id int64) (h MaintenanceHistory, e error) {
+	model.GetById(HistoryTableName, id, &h)
 	return
 }
 
 func UpdateMaintenanceHistory(id int64, maintenanceUser string, timestamp int64) error {
-	h, e := MaintenanceHistoryById(id)
+	h, e := HistoryById(id)
 
 	if e != nil {
 		return e
