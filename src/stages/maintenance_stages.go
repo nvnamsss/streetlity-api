@@ -101,3 +101,12 @@ func QueryMaintenanceValidate(req *http.Request) *pipeline.Stage {
 	})
 	return stage
 }
+
+func UpdateMaintenanceValidate(req *http.Request) *pipeline.Stage {
+	stage := pipeline.NewStage(func() (str struct {
+	}, e error) {
+		return
+	})
+
+	return stage
+}

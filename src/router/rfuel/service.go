@@ -77,7 +77,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 	}
 	res.Status = true
 	p := pipeline.NewPipeline()
-	stage := stages.AddingServiceValidateStage(req)
+	stage := stages.CreateServiceValidate(req)
 	p.First = stage
 
 	res.Error(p.Run())

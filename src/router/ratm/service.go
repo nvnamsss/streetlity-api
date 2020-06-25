@@ -79,7 +79,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 	}
 	res.Status = true
 	p := pipeline.NewPipeline()
-	stage := stages.AddingServiceValidateStage(req)
+	stage := stages.CreateServiceValidate(req)
 	bankStage := pipeline.NewStage(func() (str struct {
 		BankId int64
 	}, e error) {

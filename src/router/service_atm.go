@@ -26,7 +26,7 @@ func addAtm(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	validateParamsStage := stages.AddingServiceValidateStage(req)
+	validateParamsStage := stages.CreateServiceValidate(req)
 	bankValidateStage := pipeline.NewStage(func() (str struct{ BankId int64 }, e error) {
 		form := req.PostForm
 		bank, ok := form["bank"]

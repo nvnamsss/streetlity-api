@@ -84,7 +84,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 
 	p := pipeline.NewPipeline()
 	req.ParseForm()
-	stage := stages.AddingServiceValidateStage(req)
+	stage := stages.CreateServiceValidate(req)
 	nameStage := pipeline.NewStage(func() (str struct {
 		Name string
 		Alt  string

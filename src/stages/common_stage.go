@@ -14,7 +14,8 @@ import (
 the pipeline in request handle*/
 
 //ServiceValidateStage create the validated stage for adding a new service
-func AddingServiceValidateStage(req *http.Request) *pipeline.Stage {
+func CreateServiceValidate(req *http.Request) *pipeline.Stage {
+	req.ParseForm()
 	s := pipeline.NewStage(func() (str struct {
 		Lat     float64
 		Lon     float64

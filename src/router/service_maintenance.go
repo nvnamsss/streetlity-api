@@ -208,7 +208,7 @@ func addMaintenance(w http.ResponseWriter, req *http.Request) {
 	req.ParseForm()
 
 	var pipe *pipeline.Pipeline = pipeline.NewPipeline()
-	validateParamsStage := stages.AddingServiceValidateStage(req)
+	validateParamsStage := stages.CreateServiceValidate(req)
 	pipe.First = validateParamsStage
 	res.Error(pipe.Run())
 
