@@ -4,7 +4,9 @@ import (
 	"errors"
 	"log"
 	"math"
+	"net/url"
 	"regexp"
+	"strconv"
 	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
@@ -155,5 +157,40 @@ func GetServiceByAddress(tablename string, address string, ref interface{}) (e e
 		e := errors.New("record was not found")
 		log.Println("[Database]", "get by address", tablename, e.Error())
 	}
+	return
+}
+
+func UpdateService(tablename string, id int64, values url.Values, ref interface{}) (e error) {
+	if e = GetById(tablename, id, ref); e != nil {
+		return
+	}
+
+	service := ref.(Service)
+	_, ok := values["lat"]
+	if ok {
+		if lat, e := strconv.ParseFloat(values["lat"][0], 64); e != nil {
+			service.Lat = float32(lat)
+		}
+	}
+	_, ok = values["lon"]
+	if ok {
+		if lon, e := strconv.ParseFloat(values["lon"][0], 64); e != nil {
+			service.Lon = float32(lon)
+		}
+	}
+
+	_, ok = values["note"]
+	if ok {
+		service.Note = values["lon"][0]
+	}
+
+	if _, ok = values["address"]; ok {
+		service.Address = values["address"][0]
+	}
+
+	if e := Db.Save(service).Error; e != nil {
+		log.Println("[Database]", "update ", tablename, e.Error())
+	}
+
 	return
 }
