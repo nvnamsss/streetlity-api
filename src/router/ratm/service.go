@@ -109,12 +109,15 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		note := p.GetStringFirstOrDefault("Note")
 		images := p.GetString("Images")
 		bank_id := p.GetIntFirstOrDefault("BankId")
+		contributor := p.GetStringFirstOrDefault("Contributor")
+
 		var ucf atm.AtmUcf
 		ucf.Lat = float32(lat)
 		ucf.Lon = float32(lon)
 		ucf.Address = address
 		ucf.Note = note
 		ucf.BankId = bank_id
+		ucf.Contributor = contributor
 		ucf.SetImages(images...)
 
 		if service, e := atm.CreateUcf(ucf); e != nil {

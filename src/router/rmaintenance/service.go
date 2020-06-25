@@ -112,12 +112,14 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		note := p.GetStringFirstOrDefault("Note")
 		name := p.GetStringFirstOrDefault("Name")
 		images := p.GetString("Images")
+		contributor := p.GetStringFirstOrDefault("Contributor")
 		var ucf maintenance.MaintenanceUcf
 		ucf.Lat = float32(lat)
 		ucf.Lon = float32(lon)
 		ucf.Address = address
 		ucf.Note = note
 		ucf.Name = name
+		ucf.Contributor = contributor
 		ucf.SetImages(images...)
 
 		alt := p.GetStringFirstOrDefault("Alt")

@@ -88,11 +88,14 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		address := p.GetStringFirstOrDefault("Address")
 		note := p.GetStringFirstOrDefault("Note")
 		images := p.GetString("Images")
+		contributor := p.GetString("Contributor")[0]
+
 		var ucf toilet.ToiletUcf
 		ucf.Lat = float32(lat)
 		ucf.Lon = float32(lon)
 		ucf.Address = address
 		ucf.Note = note
+		ucf.Contributor = contributor
 		ucf.SetImages(images...)
 
 		if service, e := toilet.CreateUcf(ucf); e != nil {

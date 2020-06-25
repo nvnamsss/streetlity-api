@@ -20,22 +20,24 @@ import (
 // }
 
 type ServiceUcf struct {
-	Id        int64   `gorm:"column:id"`
-	Lat       float32 `gorm:"column:lat"`
-	Lon       float32 `gorm:"column:lon"`
-	Note      string  `gorm:"column:note"`
-	Address   string  `gorm:"column:address"`
-	Confident int     `gorm:"column:confident"`
-	Images    string  `gorm:"column:images"`
+	Id          int64   `gorm:"column:id"`
+	Lat         float32 `gorm:"column:lat"`
+	Lon         float32 `gorm:"column:lon"`
+	Note        string  `gorm:"column:note"`
+	Address     string  `gorm:"column:address"`
+	Confident   int     `gorm:"column:confident"`
+	Images      string  `gorm:"column:images"`
+	Contributor string  `gorm:"column:contributor"`
 }
 
 type Service struct {
-	Id      int64   `gorm:"column:id"`
-	Lat     float32 `gorm:"column:lat"`
-	Lon     float32 `gorm:"column:lon"`
-	Note    string  `gorm:"column:note"`
-	Address string  `gorm:"column:address"`
-	Images  string  `gorm:"column:images"`
+	Id          int64   `gorm:"column:id"`
+	Lat         float32 `gorm:"column:lat"`
+	Lon         float32 `gorm:"column:lon"`
+	Note        string  `gorm:"column:note"`
+	Address     string  `gorm:"column:address"`
+	Images      string  `gorm:"column:images"`
+	Contributor string  `gorm:"column:contributor"`
 }
 
 func (s Service) GetImagesArray() (images []string) {
@@ -135,7 +137,7 @@ func (s ServiceUcf) GetService() (service Service) {
 	service.Note = s.Note
 	service.Address = s.Address
 	service.Images = s.Images
-
+	service.Contributor = s.Contributor
 	return
 }
 

@@ -17,11 +17,12 @@ the pipeline in request handle*/
 func CreateServiceValidate(req *http.Request) *pipeline.Stage {
 	req.ParseForm()
 	s := pipeline.NewStage(func() (str struct {
-		Lat     float64
-		Lon     float64
-		Address string
-		Note    string
-		Images  []string
+		Lat         float64
+		Lon         float64
+		Address     string
+		Note        string
+		Contributor string
+		Images      []string
 	}, e error) {
 		form := req.PostForm
 		log.Println("[Pipeline]", form)
@@ -53,6 +54,12 @@ func CreateServiceValidate(req *http.Request) *pipeline.Stage {
 		_, ok := form["note"]
 		if ok {
 			str.Note = form["note"][0]
+		}
+
+		if _, ok = form["contributor"]; ok {
+			str.Contributor = form["contributor"][0]
+		} else {
+			str.Contributor = "Streetlity"
 		}
 
 		str.Images = form["images"]
