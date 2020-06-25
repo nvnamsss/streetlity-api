@@ -160,44 +160,6 @@ func acceptOrderMaintenance(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
-func updateMaintenance(w http.ResponseWriter, req *http.Request) {
-	var res sres.Response = sres.Response{Status: true}
-
-	req.ParseForm()
-	p := pipeline.NewPipeline()
-	vStage := pipeline.NewStage(func() (str struct{ Id int64 }, e error) {
-		form := req.PostForm
-		_, ok := form["id"]
-		if !ok {
-			return str, errors.New("id param is missing")
-		}
-
-		id, err := strconv.ParseInt(form["id"][0], 10, 64)
-		if err != nil {
-			return str, errors.New("cannot parse id to int")
-		}
-		str.Id = id
-
-		return
-	})
-	p.First = vStage
-
-	res.Error(p.Run())
-
-	if res.Status {
-		id := p.GetInt("Id")[0]
-		values := make(map[string]string)
-		form := req.PostForm
-		for key, value := range form {
-			values[key] = value[0]
-		}
-
-		maintenance.UpdateService(id, values)
-	}
-
-	sres.WriteJson(w, res)
-}
-
 func addMaintenance(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
@@ -412,5 +374,4 @@ func HandleMaintenance(router *mux.Router) {
 	rmaintenance.HandleHistory(s)
 	s.HandleFunc("/order", orderMaintenance).Methods("POST")
 	s.HandleFunc("/accept", acceptOrderMaintenance).Methods("POST")
-	// s.HandleFunc("/", getMaintenance).Methods("GET")
 }
