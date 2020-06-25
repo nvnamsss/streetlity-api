@@ -2,6 +2,7 @@ package rmaintenance
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"streelity/v1/model/maintenance"
 	"streelity/v1/sres"
@@ -39,15 +40,16 @@ func GetHistoriesC(w http.ResponseWriter, req *http.Request) {
 		sres.Response
 		Histories []maintenance.MaintenanceHistory
 	}
+	res.Status = true
 
 	p := pipeline.NewPipeline()
 	stage := pipeline.NewStage(func() (str struct {
 		CommonUser string
 	}, e error) {
 		query := req.URL.Query()
-		users, ok := query["common_user"]
+		users, ok := query["cuser"]
 		if !ok {
-			return str, errors.New("common_user param is missing")
+			return str, errors.New("cuser param is missing")
 		}
 		str.CommonUser = users[0]
 		return
@@ -72,6 +74,7 @@ func GetHistoriesM(w http.ResponseWriter, req *http.Request) {
 		sres.Response
 		Histories []maintenance.MaintenanceHistory
 	}
+	res.Status = true
 
 	p := pipeline.NewPipeline()
 	stage := pipeline.NewStage(func() (str struct {
@@ -79,9 +82,9 @@ func GetHistoriesM(w http.ResponseWriter, req *http.Request) {
 	}, e error) {
 		query := req.URL.Query()
 
-		users, ok := query["maintenance_user"]
+		users, ok := query["muser"]
 		if !ok {
-			return str, errors.New("maintenance_user param is missing")
+			return str, errors.New("muser param is missing")
 		}
 
 		str.MaintenanceUser = users[0]
@@ -103,6 +106,7 @@ func GetHistoriesM(w http.ResponseWriter, req *http.Request) {
 }
 
 func HandleHistory(router *mux.Router) *mux.Router {
+	log.Println("[Maintenance]", "Loading history")
 	s := router.PathPrefix("/history").Subrouter()
 	s.HandleFunc("/", GetHistory).Methods("GET")
 	s.HandleFunc("/c", GetHistoriesC).Methods("GET")
