@@ -4,6 +4,7 @@ import (
 	"errors"
 	"log"
 	"math"
+	"net/url"
 	"streelity/v1/model"
 	"streelity/v1/spatial"
 
@@ -144,20 +145,23 @@ func ServicesInRange(p r2.Point, max_range float64) []Maintenance {
 	return result
 }
 
-func UpdateService(id int64, values map[string]string) {
-	service, e := ServiceById(id)
+func UpdateService(id int64, values url.Values) (service Maintenance, e error) {
+	e = model.UpdateService(ServiceTableName, id, values, &service)
+	return
+}
+
+func UpdateOwner(id int64, owner string) (service Maintenance, e error) {
+	service, e = ServiceById(id)
 	if e != nil {
 		return
 	}
 
-	_, ok := values["owner"]
-	if ok {
-		service.Owner = values["owner"]
+	service.Owner = owner
+	if e = model.Db.Save(&service).Error; e != nil {
+		log.Println("[Database]", "update owner", e.Error())
 	}
 
-	if e = model.Db.Save(&service).Error; e != nil {
-		log.Println("[Database]", "Update maintenance", e.Error())
-	}
+	return
 }
 
 func (s *Maintenance) AfterSave(scope *gorm.Scope) (err error) {

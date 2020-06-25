@@ -140,6 +140,26 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
+func UpdateService(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		sres.Response
+		Service maintenance.Maintenance
+	}
+	res.Status = true
+
+	p := pipeline.NewPipeline()
+	stage := stages.UpdateMaintenanceValidate(req)
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		// id := p.GetInt("Id")[0]
+
+	}
+
+	sres.WriteJson(w, res)
+}
+
 func SetOwner(w http.ResponseWriter, req *http.Request) {
 	var res sres.Response = sres.Response{Status: true}
 	p := pipeline.NewPipeline()
@@ -150,9 +170,7 @@ func SetOwner(w http.ResponseWriter, req *http.Request) {
 	if res.Status {
 		service_id := p.GetInt("ServiceId")[0]
 		owner := p.GetString("Owner")[0]
-		values := make(map[string]string)
-		values["owner"] = owner
-		maintenance.UpdateService(service_id, values)
+		maintenance.UpdateOwner(service_id, owner)
 	}
 	sres.WriteJson(w, res)
 }
