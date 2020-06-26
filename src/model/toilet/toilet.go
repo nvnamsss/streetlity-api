@@ -80,8 +80,13 @@ func ServiceByLocation(lat, lon float64) (service Toilet, e error) {
 	return
 }
 
-func ServiceByAddres(address string) (service Toilet, e error) {
+func ServiceByAddress(address string) (service Toilet, e error) {
 	e = model.GetServiceByAddress(ServiceTableName, address, &service)
+	return
+}
+
+func ServicesByAddress(address string) (services []Toilet, e error) {
+	e = model.GetServiceByAddress(ServiceTableName, address, &services)
 	return
 }
 

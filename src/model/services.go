@@ -190,6 +190,10 @@ func UpdateService(tablename string, id int64, values url.Values, ref interface{
 		service.Address = values["address"][0]
 	}
 
+	if _, ok = values["images"]; ok {
+		service.SetImages(values["images"]...)
+	}
+
 	if e := Db.Save(service).Error; e != nil {
 		log.Println("[Database]", "update ", tablename, e.Error())
 	}

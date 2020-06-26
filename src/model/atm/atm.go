@@ -69,8 +69,13 @@ func ServiceByLocation(lat, lon float64) (service Atm, e error) {
 	return
 }
 
-func ServiceByAddres(address string) (service Atm, e error) {
+func ServiceByAddress(address string) (service Atm, e error) {
 	e = model.GetServiceByAddress(ServiceTableName, address, &service)
+	return
+}
+
+func ServicesByAddress(address string) (services []Atm, e error) {
+	e = model.GetServiceByAddress(ServiceTableName, address, &services)
 	return
 }
 

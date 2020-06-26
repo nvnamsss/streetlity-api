@@ -43,7 +43,7 @@ func GetService(w http.ResponseWriter, req *http.Request) {
 			break
 		case 3:
 			address := p.GetString("Address")[0]
-			if service, e := toilet.ServiceByAddres(address); e != nil {
+			if service, e := toilet.ServiceByAddress(address); e != nil {
 				res.Error(e)
 			} else {
 				res.Service = service
@@ -51,6 +51,30 @@ func GetService(w http.ResponseWriter, req *http.Request) {
 			break
 		}
 	}
+	sres.WriteJson(w, res)
+}
+
+func GetServices(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		sres.Response
+		Services []toilet.Toilet
+	}
+	res.Status = true
+
+	p := pipeline.NewPipeline()
+	stage := stages.QueryServicesValidateStage(req)
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		address := p.GetString("Address")[0]
+		if services, e := toilet.ServicesByAddress(address); e != nil {
+			res.Error(e)
+		} else {
+			res.Services = services
+		}
+	}
+
 	sres.WriteJson(w, res)
 }
 
@@ -137,6 +161,7 @@ func HandleService(router *mux.Router) *mux.Router {
 
 	s.HandleFunc("/", CreateService).Methods("POST")
 	s.HandleFunc("/", GetService).Methods("GET")
+	s.HandleFunc("/s", GetServices).Methods("GET")
 	s.HandleFunc("/all", AllServices).Methods("GET")
 	s.HandleFunc("/range", ServiceInRange).Methods("GET")
 	s.HandleFunc("/create", CreateService).Methods("POST")
