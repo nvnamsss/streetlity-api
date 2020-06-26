@@ -103,8 +103,37 @@ func QueryMaintenanceValidate(req *http.Request) *pipeline.Stage {
 }
 
 func UpdateMaintenanceValidate(req *http.Request) *pipeline.Stage {
+	req.ParseForm()
 	stage := pipeline.NewStage(func() (str struct {
+		Lat    float32
+		Lon    float32
+		Note   string
+		Images []string
 	}, e error) {
+		form := req.PostForm
+		if images, ok := form["images"]; ok {
+			str.Images = images
+		}
+		if _, ok := form["lat"]; ok {
+			if lat, e := strconv.ParseFloat(form["lat"][0], 64); e != nil {
+				return str, errors.New("cannot parse lat to float32")
+			} else {
+				str.Lat = float32(lat)
+			}
+		}
+
+		if _, ok := form["lon"]; ok {
+			if lon, e := strconv.ParseFloat(form["lon"][0], 64); e != nil {
+				return str, errors.New("cannot parse lon to float32")
+			} else {
+				str.Lon = float32(lon)
+			}
+		}
+
+		if notes, ok := form["note"]; ok {
+			str.Note = notes[0]
+		}
+
 		return
 	})
 
