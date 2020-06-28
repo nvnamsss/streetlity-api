@@ -1,6 +1,7 @@
 package rmaintenance
 
 import (
+	"log"
 	"net/http"
 	"streelity/v1/model/maintenance"
 	"streelity/v1/sres"
@@ -97,19 +98,18 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 	var res sres.Response = sres.Response{Status: true}
 	req.ParseForm()
 	p := pipeline.NewPipeline()
-	stage := stages.IdValidateStage(req.PostForm)
-	type_stage := stages.UpvoteTypeStage(req)
-	stage.NextStage(type_stage)
+	stage := stages.UpvoteValidateStage(req)
 	p.First = stage
 	res.Error(p.Run())
 
 	if res.Status {
 		if res.Status {
-			id := p.GetIntFirstOrDefault("Id")
-			t := p.GetString("UpvoteType")[0]
+			id := p.GetInt("ServiceId")[0]
+			t := p.GetStringFirstOrDefault("UpvoteType")
 
 			switch t {
 			case "Immediately":
+				log.Println("hi mom")
 				if e := maintenance.UpvoteUcfImmediately(id); e != nil {
 					res.Error(e)
 				}
@@ -119,7 +119,6 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 					res.Error(e)
 				}
 			}
-
 		}
 	}
 

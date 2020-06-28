@@ -97,15 +97,13 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 
 	req.ParseForm()
 	p := pipeline.NewPipeline()
-	stage := stages.IdValidateStage(req.PostForm)
-	type_stage := stages.UpvoteTypeStage(req)
-	stage.NextStage(type_stage)
+	stage := stages.UpvoteValidateStage(req)
 	p.First = stage
 	res.Error(p.Run())
 
 	if res.Status {
-		id := p.GetIntFirstOrDefault("Id")
-		t := p.GetString("UpvoteType")[0]
+		id := p.GetInt("ServiceId")[0]
+		t := p.GetStringFirstOrDefault("UpvoteType")
 
 		switch t {
 		case "Immediately":
