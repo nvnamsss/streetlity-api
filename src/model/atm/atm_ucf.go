@@ -124,7 +124,7 @@ func CreateUcf(s AtmUcf) (ucf AtmUcf, e error) {
 //UcfInRange query the unconfirmed atm services that are in the radius of a location
 func UcfInRange(p r2.Point, max_range float64) []AtmUcf {
 	var result []AtmUcf = []AtmUcf{}
-	trees := services.InRange(p, max_range)
+	trees := ucf_services.InRange(p, max_range)
 
 	for _, tree := range trees {
 		for _, item := range tree.Items {

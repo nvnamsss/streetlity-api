@@ -1,6 +1,7 @@
 package maintenance
 
 import (
+	"encoding/json"
 	"errors"
 	"log"
 	"math"
@@ -59,15 +60,30 @@ func CreateService(s Maintenance) (e error) {
 	return
 }
 
-// func (m *Maintenance) AddMaintainer(maintainer string) (e error) {
+func (m *Maintenance) AddMaintainer(maintainer string) (e error) {
+	ms := m.GetMaintainers()
+	ms = append(ms, maintainer)
+	e = m.SetMaintainer(ms)
+	return
+}
 
-// }
+func (m *Maintenance) SetMaintainer(maintainers []string) (e error) {
+	data, e := json.Marshal(maintainers)
+	if e != nil {
+		log.Println("[Maintenance]", "Set maintainer", e.Error())
+	}
 
-// func (m Maintenance) GetMaintainers() (maintainer []string) {
-// 	e := json.Unmarshal([]byte(m.Maintainer, &maintainer))
+	m.Maintainer = string(data)
+	return
+}
 
-// 	return maintainer
-// }
+func (m Maintenance) GetMaintainers() (maintainer []string) {
+	if e := json.Unmarshal([]byte(m.Maintainer), &maintainer); e != nil {
+		log.Println("[Maintenance]", "Get maintainer", e.Error())
+	}
+
+	return maintainer
+}
 
 func queryMaintenance(s Maintenance) (service Maintenance, e error) {
 	service = s

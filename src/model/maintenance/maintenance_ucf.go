@@ -4,12 +4,14 @@ import (
 	"errors"
 	"log"
 	"streelity/v1/model"
+	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
 )
 
 var confident int = 5
+var ucf_services spatial.RTree
 
 type MaintenanceUcf struct {
 	model.ServiceUcf
@@ -164,7 +166,7 @@ func DeleteUcf(id int64) (e error) {
 //UcfInRange query the unconfirmed fuel services that are in the radius of a location
 func UcfInRange(p r2.Point, max_range float64) []MaintenanceUcf {
 	var result []MaintenanceUcf = []MaintenanceUcf{}
-	trees := services.InRange(p, max_range)
+	trees := ucf_services.InRange(p, max_range)
 
 	for _, tree := range trees {
 		for _, item := range tree.Items {
@@ -186,23 +188,25 @@ func (s *MaintenanceUcf) AfterSave(scope *gorm.Scope) (err error) {
 		CreateService(m)
 		scope.DB().Delete(s)
 		log.Println("[Unconfirmed Maintenance]", "Confident is enough. Added", m)
+	} else {
+		ucf_services.AddItem(s)
 	}
 
 	return
 }
 
-func LoadUcfService() {
+func LoadUnconfirmedService() {
 	log.Println("[Maintenance]", "Loading unconfirmed service")
 
 	maintenances := AllUcfs()
 	for _, service := range maintenances {
-		services.AddItem(service)
+		ucf_services.AddItem(service)
 	}
 }
 
 func init() {
-	model.OnConnected.Subscribe(LoadUcfService)
+	model.OnConnected.Subscribe(LoadUnconfirmedService)
 	model.OnDisconnect.Subscribe(func() {
-		model.OnConnected.Unsubscribe(LoadUcfService)
+		model.OnConnected.Unsubscribe(LoadUnconfirmedService)
 	})
 }

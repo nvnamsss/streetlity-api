@@ -121,7 +121,7 @@ func CreateUcf(s ToiletUcf) (ucf ToiletUcf, e error) {
 //UcfInRange query the unconfirmed fuel services that are in the radius of a location
 func UcfInRange(p r2.Point, max_range float64) []ToiletUcf {
 	var result []ToiletUcf = []ToiletUcf{}
-	trees := services.InRange(p, max_range)
+	trees := ucf_services.InRange(p, max_range)
 
 	for _, tree := range trees {
 		for _, item := range tree.Items {
@@ -154,23 +154,25 @@ func (s *ToiletUcf) AfterSave(scope *gorm.Scope) (err error) {
 		CreateService(t)
 		scope.DB().Delete(s)
 		log.Println("[Unconfirmed Toilet]", "Confident is enough. Added", t)
+	} else {
+		ucf_services.AddItem(s)
 	}
 
 	return
 }
 
-func LoadUcfService() {
+func LoadUnconfirmedService() {
 	log.Println("[Toilet]", "Loading unconfirmed service")
 
 	toilets := AllToiletUcfs()
 	for _, service := range toilets {
-		services.AddItem(service)
+		ucf_services.AddItem(service)
 	}
 }
 
 func init() {
-	model.OnConnected.Subscribe(LoadUcfService)
+	model.OnConnected.Subscribe(LoadUnconfirmedService)
 	model.OnDisconnect.Subscribe(func() {
-		model.OnConnected.Unsubscribe(LoadUcfService)
+		model.OnConnected.Unsubscribe(LoadUnconfirmedService)
 	})
 }
