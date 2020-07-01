@@ -8,20 +8,20 @@ import (
 	"github.com/nvnamsss/goinf/pipeline"
 )
 
-func SetOwnerValidate(req *http.Request) *pipeline.Stage {
+func AddMaintainerValidate(req *http.Request) *pipeline.Stage {
 	req.ParseForm()
 	stage := pipeline.NewStage(func() (str struct {
-		ServiceId int64
-		Owner     string
+		ServiceId  int64
+		Maintainer string
 	}, e error) {
 		form := req.PostForm
 		service_ids, ok := form["service_id"]
 		if !ok {
 			return str, errors.New("service_id param is missing")
 		}
-		owners, ok := form["owner"]
+		maintainers, ok := form["maintainer"]
 		if !ok {
-			return str, errors.New("owner param is missing")
+			return str, errors.New("maintainer param is missing")
 		}
 
 		if service_id, e := strconv.ParseInt(service_ids[0], 10, 64); e != nil {
@@ -29,7 +29,7 @@ func SetOwnerValidate(req *http.Request) *pipeline.Stage {
 		} else {
 			str.ServiceId = service_id
 		}
-		str.Owner = owners[0]
+		str.Maintainer = maintainers[0]
 		return
 	})
 

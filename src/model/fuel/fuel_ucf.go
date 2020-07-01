@@ -55,7 +55,6 @@ func CreateUcf(s FuelUcf) (ucf FuelUcf, e error) {
 		ucf = s
 	}
 
-	UpvoteUcfImmediately(ucf.Id)
 	return
 }
 

@@ -187,7 +187,7 @@ func UpdateService(w http.ResponseWriter, req *http.Request) {
 func SetOwner(w http.ResponseWriter, req *http.Request) {
 	var res sres.Response = sres.Response{Status: true}
 	p := pipeline.NewPipeline()
-	stage := stages.SetOwnerValidate(req)
+	stage := stages.AddMaintainerValidate(req)
 	p.First = stage
 	res.Error(p.Run())
 

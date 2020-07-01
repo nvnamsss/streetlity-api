@@ -14,8 +14,8 @@ import (
 
 type Maintenance struct {
 	model.Service
-	Owner string `gorm:"column:owner"`
-	Name  string `gorm:"column:name"`
+	Maintainer string `gorm:"column:maintainer"`
+	Name       string `gorm:"column:name"`
 	// Id  int64
 	// Lat float32 `gorm:"column:lat"`
 	// Lon float32 `gorm:"column:lon"`
@@ -59,6 +59,16 @@ func CreateService(s Maintenance) (e error) {
 	return
 }
 
+// func (m *Maintenance) AddMaintainer(maintainer string) (e error) {
+
+// }
+
+// func (m Maintenance) GetMaintainers() (maintainer []string) {
+// 	e := json.Unmarshal([]byte(m.Maintainer, &maintainer))
+
+// 	return maintainer
+// }
+
 func queryMaintenance(s Maintenance) (service Maintenance, e error) {
 	service = s
 
@@ -90,7 +100,7 @@ func ServiceByLocation(lat, lon float64) (service Maintenance, e error) {
 	return
 }
 
-func ServiceByAddres(address string) (service Maintenance, e error) {
+func ServiceByAddress(address string) (service Maintenance, e error) {
 	e = model.GetServiceByAddress(ServiceTableName, address, &service)
 	return
 }
@@ -156,7 +166,7 @@ func UpdateOwner(id int64, owner string) (service Maintenance, e error) {
 		return
 	}
 
-	service.Owner = owner
+	service.Maintainer = owner
 	if e = model.Db.Save(&service).Error; e != nil {
 		log.Println("[Database]", "update owner", e.Error())
 	}

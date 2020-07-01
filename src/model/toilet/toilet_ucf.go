@@ -115,8 +115,6 @@ func CreateUcf(s ToiletUcf) (ucf ToiletUcf, e error) {
 		ucf = s
 	}
 
-	//Temporal
-	UpvoteUcfImmediately(s.Id)
 	return
 }
 

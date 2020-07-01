@@ -81,8 +81,6 @@ func CreateUcf(s MaintenanceUcf) (ucf MaintenanceUcf, e error) {
 		ucf = s
 	}
 
-	//Temporal
-	UpvoteUcfImmediately(s.Id)
 	return
 }
 

@@ -118,9 +118,6 @@ func CreateUcf(s AtmUcf) (ucf AtmUcf, e error) {
 		ucf = s
 	}
 
-	//Temporal
-	UpvoteUcfImmediately(s.Id)
-
 	return
 }
 
