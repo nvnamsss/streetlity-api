@@ -88,7 +88,7 @@ func orderMaintenance(w http.ResponseWriter, req *http.Request) {
 		maintenance_users := []string{}
 		for _, s := range services {
 			if s.Maintainer != "" {
-				maintenance_users = append(maintenance_users, s.Maintainer)
+				maintenance_users = append(maintenance_users, s.GetMaintainers()...)
 			}
 		}
 

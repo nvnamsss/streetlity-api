@@ -184,7 +184,7 @@ func UpdateService(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
-func SetOwner(w http.ResponseWriter, req *http.Request) {
+func AddMaintainer(w http.ResponseWriter, req *http.Request) {
 	var res sres.Response = sres.Response{Status: true}
 	p := pipeline.NewPipeline()
 	stage := stages.AddMaintainerValidate(req)
@@ -193,9 +193,28 @@ func SetOwner(w http.ResponseWriter, req *http.Request) {
 
 	if res.Status {
 		service_id := p.GetInt("ServiceId")[0]
-		owner := p.GetString("Owner")[0]
-		maintenance.UpdateOwner(service_id, owner)
+		maintainer := p.GetString("Maintainer")[0]
+
+		_, e := maintenance.AddMaintainer(service_id, maintainer)
+		res.Error(e)
 	}
+	sres.WriteJson(w, res)
+}
+
+func RemoveMaintainer(w http.ResponseWriter, req *http.Request) {
+	var res sres.Response = sres.Response{Status: true}
+	p := pipeline.NewPipeline()
+	stage := stages.AddMaintainerValidate(req)
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		service_id := p.GetInt("ServiceId")[0]
+		maintainer := p.GetString("Maintainer")[0]
+		_, e := maintenance.RemoveMaintainer(service_id, maintainer)
+		res.Error(e)
+	}
+
 	sres.WriteJson(w, res)
 }
 
@@ -230,7 +249,8 @@ func HandleService(router *mux.Router) *mux.Router {
 	s.HandleFunc("/", CreateService).Methods("POST")
 	s.HandleFunc("/", GetService).Methods("GET")
 	s.HandleFunc("/s", GetServices).Methods("GET")
-	s.HandleFunc("/owner", SetOwner).Methods("POST")
+	s.HandleFunc("/maintainer", AddMaintainer).Methods("POST")
+	s.HandleFunc("/maintainer", RemoveMaintainer).Methods("DELETE")
 	s.HandleFunc("/all", AllServices).Methods("GET")
 	s.HandleFunc("/create", CreateService).Methods("POST")
 	s.HandleFunc("/range", ServiceInRange).Methods("GET")

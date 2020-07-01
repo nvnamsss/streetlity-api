@@ -62,12 +62,31 @@ func CreateService(s Maintenance) (e error) {
 
 func (m *Maintenance) AddMaintainer(maintainer string) (e error) {
 	ms := m.GetMaintainers()
-	ms = append(ms, maintainer)
+	if _, ok := ms[maintainer]; ok {
+		log.Println("[Maintenance]", "Add", maintainer, "is already work for", m.Name)
+		return errors.New("maintainer is already exist")
+	} else {
+		ms[maintainer] = "Employee"
+	}
+
 	e = m.SetMaintainer(ms)
 	return
 }
 
-func (m *Maintenance) SetMaintainer(maintainers []string) (e error) {
+func (m *Maintenance) RemoveMaintainer(maintainer string) (e error) {
+	ms := m.GetMaintainers()
+	_, ok := ms[maintainer]
+	if !ok {
+		log.Println("[Maintenance]", "Remove", maintainer, "is not work for", m.Name)
+		return errors.New("maintainer is not exist")
+	}
+
+	delete(ms, maintainer)
+	e = m.SetMaintainer(ms)
+	return
+}
+
+func (m *Maintenance) SetMaintainer(maintainers map[string]string) (e error) {
 	data, e := json.Marshal(maintainers)
 	if e != nil {
 		log.Println("[Maintenance]", "Set maintainer", e.Error())
@@ -77,7 +96,7 @@ func (m *Maintenance) SetMaintainer(maintainers []string) (e error) {
 	return
 }
 
-func (m Maintenance) GetMaintainers() (maintainer []string) {
+func (m Maintenance) GetMaintainers() (maintainer map[string]string) {
 	if e := json.Unmarshal([]byte(m.Maintainer), &maintainer); e != nil {
 		log.Println("[Maintenance]", "Get maintainer", e.Error())
 	}
@@ -176,17 +195,34 @@ func UpdateService(id int64, values url.Values) (service Maintenance, e error) {
 	return
 }
 
-func UpdateOwner(id int64, owner string) (service Maintenance, e error) {
+func AddMaintainer(id int64, maintainer string) (service Maintenance, e error) {
 	service, e = ServiceById(id)
 	if e != nil {
 		return
 	}
-
-	service.Maintainer = owner
-	if e = model.Db.Save(&service).Error; e != nil {
-		log.Println("[Database]", "update owner", e.Error())
+	if e = service.AddMaintainer(maintainer); e != nil {
+		return
 	}
 
+	if e = model.Db.Save(&service).Error; e != nil {
+		log.Println("[Database]", "add maintainer", e.Error())
+	}
+
+	return
+}
+
+func RemoveMaintainer(id int64, maintainer string) (service Maintenance, e error) {
+	service, e = ServiceById(id)
+	if e != nil {
+		return
+	}
+	if e = service.RemoveMaintainer(maintainer); e != nil {
+		return
+	}
+
+	if e = model.Db.Save(&service).Error; e != nil {
+		log.Println("[Database]", "add maintainer", e.Error())
+	}
 	return
 }
 
