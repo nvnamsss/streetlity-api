@@ -92,9 +92,7 @@ func GetAllUnconfirmed(w http.ResponseWriter, req *http.Request) {
 }
 
 func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
-	var res struct {
-		sres.Response
-	}
+	var res sres.Response = sres.Response{Status: true}
 
 	req.ParseForm()
 	p := pipeline.NewPipeline()
@@ -119,7 +117,7 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 		}
 	}
 
-	sres.WriteJson(w, req)
+	sres.WriteJson(w, res)
 }
 
 func UnconfirmedInRange(w http.ResponseWriter, req *http.Request) {
