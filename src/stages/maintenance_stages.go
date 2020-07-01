@@ -2,7 +2,9 @@ package stages
 
 import (
 	"errors"
+	"log"
 	"net/http"
+	"net/url"
 	"strconv"
 
 	"github.com/nvnamsss/goinf/pipeline"
@@ -15,6 +17,7 @@ func AddMaintainerValidate(req *http.Request) *pipeline.Stage {
 		Maintainer string
 	}, e error) {
 		form := req.PostForm
+		log.Println(form)
 		service_ids, ok := form["service_id"]
 		if !ok {
 			return str, errors.New("service_id param is missing")
@@ -36,6 +39,33 @@ func AddMaintainerValidate(req *http.Request) *pipeline.Stage {
 	return stage
 }
 
+func RemoveMaintainerValidate(req *http.Request) *pipeline.Stage {
+	stage := pipeline.NewStage(func() (str struct {
+		ServiceId  int64
+		Maintainer string
+	}, e error) {
+		query, _ := url.ParseQuery(req.URL.RawQuery)
+		log.Println(query)
+		service_ids, ok := query["service_id"]
+		if !ok {
+			return str, errors.New("service_id param is missing")
+		}
+		maintainers, ok := query["maintainer"]
+		if !ok {
+			return str, errors.New("maintainer param is missing")
+		}
+
+		if service_id, e := strconv.ParseInt(service_ids[0], 10, 64); e != nil {
+			return str, errors.New("service_id cannot parse to int64")
+		} else {
+			str.ServiceId = service_id
+		}
+		str.Maintainer = maintainers[0]
+		return
+	})
+
+	return stage
+}
 func QueryMaintenanceValidate(req *http.Request) *pipeline.Stage {
 	stage := pipeline.NewStage(func() (str struct {
 		Case    int

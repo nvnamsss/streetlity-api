@@ -97,6 +97,7 @@ func (m *Maintenance) SetMaintainer(maintainers map[string]string) (e error) {
 }
 
 func (m Maintenance) GetMaintainers() (maintainer map[string]string) {
+	maintainer = make(map[string]string)
 	if e := json.Unmarshal([]byte(m.Maintainer), &maintainer); e != nil {
 		log.Println("[Maintenance]", "Get maintainer", e.Error())
 	}

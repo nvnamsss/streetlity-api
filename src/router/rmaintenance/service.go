@@ -2,6 +2,7 @@ package rmaintenance
 
 import (
 	"errors"
+	"log"
 	"net/http"
 	"streelity/v1/model/maintenance"
 	"streelity/v1/sres"
@@ -202,9 +203,10 @@ func AddMaintainer(w http.ResponseWriter, req *http.Request) {
 }
 
 func RemoveMaintainer(w http.ResponseWriter, req *http.Request) {
+	log.Println("hi mom")
 	var res sres.Response = sres.Response{Status: true}
 	p := pipeline.NewPipeline()
-	stage := stages.AddMaintainerValidate(req)
+	stage := stages.RemoveMaintainerValidate(req)
 	p.First = stage
 	res.Error(p.Run())
 
