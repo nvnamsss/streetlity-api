@@ -6,6 +6,7 @@ import (
 	"math"
 	"strconv"
 	"streelity/v1/model"
+	"strings"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
@@ -172,6 +173,60 @@ func ServicesInRange(p r2.Point, max_range float64) []Fuel {
 		}
 	}
 	return result
+}
+
+func Import(bytes []byte, t string) (e error) {
+	switch t {
+	case "RawText":
+		ImportByRawText(string(bytes))
+		break
+	}
+
+	return
+}
+
+func ImportByRawText(data string) (e error) {
+	lines := strings.Split(data, "\n")
+	for _, line := range lines {
+		fields := strings.Split(line, ";")
+		m := make(map[string]string)
+		s := Fuel{}
+		for _, field := range fields {
+			log.Println(field)
+			att := strings.Split(field, ":")
+			if len(att) <= 1 {
+				continue
+			}
+
+			m[att[0]] = att[1]
+		}
+
+		if lat, e := strconv.ParseFloat(m["lat"], 64); e != nil {
+			log.Println("[Fuel]", "import", "cannot parse lat to float")
+			continue
+		} else {
+			s.Lat = float32(lat)
+		}
+
+		if lon, e := strconv.ParseFloat(m["lon"], 64); e != nil {
+			log.Println("[Fuel]", "import", "cannot parse lon to float")
+			continue
+		} else {
+			s.Lon = float32(lon)
+		}
+
+		if address, ok := m["address"]; ok {
+			s.Address = address
+		}
+
+		if note, ok := m["note"]; ok {
+			s.Note = note
+		}
+		s.Contributor = "Streetlity"
+		CreateService(s)
+	}
+
+	return
 }
 
 func (s *Fuel) AfterSave(scope *gorm.Scope) (e error) {

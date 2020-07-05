@@ -1,10 +1,14 @@
 package ratm
 
 import (
+	"bytes"
 	"errors"
+	"io"
+	"log"
 	"net/http"
 	"strconv"
 	"streelity/v1/model/atm"
+	"streelity/v1/model/maintenance"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
 
@@ -178,6 +182,35 @@ func ServiceInRange(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
+func Import(w http.ResponseWriter, req *http.Request) {
+	var res sres.Response = sres.Response{Status: true}
+
+	req.ParseForm()
+	p := pipeline.NewPipeline()
+	stage := stages.ImportValidate(req.URL.Query())
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		t := p.GetString("Type")[0]
+		req.ParseMultipartForm(32 << 20) // limit your max input length!
+		file, _, e := req.FormFile("f")
+
+		if e != nil {
+			log.Println("[Upload]", "cannot find", "f param", "in the form")
+		}
+
+		defer file.Close()
+
+		var buf bytes.Buffer
+		io.Copy(&buf, file)
+		maintenance.Import(buf.Bytes(), t)
+
+	}
+
+	sres.WriteJson(w, res)
+}
+
 func HandleService(router *mux.Router) *mux.Router {
 	s := router.PathPrefix("/atm").Subrouter()
 
@@ -187,6 +220,7 @@ func HandleService(router *mux.Router) *mux.Router {
 	s.HandleFunc("/all", AllServices).Methods("GET")
 	s.HandleFunc("/create", CreateService).Methods("POST")
 	s.HandleFunc("/range", ServiceInRange).Methods("GET")
+	s.HandleFunc("/import", Import).Methods("POST")
 
 	return s
 }

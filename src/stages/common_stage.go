@@ -372,3 +372,18 @@ func IdValidateStage(values url.Values) *pipeline.Stage {
 
 	return stage
 }
+
+func ImportValidate(values url.Values) *pipeline.Stage {
+	stage := pipeline.NewStage(func() (str struct {
+		Type string
+	}, e error) {
+		types, ok := values["type"]
+		if !ok {
+			return str, errors.New("type param is missing")
+		}
+		str.Type = types[0]
+		return
+	})
+
+	return stage
+}
