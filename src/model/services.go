@@ -7,9 +7,9 @@ import (
 	"net/url"
 	"regexp"
 	"strconv"
-	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
+	"github.com/nvnamsss/goinf/spatial"
 )
 
 // type Services struct {
@@ -88,6 +88,11 @@ func (s *ServiceUcf) SetImages(images ...string) {
 	}
 
 	s.Images = imgString
+}
+
+func (s ServiceUcf) GetId() string {
+	id := strconv.FormatInt(s.Id, 10)
+	return id
 }
 
 var services spatial.RTree

@@ -3,11 +3,12 @@ package fuel
 import (
 	"errors"
 	"log"
+	"strconv"
 	"streelity/v1/model"
-	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
+	"github.com/nvnamsss/goinf/spatial"
 )
 
 const UcfServiceTableName = "fuel_ucf"
@@ -22,6 +23,11 @@ type FuelUcf struct {
 
 func (FuelUcf) TableName() string {
 	return UcfServiceTableName
+}
+
+func (s FuelUcf) GetId() string {
+	id := strconv.FormatInt(s.Id, 10)
+	return id
 }
 
 func (s FuelUcf) Location() r2.Point {

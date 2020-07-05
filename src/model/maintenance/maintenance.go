@@ -6,11 +6,12 @@ import (
 	"log"
 	"math"
 	"net/url"
+	"strconv"
 	"streelity/v1/model"
-	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
+	"github.com/nvnamsss/goinf/spatial"
 )
 
 type Maintenance struct {
@@ -29,6 +30,11 @@ var map_services map[int64]Maintenance
 
 func (Maintenance) TableName() string {
 	return ServiceTableName
+}
+
+func (s Maintenance) GetId() string {
+	id := strconv.FormatInt(s.Id, 10)
+	return id
 }
 
 func (s Maintenance) Location() r2.Point {

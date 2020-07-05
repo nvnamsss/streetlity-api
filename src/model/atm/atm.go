@@ -4,11 +4,12 @@ import (
 	"errors"
 	"log"
 	"math"
+	"strconv"
 	"streelity/v1/model"
-	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
+	"github.com/nvnamsss/goinf/spatial"
 )
 
 type Atm struct {
@@ -25,6 +26,11 @@ const ServiceTableName = "atm"
 //TableName determine the table name in database which is using for gorm
 func (Atm) TableName() string {
 	return ServiceTableName
+}
+
+func (s Atm) GetId() string {
+	id := strconv.FormatInt(s.Id, 10)
+	return id
 }
 
 //Location determine the location of service as r2.Point

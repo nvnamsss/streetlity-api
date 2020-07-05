@@ -4,10 +4,10 @@ import (
 	"errors"
 	"log"
 	"streelity/v1/model"
-	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
+	"github.com/nvnamsss/goinf/spatial"
 )
 
 var confident int = 5

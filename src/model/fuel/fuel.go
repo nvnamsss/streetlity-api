@@ -4,11 +4,12 @@ import (
 	"errors"
 	"log"
 	"math"
+	"strconv"
 	"streelity/v1/model"
-	"streelity/v1/spatial"
 
 	"github.com/golang/geo/r2"
 	"github.com/jinzhu/gorm"
+	"github.com/nvnamsss/goinf/spatial"
 )
 
 //FuelUcf representation the Fuel service which is confirmed
@@ -27,6 +28,11 @@ const ServiceTableName = "fuel"
 //Determine table name
 func (Fuel) TableName() string {
 	return ServiceTableName
+}
+
+func (s Fuel) GetId() string {
+	id := strconv.FormatInt(s.Id, 10)
+	return id
 }
 
 func (s Fuel) Location() r2.Point {
