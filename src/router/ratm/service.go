@@ -99,7 +99,7 @@ func AllServices(w http.ResponseWriter, req *http.Request) {
 func CreateService(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Service atm.AtmUcf
+		Service atm.Atm
 	}
 	res.Status = true
 	p := pipeline.NewPipeline()
@@ -135,7 +135,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		bank_id := p.GetIntFirstOrDefault("BankId")
 		contributor := p.GetStringFirstOrDefault("Contributor")
 
-		var ucf atm.AtmUcf
+		var ucf atm.Atm
 		ucf.Lat = float32(lat)
 		ucf.Lon = float32(lon)
 		ucf.Address = address
@@ -144,7 +144,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		ucf.Contributor = contributor
 		ucf.SetImages(images...)
 
-		if service, e := atm.CreateUcf(ucf); e != nil {
+		if service, e := atm.CreateService(ucf); e != nil {
 			res.Error(e)
 		} else {
 			res.Service = service

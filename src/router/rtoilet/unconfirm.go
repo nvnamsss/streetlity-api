@@ -107,12 +107,12 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 
 		switch t {
 		case "Immediately":
-			if e := toilet.UpvoteUcfImmediately(id); e != nil {
+			if e := toilet.UpvoteServiceImmediately(id); e != nil {
 				res.Error(e)
 			}
 			break
 		default:
-			if e := toilet.UpvoteUcf(id); e != nil {
+			if e := toilet.UpvoteService(id); e != nil {
 				res.Error(e)
 			}
 		}
@@ -125,7 +125,7 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 func UnconfirmedInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Services []toilet.ToiletUcf
+		Services []toilet.Toilet
 	}
 	res.Status = true
 

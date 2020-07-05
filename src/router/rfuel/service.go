@@ -97,7 +97,7 @@ func AllServices(w http.ResponseWriter, req *http.Request) {
 func CreateService(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Service fuel.FuelUcf
+		Service fuel.Fuel
 	}
 	res.Status = true
 	p := pipeline.NewPipeline()
@@ -114,7 +114,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		images := p.GetString("Images")
 		contributor := p.GetStringFirstOrDefault("Contributor")
 
-		var ucf fuel.FuelUcf
+		var ucf fuel.Fuel
 		ucf.Lat = float32(lat)
 		ucf.Lon = float32(lon)
 		ucf.Address = address
@@ -122,7 +122,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		ucf.Contributor = contributor
 		ucf.SetImages(images...)
 
-		if service, e := fuel.CreateUcf(ucf); e != nil {
+		if service, e := fuel.CreateService(ucf); e != nil {
 			res.Error(e)
 		} else {
 			res.Service = service

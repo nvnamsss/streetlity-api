@@ -20,6 +20,6 @@ require (
 	github.com/lukehoban/go-outline v0.0.0-20161011150102-e78556874252 // indirect
 	github.com/mattn/go-sqlite3 v2.0.1+incompatible // indirect
 	github.com/mdempsky/gocode v0.0.0-20191202075140-939b4a677f2f // indirect
-	github.com/nvnamsss/goinf v1.1.2
+	github.com/nvnamsss/goinf v1.1.4
 	github.com/uudashr/gopkgs/v2 v2.1.2 // indirect
 )

@@ -119,8 +119,8 @@ func CreateUcf(s ToiletUcf) (ucf ToiletUcf, e error) {
 }
 
 //UcfInRange query the unconfirmed fuel services that are in the radius of a location
-func UcfInRange(p r2.Point, max_range float64) []ToiletUcf {
-	var result []ToiletUcf = []ToiletUcf{}
+func UcfInRange(p r2.Point, max_range float64) []Toilet {
+	var result []Toilet = []Toilet{}
 	trees := ucf_services.InRange(p, max_range)
 
 	for _, tree := range trees {
@@ -128,7 +128,7 @@ func UcfInRange(p r2.Point, max_range float64) []ToiletUcf {
 			location := item.Location()
 
 			d := distance(location, p)
-			s, isService := item.(ToiletUcf)
+			s, isService := item.(Toilet)
 			if isService && d < max_range {
 				result = append(result, s)
 			}
@@ -170,9 +170,9 @@ func LoadUnconfirmedService() {
 	}
 }
 
-func init() {
-	model.OnConnected.Subscribe(LoadUnconfirmedService)
-	model.OnDisconnect.Subscribe(func() {
-		model.OnConnected.Unsubscribe(LoadUnconfirmedService)
-	})
-}
+// func init() {
+// 	model.OnConnected.Subscribe(LoadUnconfirmedService)
+// 	model.OnDisconnect.Subscribe(func() {
+// 		model.OnConnected.Unsubscribe(LoadUnconfirmedService)
+// 	})
+// }

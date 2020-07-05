@@ -24,7 +24,7 @@ func TestCreateService(t *testing.T) {
 		s.Note = gofakeit.Sentence(30)
 		s.Name = gofakeit.BeerName()
 
-		if e := maintenance.CreateService(s); e != nil {
+		if _, e := maintenance.CreateService(s); e != nil {
 			t.Error(e)
 		}
 	}

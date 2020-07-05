@@ -102,20 +102,54 @@ func ServicesByIds(ids ...int64) (services []Atm) {
 //CreateService add new atm service to the database
 //
 //return error if there is something wrong when doing transaction
-func CreateService(s Atm) (e error) {
+func CreateService(s Atm) (service Atm, e error) {
+	service = s
 	if e = model.Db.Where("lat=? AND lon=?", s.Lat, s.Lon).Find(&Atm{}).Error; e == nil {
-		return errors.New("The service location is existed or some problems is occured")
+		return s, errors.New("The service location is existed or some problems is occured")
 	}
 
-	if e = model.Db.Create(&s).Error; e != nil {
+	if e = model.Db.Create(&service).Error; e != nil {
 		log.Println("[Database]", "Add atm", e.Error())
 		return
 	}
 
-	return nil
+	return
 }
 
-func (s *Atm) AfterSave(scope *gorm.Scope) (err error) {
+//UpvoteService upvote the unconfirmed atm by specific id
+func UpvoteService(id int64) error {
+	return upvoteService(id, 1)
+}
+
+func UpvoteServiceImmediately(id int64) error {
+	return upvoteService(id, confident)
+}
+
+func upvoteService(id int64, value int) (e error) {
+	s, e := ServiceById(id)
+
+	if e != nil {
+		return e
+	}
+
+	s.Confident += value
+	if e := model.Db.Save(&s).Error; e != nil {
+		log.Println("[Database]", "upvote unconfirmed atm", id, ":", e.Error())
+	}
+
+	return
+}
+
+func (s *Atm) AfterSave(scope *gorm.Scope) (e error) {
+	if s.Confident > confident {
+		ucf_services.RemoveItem(s)
+		if e = services.AddItem(*s); e != nil {
+			log.Println("[Database]", "atm offical", e.Error())
+		}
+	} else {
+		ucf_services.AddItem(s)
+	}
+
 	map_services[s.Id] = *s
 	return
 }
@@ -156,10 +190,15 @@ func ServicesInRange(p r2.Point, max_range float64) []Atm {
 func LoadService() {
 	log.Println("[ATM]", "Loading service")
 	map_services = make(map[int64]Atm)
-	atms, _ := AllServices()
-	for _, atm := range atms {
-		services.AddItem(atm)
-		map_services[atm.Id] = atm
+	ss, _ := AllServices()
+	for _, s := range ss {
+		if s.Confident > confident {
+			services.AddItem(s)
+		} else {
+			ucf_services.AddItem(s)
+		}
+
+		map_services[s.Id] = s
 	}
 }
 

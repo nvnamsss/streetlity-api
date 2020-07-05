@@ -2,7 +2,6 @@ package rmaintenance
 
 import (
 	"errors"
-	"log"
 	"net/http"
 	"streelity/v1/model/maintenance"
 	"streelity/v1/sres"
@@ -103,7 +102,7 @@ func AllServices(w http.ResponseWriter, req *http.Request) {
 func CreateService(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Service maintenance.MaintenanceUcf
+		Service maintenance.Maintenance
 	}
 	res.Status = true
 
@@ -138,7 +137,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		name := p.GetStringFirstOrDefault("Name")
 		images := p.GetString("Images")
 		contributor := p.GetStringFirstOrDefault("Contributor")
-		var ucf maintenance.MaintenanceUcf
+		var ucf maintenance.Maintenance
 		ucf.Lat = float32(lat)
 		ucf.Lon = float32(lon)
 		ucf.Address = address
@@ -147,21 +146,11 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		ucf.Contributor = contributor
 		ucf.SetImages(images...)
 
-		alt := p.GetStringFirstOrDefault("Alt")
-		if alt == "" {
-			if service, e := maintenance.CreateUcf(ucf); e != nil {
-				res.Error(e)
-			} else {
-				res.Service = service
-			}
+		if service, e := maintenance.CreateService(ucf); e != nil {
+			res.Error(e)
 		} else {
-			if service, e := maintenance.CreateUcfAlt(ucf); e != nil {
-				res.Error(e)
-			} else {
-				res.Service = service
-			}
+			res.Service = service
 		}
-
 	}
 
 	sres.WriteJson(w, res)
@@ -203,7 +192,6 @@ func AddMaintainer(w http.ResponseWriter, req *http.Request) {
 }
 
 func RemoveMaintainer(w http.ResponseWriter, req *http.Request) {
-	log.Println("hi mom")
 	var res sres.Response = sres.Response{Status: true}
 	p := pipeline.NewPipeline()
 	stage := stages.RemoveMaintainerValidate(req)

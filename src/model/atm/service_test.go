@@ -23,7 +23,7 @@ func TestCreateService(t *testing.T) {
 		s.Lon = gofakeit.Float32Range(minLon, maxLon)
 		s.Note = gofakeit.Sentence(30)
 		s.BankId = int64(gofakeit.RandomInt([]int{1, 2, 3, 4}))
-		if e := atm.CreateService(s); e != nil {
+		if _, e := atm.CreateService(s); e != nil {
 			t.Error(e)
 		}
 	}

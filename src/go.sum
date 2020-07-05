@@ -243,6 +243,10 @@ github.com/nvnamsss/goinf v1.0.10 h1:NjIzzvFNuGy6ee/tnMIcIQY8MlETSYKv8mdAo9SUt30
 github.com/nvnamsss/goinf v1.0.10/go.mod h1:tlct2DRHH8ozfcJMmNs9BUI/MT/nSmYmXqliDIPFEyY=
 github.com/nvnamsss/goinf v1.1.2 h1:yp0JYZHT80UE2xWk9+LBf7KvXQtRUxprhpyU2kf63ro=
 github.com/nvnamsss/goinf v1.1.2/go.mod h1:kyBUqbMpwXMCRxOfQdsQFHYVkbRM+zEa1x+BXM8HZ0g=
+github.com/nvnamsss/goinf v1.1.3 h1:kgysFD3V0X/xmw3uZv9sDmruZqrcUwTvpx64DOq3kWY=
+github.com/nvnamsss/goinf v1.1.3/go.mod h1:kyBUqbMpwXMCRxOfQdsQFHYVkbRM+zEa1x+BXM8HZ0g=
+github.com/nvnamsss/goinf v1.1.4 h1:IoqRo50kK7YtbYL5lt/y7dHtzEI8yOQ1FDB22kKFDuY=
+github.com/nvnamsss/goinf v1.1.4/go.mod h1:kyBUqbMpwXMCRxOfQdsQFHYVkbRM+zEa1x+BXM8HZ0g=
 github.com/oklog/ulid v1.3.1/go.mod h1:CirwcVhetQ6Lv90oh/F+FBtV6XMibvdAFo93nm5qn4U=
 github.com/olekukonko/tablewriter v0.0.1/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=
 github.com/olekukonko/tablewriter v0.0.2-0.20190409134802-7e037d187b0c/go.mod h1:vsDQFd/mU46D+Z4whnwzcISnGGzXWMclvtLoiIKAKIo=

@@ -122,8 +122,8 @@ func CreateUcf(s AtmUcf) (ucf AtmUcf, e error) {
 }
 
 //UcfInRange query the unconfirmed atm services that are in the radius of a location
-func UcfInRange(p r2.Point, max_range float64) []AtmUcf {
-	var result []AtmUcf = []AtmUcf{}
+func UcfInRange(p r2.Point, max_range float64) []Atm {
+	var result []Atm = []Atm{}
 	trees := ucf_services.InRange(p, max_range)
 
 	for _, tree := range trees {
@@ -131,8 +131,8 @@ func UcfInRange(p r2.Point, max_range float64) []AtmUcf {
 			location := item.Location()
 
 			d := distance(location, p)
-			s, isFuel := item.(AtmUcf)
-			if isFuel && d < max_range {
+			s, isService := item.(Atm)
+			if isService && d < max_range {
 				result = append(result, s)
 			}
 		}
@@ -172,9 +172,9 @@ func LoadUnconfirmedService() {
 	}
 }
 
-func init() {
-	model.OnConnected.Subscribe(LoadUnconfirmedService)
-	model.OnDisconnect.Subscribe(func() {
-		model.OnConnected.Unsubscribe(LoadUnconfirmedService)
-	})
-}
+// func init() {
+// 	model.OnConnected.Subscribe(LoadUnconfirmedService)
+// 	model.OnDisconnect.Subscribe(func() {
+// 		model.OnConnected.Unsubscribe(LoadUnconfirmedService)
+// 	})
+// }

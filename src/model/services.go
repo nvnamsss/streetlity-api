@@ -38,6 +38,7 @@ type Service struct {
 	Address     string  `gorm:"column:address"`
 	Images      string  `gorm:"column:images"`
 	Contributor string  `gorm:"column:contributor"`
+	Confident   int     `gorm:"column:confident"`
 }
 
 func (s Service) GetImagesArray() (images []string) {

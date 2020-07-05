@@ -1,7 +1,6 @@
 package rmaintenance
 
 import (
-	"log"
 	"net/http"
 	"streelity/v1/model/maintenance"
 	"streelity/v1/sres"
@@ -109,13 +108,12 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 
 			switch t {
 			case "Immediately":
-				log.Println("hi mom")
-				if e := maintenance.UpvoteUcfImmediately(id); e != nil {
+				if e := maintenance.UpvoteServiceImmediately(id); e != nil {
 					res.Error(e)
 				}
 				break
 			default:
-				if e := maintenance.UpvoteUcf(id); e != nil {
+				if e := maintenance.UpvoteService(id); e != nil {
 					res.Error(e)
 				}
 			}
@@ -128,7 +126,7 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 func UnconfirmedInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Services []maintenance.MaintenanceUcf
+		Services []maintenance.Maintenance
 	}
 	res.Status = true
 
