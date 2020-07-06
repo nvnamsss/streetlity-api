@@ -294,6 +294,7 @@ func ImportByRawText(data string) (e error) {
 		}
 		s.Contributor = "Streetlity"
 		CreateService(s)
+		UpvoteServiceImmediately(s.Id)
 	}
 
 	return
