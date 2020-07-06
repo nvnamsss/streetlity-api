@@ -5,7 +5,7 @@ import (
 	"io"
 	"log"
 	"net/http"
-	"streelity/v1/model/maintenance"
+	"streelity/v1/model/atm"
 	"streelity/v1/model/toilet"
 	"streelity/v1/sres"
 	"streelity/v1/stages"
@@ -182,7 +182,7 @@ func Import(w http.ResponseWriter, req *http.Request) {
 
 		var buf bytes.Buffer
 		io.Copy(&buf, file)
-		maintenance.Import(buf.Bytes(), t)
+		atm.Import(buf.Bytes(), t)
 
 	}
 
