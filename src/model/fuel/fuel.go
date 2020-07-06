@@ -16,6 +16,7 @@ import (
 //FuelUcf representation the Fuel service which is confirmed
 type Fuel struct {
 	model.Service
+	Name string `gorm:"column:name"`
 	// Id  int64
 	// Lat float32 `gorm:"column:lat"`
 	// Lon float32 `gorm:"column:lon"`
@@ -222,6 +223,8 @@ func ImportByRawText(data string) (e error) {
 		if note, ok := m["note"]; ok {
 			s.Note = note
 		}
+
+		s.Name = m["name"]
 		s.Contributor = "Streetlity"
 		CreateService(s)
 	}

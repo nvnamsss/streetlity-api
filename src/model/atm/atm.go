@@ -188,6 +188,12 @@ func ImportByRawText(data string) (e error) {
 		if note, ok := m["note"]; ok {
 			s.Note = note
 		}
+		if bank, e := BankByName(m["name"]); e != nil {
+			continue
+		} else {
+			s.BankId = bank.Id
+		}
+
 		s.Contributor = "Streetlity"
 		CreateService(s)
 	}
