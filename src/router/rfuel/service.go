@@ -182,7 +182,7 @@ func Import(w http.ResponseWriter, req *http.Request) {
 
 		var buf bytes.Buffer
 		io.Copy(&buf, file)
-		atm.Import(buf.Bytes(), t)
+		fuel.Import(buf.Bytes(), t)
 
 	}
 
