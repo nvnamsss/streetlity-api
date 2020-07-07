@@ -40,6 +40,10 @@ func CreateBank(s Bank) (e error) {
 	return nil
 }
 
+func BankLikeName(name string) (bank Bank, e error) {
+	return
+}
+
 func BankByName(name string) (bank Bank, e error) {
 	db := model.Db.Where("name=?", name).First(&bank)
 

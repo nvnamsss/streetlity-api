@@ -94,4 +94,6 @@ func TestCreateBank(t *testing.T) {
 	for _, name := range names {
 		atm.CreateBank(atm.Bank{Name: name})
 	}
+
+	t.Logf("Completed")
 }

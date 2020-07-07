@@ -62,7 +62,7 @@ func CommonOrder(w http.ResponseWriter, req *http.Request) {
 		reason := p.GetString("Reason")[0]
 		note := p.GetStringFirstOrDefault("Note")
 		phone := p.GetString("Phone")[0]
-		t := "1"
+		order_type := "1"
 		services := maintenance.ServicesByIds(service_ids...)
 		maintenance_users := []string{}
 		for _, s := range services {
@@ -83,7 +83,7 @@ func CommonOrder(w http.ResponseWriter, req *http.Request) {
 				"reason":            {reason},
 				"phone":             {phone},
 				"note":              {note},
-				"type":              {t},
+				"type":              {order_type},
 			}); e != nil {
 				res.Error(e)
 			} else {
@@ -100,5 +100,6 @@ func CommonOrder(w http.ResponseWriter, req *http.Request) {
 func HandleOrder(router *mux.Router) *mux.Router {
 	s := router.PathPrefix("/order").Subrouter()
 	s.HandleFunc("/e", EmergencyOrder).Methods("POST")
+	s.HandleFunc("/c", CommonOrder).Methods("POST")
 	return s
 }
