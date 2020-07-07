@@ -226,8 +226,8 @@ func ImportByRawText(data string) (e error) {
 
 		s.Name = m["name"]
 		s.Contributor = "Streetlity"
+		s.Confident = confident + 1
 		CreateService(s)
-		UpvoteServiceImmediately(s.Id)
 	}
 
 	return
