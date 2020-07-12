@@ -308,12 +308,11 @@ func UpdateReviewValidateStage(req *http.Request) *pipeline.Stage {
 	return stage
 }
 
-func ReviewIdValidate(req *http.Request) *pipeline.Stage {
+func ReviewIdValidate(values url.Values) *pipeline.Stage {
 	stage := pipeline.NewStage(func() (str struct {
 		ReviewId int64
 	}, e error) {
-		form := req.PostForm
-		review_ids, ok := form["review_id"]
+		review_ids, ok := values["review_id"]
 		if !ok {
 			return str, errors.New("review_id param is missing")
 		}

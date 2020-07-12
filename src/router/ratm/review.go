@@ -159,7 +159,7 @@ func ReviewAverageScore(w http.ResponseWriter, req *http.Request) {
 func DeleteReview(w http.ResponseWriter, req *http.Request) {
 	var res sres.Response = sres.Response{Status: true}
 	p := pipeline.NewPipeline()
-	stage := stages.ReviewIdValidate(req)
+	stage := stages.ReviewIdValidate(req.URL.Query())
 	p.First = stage
 	res.Error(p.Run())
 
