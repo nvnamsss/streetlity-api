@@ -387,3 +387,17 @@ func ImportValidate(values url.Values) *pipeline.Stage {
 
 	return stage
 }
+
+func NameValidate(values url.Values) *pipeline.Stage {
+	nameStage := pipeline.NewStage(func() (str struct {
+		Name string
+	}, e error) {
+		names, ok := values["name"]
+		if !ok {
+			return str, errors.New("name param is missing")
+		}
+		str.Name = names[0]
+		return
+	})
+	return nameStage
+}

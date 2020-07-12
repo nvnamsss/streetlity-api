@@ -123,6 +123,30 @@ func UpvoteUnconfirmed(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
+func DownvoteService(w http.ResponseWriter, req *http.Request) {
+	var res sres.Response = sres.Response{Status: true, Message: "Downvote successfully"}
+
+	req.ParseForm()
+	p := pipeline.NewPipeline()
+	stage := stages.UpvoteValidateStage(req)
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		id := p.GetInt("ServiceId")[0]
+		t := p.GetStringFirstOrDefault("UpvoteType")
+
+		switch t {
+		default:
+			if e := maintenance.DownvoteService(id); e != nil {
+				res.Error(e)
+			}
+		}
+	}
+
+	sres.WriteJson(w, res)
+}
+
 func UnconfirmedInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
@@ -172,6 +196,7 @@ func HandleUnconfirmed(router *mux.Router) *mux.Router {
 	s.HandleFunc("/all", GetAllUnconfirmed).Methods("GET")
 	s.HandleFunc("/range", UnconfirmedInRange).Methods("GET")
 	s.HandleFunc("/upvote", UpvoteUnconfirmed).Methods("POST")
+	s.HandleFunc("/downvote", DownvoteService).Methods("POST")
 
 	return s
 }

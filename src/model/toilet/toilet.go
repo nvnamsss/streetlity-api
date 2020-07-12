@@ -15,6 +15,7 @@ import (
 
 type Toilet struct {
 	model.Service
+	Name string `gorm:"column:name"`
 }
 
 var services spatial.RTree
@@ -65,6 +66,10 @@ func CreateService(s Toilet) (service Toilet, e error) {
 //UpvoteService upvote the unconfirmed atm by specific id
 func UpvoteService(id int64) error {
 	return upvoteService(id, 1)
+}
+
+func DownvoteService(id int64) error {
+	return upvoteService(id, -1)
 }
 
 func UpvoteServiceImmediately(id int64) error {
@@ -209,6 +214,8 @@ func ImportByRawText(data string) (e error) {
 		if note, ok := m["note"]; ok {
 			s.Note = note
 		}
+
+		s.Name = m["name"]
 		s.Contributor = "Streetlity"
 		s.Confident = confident + 1
 		CreateService(s)

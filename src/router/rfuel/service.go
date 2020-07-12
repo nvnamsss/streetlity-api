@@ -105,6 +105,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 	res.Status = true
 	p := pipeline.NewPipeline()
 	stage := stages.CreateServiceValidate(req)
+	stage.NextStage(stages.NameValidate(req.PostForm))
 	p.First = stage
 
 	res.Error(p.Run())
@@ -116,13 +117,14 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		note := p.GetStringFirstOrDefault("Note")
 		images := p.GetString("Images")
 		contributor := p.GetStringFirstOrDefault("Contributor")
-
+		name := p.GetString("Name")[0]
 		var ucf fuel.Fuel
 		ucf.Lat = float32(lat)
 		ucf.Lon = float32(lon)
 		ucf.Address = address
 		ucf.Note = note
 		ucf.Contributor = contributor
+		ucf.Name = name
 		ucf.SetImages(images...)
 
 		if service, e := fuel.CreateService(ucf); e != nil {

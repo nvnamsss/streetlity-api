@@ -22,6 +22,7 @@ func TestCreateService(t *testing.T) {
 		s.Lat = gofakeit.Float32Range(minLat, maxLat)
 		s.Lon = gofakeit.Float32Range(minLon, maxLon)
 		s.Note = gofakeit.Sentence(30)
+		s.Name = gofakeit.BeerName()
 		if _, e := fuel.CreateService(s); e != nil {
 			t.Error(e)
 		}

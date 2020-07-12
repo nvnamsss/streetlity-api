@@ -16,11 +16,6 @@ func UpvoteValidateStage(req *http.Request) *pipeline.Stage {
 		UpvoteType string
 	}, e error) {
 		form := req.PostForm
-		if users, ok := form["upvote_user"]; !ok {
-			return str, errors.New("upvote_user param is missing")
-		} else {
-			str.UpvoteUser = users[0]
-		}
 
 		if ids, ok := form["id"]; !ok {
 			return str, errors.New("id param is missing")

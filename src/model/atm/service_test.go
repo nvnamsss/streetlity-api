@@ -28,5 +28,5 @@ func TestCreateService(t *testing.T) {
 		}
 	}
 
-	t.Logf("Completed")
+	t.Log("Completed")
 }

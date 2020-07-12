@@ -72,6 +72,10 @@ func UpvoteService(id int64) error {
 	return upvoteService(id, 1)
 }
 
+func DownvoteService(id int64) error {
+	return upvoteService(id, -1)
+}
+
 func UpvoteServiceImmediately(id int64) error {
 	return upvoteService(id, confident)
 }

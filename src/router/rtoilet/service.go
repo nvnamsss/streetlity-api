@@ -100,11 +100,12 @@ func AllServices(w http.ResponseWriter, req *http.Request) {
 func CreateService(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
-		Service toilet.ToiletUcf
+		Service toilet.Toilet
 	}
 	res.Status = true
 	p := pipeline.NewPipeline()
 	stage := stages.CreateServiceValidate(req)
+	stage.NextStage(stages.NameValidate(req.PostForm))
 	p.First = stage
 
 	res.Error(p.Run())
@@ -116,16 +117,18 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 		note := p.GetStringFirstOrDefault("Note")
 		images := p.GetString("Images")
 		contributor := p.GetString("Contributor")[0]
+		name := p.GetString("Name")[0]
 
-		var ucf toilet.ToiletUcf
+		var ucf toilet.Toilet
 		ucf.Lat = float32(lat)
 		ucf.Lon = float32(lon)
 		ucf.Address = address
 		ucf.Note = note
 		ucf.Contributor = contributor
+		ucf.Name = name
 		ucf.SetImages(images...)
 
-		if service, e := toilet.CreateUcf(ucf); e != nil {
+		if service, e := toilet.CreateService(ucf); e != nil {
 			res.Error(e)
 		} else {
 			res.Service = service

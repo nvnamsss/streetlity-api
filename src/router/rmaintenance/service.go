@@ -2,7 +2,6 @@ package rmaintenance
 
 import (
 	"bytes"
-	"errors"
 	"io"
 	"log"
 	"net/http"
@@ -112,22 +111,7 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 	p := pipeline.NewPipeline()
 	req.ParseForm()
 	stage := stages.CreateServiceValidate(req)
-	nameStage := pipeline.NewStage(func() (str struct {
-		Name string
-		Alt  string
-	}, e error) {
-		form := req.PostForm
-		names, ok := form["name"]
-		if !ok {
-			return str, errors.New("name param is missing")
-		}
-		if alts, ok := form["alt"]; ok {
-			str.Alt = alts[0]
-		}
-		str.Name = names[0]
-		return
-	})
-	stage.NextStage(nameStage)
+	stage.NextStage(stages.NameValidate(req.PostForm))
 	p.First = stage
 
 	res.Error(p.Run())
