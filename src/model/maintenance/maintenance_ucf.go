@@ -11,6 +11,7 @@ import (
 )
 
 var confident int = 5
+var map_ucfservices map[int64]Maintenance
 var ucf_services spatial.RTree
 
 type MaintenanceUcf struct {
@@ -175,7 +176,7 @@ func UcfInRange(p r2.Point, max_range float64) []Maintenance {
 			d := distance(location, p)
 			s, isService := item.(Maintenance)
 			if isService && d < max_range {
-				result = append(result, s)
+				result = append(result, map_ucfservices[s.Id])
 			}
 		}
 	}

@@ -15,6 +15,7 @@ type ToiletUcf struct {
 }
 
 var confident int = 5
+var map_ucfservices map[int64]Toilet
 var ucf_services spatial.RTree
 
 const UcfServiceTableName = "toilet_ucf"
@@ -130,7 +131,7 @@ func UcfInRange(p r2.Point, max_range float64) []Toilet {
 			d := distance(location, p)
 			s, isService := item.(Toilet)
 			if isService && d < max_range {
-				result = append(result, s)
+				result = append(result, map_ucfservices[s.Id])
 			}
 		}
 	}

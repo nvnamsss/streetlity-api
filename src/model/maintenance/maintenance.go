@@ -321,40 +321,51 @@ func RemoveMaintainer(id int64, maintainer string) (service Maintenance, e error
 
 func (s *Maintenance) AfterSave(scope *gorm.Scope) (e error) {
 	if s.Confident > confident {
-		ucf_services.RemoveItem(s)
-		if e = services.AddItem(*s); e != nil {
-			log.Println("[Database]", "maintenance offical", e.Error())
+		if _, ok := map_services[s.Id]; !ok {
+			ucf_services.RemoveItem(s)
+			if e = services.AddItem(*s); e != nil {
+				log.Println("[Database]", "maintenance offical", e.Error())
+			}
+			map_services[s.Id] = *s
+			delete(map_ucfservices, s.Id)
 		}
 	} else {
-		ucf_services.AddItem(s)
+		if _, ok := map_ucfservices[s.Id]; !ok {
+			services.RemoveItem(s)
+			ucf_services.AddItem(*s)
+			map_ucfservices[s.Id] = *s
+			delete(map_services, s.Id)
+		}
 	}
 
-	map_services[s.Id] = *s
 	return
 }
 
-func (s Maintenance) AfterCreate(scope *gorm.Scope) (e error) {
-	if e = services.AddItem(s); e != nil {
-		log.Println("[Database]", "After create maintenance", e.Error())
-	} else {
-		map_services[s.Id] = s
-	}
+// func (s Maintenance) AfterCreate(scope *gorm.Scope) (e error) {
+// 	if e = services.AddItem(s); e != nil {
+// 		log.Println("[Database]", "After create maintenance", e.Error())
+// 	} else {
+// 		map_services[s.Id] = s
+// 	}
 
-	log.Println("[Database]", "New maintennace added")
-	return
-}
+// 	log.Println("[Database]", "New maintennace added")
+// 	return
+// }
 
 func LoadService() {
 	log.Println("[Maintenance]", "Loading service")
 	map_services = make(map[int64]Maintenance)
+	map_ucfservices = make(map[int64]Maintenance)
 	ss, _ := AllServices()
 	for _, s := range ss {
 		if s.Confident > confident {
 			services.AddItem(s)
+			map_services[s.Id] = s
 		} else {
 			ucf_services.AddItem(s)
+			map_ucfservices[s.Id] = s
 		}
-		map_services[s.Id] = s
+
 	}
 }
 

@@ -17,7 +17,8 @@ type AtmUcf struct {
 
 const UcfServiceTableName = "atm_ucf"
 
-var confident int = 1
+var confident int = 5
+var map_ucfservices map[int64]Atm
 var ucf_services spatial.RTree
 
 //TableName determine the table name in database which is using for gorm
@@ -129,11 +130,10 @@ func UcfInRange(p r2.Point, max_range float64) []Atm {
 	for _, tree := range trees {
 		for _, item := range tree.Items {
 			location := item.Location()
-
 			d := distance(location, p)
 			s, isService := item.(Atm)
 			if isService && d < max_range {
-				result = append(result, s)
+				result = append(result, map_ucfservices[s.Id])
 			}
 		}
 	}

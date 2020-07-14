@@ -239,37 +239,47 @@ func ImportByRawText(data string) (e error) {
 
 func (s *Fuel) AfterSave(scope *gorm.Scope) (e error) {
 	if s.Confident > confident {
-		ucf_services.RemoveItem(s)
-		if e = services.AddItem(*s); e != nil {
-			log.Println("[Database]", "fuel offical", e.Error())
+		if _, ok := map_services[s.Id]; !ok {
+			ucf_services.RemoveItem(s)
+			if e = services.AddItem(*s); e != nil {
+				log.Println("[Database]", "fuel offical", e.Error())
+			}
+			map_services[s.Id] = *s
+			delete(map_ucfservices, s.Id)
 		}
 	} else {
-		ucf_services.AddItem(s)
-	}
-
-	map_services[s.Id] = *s
-	return
-}
-
-func (s Fuel) AfterCreate(scope *gorm.Scope) (e error) {
-	if e = services.AddItem(s); e != nil {
-		log.Println("[Database]", "After create fuel", e.Error())
+		if _, ok := map_ucfservices[s.Id]; !ok {
+			services.RemoveItem(s)
+			ucf_services.AddItem(*s)
+			map_ucfservices[s.Id] = *s
+			delete(map_services, s.Id)
+		}
 	}
 
 	return
 }
+
+// func (s Fuel) AfterCreate(scope *gorm.Scope) (e error) {
+// 	if e = services.AddItem(s); e != nil {
+// 		log.Println("[Database]", "After create fuel", e.Error())
+// 	}
+
+// 	return
+// }
 
 func LoadService() {
 	log.Println("[Fuel]", "Loading service")
 	map_services = make(map[int64]Fuel)
+	map_ucfservices = make(map[int64]Fuel)
 	ss, _ := AllServices()
 	for _, s := range ss {
 		if s.Confident > confident {
 			services.AddItem(s)
+			map_services[s.Id] = s
 		} else {
 			ucf_services.AddItem(s)
+			map_ucfservices[s.Id] = s
 		}
-		map_services[s.Id] = s
 	}
 }
 

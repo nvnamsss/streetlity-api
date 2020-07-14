@@ -208,25 +208,34 @@ func ImportByRawText(data string) (e error) {
 
 func (s *Atm) AfterSave(scope *gorm.Scope) (e error) {
 	if s.Confident > confident {
-		ucf_services.RemoveItem(s)
-		if e = services.AddItem(*s); e != nil {
-			log.Println("[Database]", "atm offical", e.Error())
+		if _, ok := map_services[s.Id]; !ok {
+			ucf_services.RemoveItem(s)
+			if e = services.AddItem(*s); e != nil {
+				log.Println("[Database]", "atm offical", e.Error())
+			}
+			map_services[s.Id] = *s
+			delete(map_ucfservices, s.Id)
 		}
 	} else {
-		ucf_services.AddItem(s)
-	}
-
-	map_services[s.Id] = *s
-	return
-}
-
-func (s Atm) AfterCreate(scope *gorm.Scope) (e error) {
-	if e = services.AddItem(s); e != nil {
-		log.Println("[Database]", "After create atm", e.Error())
+		if _, ok := map_ucfservices[s.Id]; !ok {
+			services.RemoveItem(s)
+			ucf_services.AddItem(*s)
+			map_ucfservices[s.Id] = *s
+			delete(map_services, s.Id)
+		}
 	}
 
 	return
 }
+
+// func (s Atm) AfterCreate(scope *gorm.Scope) (e error) {
+// 	if e = services.AddItem(s); e != nil {
+// 		log.Println("[Database]", "After create atm", e.Error())
+// 	}
+
+// 	log.Println("[Database]", "New atm added", s)
+// 	return
+// }
 
 func distance(p1 r2.Point, p2 r2.Point) float64 {
 	x := math.Pow(p1.X-p2.X, 2)
@@ -256,15 +265,18 @@ func ServicesInRange(p r2.Point, max_range float64) []Atm {
 func LoadService() {
 	log.Println("[ATM]", "Loading service")
 	map_services = make(map[int64]Atm)
+	map_ucfservices = make(map[int64]Atm)
+
 	ss, _ := AllServices()
 	for _, s := range ss {
 		if s.Confident > confident {
 			services.AddItem(s)
+			map_services[s.Id] = s
 		} else {
 			ucf_services.AddItem(s)
+			map_ucfservices[s.Id] = s
 		}
 
-		map_services[s.Id] = s
 	}
 }
 

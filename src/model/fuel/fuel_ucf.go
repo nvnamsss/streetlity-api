@@ -14,6 +14,7 @@ import (
 const UcfServiceTableName = "fuel_ucf"
 
 var confident int = 5
+var map_ucfservices map[int64]Fuel
 var ucf_services spatial.RTree
 
 //FuelUcf representation the Fuel service which is not confirmed
