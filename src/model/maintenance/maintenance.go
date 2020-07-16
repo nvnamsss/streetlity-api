@@ -363,16 +363,16 @@ func (s *Maintenance) AfterSave(scope *gorm.Scope) (e error) {
 			if e = services.AddItem(*s); e != nil {
 				log.Println("[Database]", "maintenance offical", e.Error())
 			}
-			map_services[s.Id] = *s
 			delete(map_ucfservices, s.Id)
 		}
+		map_services[s.Id] = *s
 	} else {
 		if _, ok := map_ucfservices[s.Id]; !ok {
 			services.RemoveItem(s)
-			ucf_services.AddItem(*s)
 			map_ucfservices[s.Id] = *s
 			delete(map_services, s.Id)
 		}
+		ucf_services.AddItem(*s)
 	}
 
 	return
