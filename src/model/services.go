@@ -4,7 +4,6 @@ import (
 	"errors"
 	"log"
 	"math"
-	"net/url"
 	"regexp"
 	"strconv"
 
@@ -168,7 +167,7 @@ func GetServiceByAddress(tablename string, address string, ref interface{}) (e e
 	return
 }
 
-func UpdateService(tablename string, id int64, values url.Values, ref interface{}) (e error) {
+func UpdateService(tablename string, id int64, values map[string][]string, ref interface{}) (e error) {
 	if e = GetById(tablename, id, ref); e != nil {
 		return
 	}

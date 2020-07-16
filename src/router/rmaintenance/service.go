@@ -148,14 +148,20 @@ func UpdateService(w http.ResponseWriter, req *http.Request) {
 		sres.Response
 		Service maintenance.Maintenance
 	}
-	res.Status = true
+	res.Response = sres.Response{Status: true, Message: "Update service successfully"}
 
 	p := pipeline.NewPipeline()
-	stage := stages.UpdateMaintenanceValidate(req)
+	stage := stages.UpdateServiceValidateStage(req)
 	p.First = stage
 	res.Error(p.Run())
 
 	if res.Status {
+		id := p.GetInt("Id")[0]
+		if s, e := maintenance.UpdateService(id, req.PostForm); e != nil {
+			res.Error(e)
+		} else {
+			res.Service = s
+		}
 	}
 
 	sres.WriteJson(w, res)
@@ -255,6 +261,7 @@ func HandleService(router *mux.Router) *mux.Router {
 	s.HandleFunc("/", CreateService).Methods("POST")
 	s.HandleFunc("/", GetService).Methods("GET")
 	s.HandleFunc("/s", GetServices).Methods("GET")
+	s.HandleFunc("/update", UpdateService).Methods("POSt")
 	s.HandleFunc("/maintainer", AddMaintainer).Methods("POST")
 	s.HandleFunc("/maintainer", RemoveMaintainer).Methods("DELETE")
 	s.HandleFunc("/all", AllServices).Methods("GET")

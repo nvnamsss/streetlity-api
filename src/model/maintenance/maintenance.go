@@ -228,7 +228,44 @@ func ServicesInRange(p r2.Point, max_range float64) []Maintenance {
 }
 
 func UpdateService(id int64, values url.Values) (service Maintenance, e error) {
-	e = model.UpdateService(ServiceTableName, id, values, &service)
+	service, e = ServiceById(id)
+	if e != nil {
+		return
+	}
+
+	_, ok := values["lat"]
+	if ok {
+		if lat, e := strconv.ParseFloat(values["lat"][0], 64); e != nil {
+			service.Lat = float32(lat)
+		}
+	}
+	_, ok = values["lon"]
+	if ok {
+		if lon, e := strconv.ParseFloat(values["lon"][0], 64); e != nil {
+			service.Lon = float32(lon)
+		}
+	}
+
+	_, ok = values["note"]
+	if ok {
+		service.Note = values["note"][0]
+	}
+
+	if _, ok = values["address"]; ok {
+		service.Address = values["address"][0]
+	}
+
+	if _, ok = values["images"]; ok {
+		service.SetImages(values["images"]...)
+	}
+
+	if _, ok = values["name"]; ok {
+		service.Name = values["name"][0]
+	}
+
+	if e := model.Db.Save(&service).Error; e != nil {
+		log.Println("[Database]", "update ", ServiceTableName, e.Error())
+	}
 	return
 }
 

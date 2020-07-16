@@ -157,6 +157,30 @@ func CreateService(w http.ResponseWriter, req *http.Request) {
 	sres.WriteJson(w, res)
 }
 
+func UpdateService(w http.ResponseWriter, req *http.Request) {
+	var res struct {
+		sres.Response
+		Service atm.Atm
+	}
+	res.Response = sres.Response{Status: true, Message: "Update service successfully"}
+
+	p := pipeline.NewPipeline()
+	stage := stages.UpdateServiceValidateStage(req)
+	p.First = stage
+	res.Error(p.Run())
+
+	if res.Status {
+		id := p.GetInt("Id")[0]
+		if s, e := atm.UpdateService(id, req.PostForm); e != nil {
+			res.Error(e)
+		} else {
+			res.Service = s
+		}
+	}
+
+	sres.WriteJson(w, res)
+}
+
 func ServiceInRange(w http.ResponseWriter, req *http.Request) {
 	var res struct {
 		sres.Response
@@ -216,6 +240,7 @@ func HandleService(router *mux.Router) *mux.Router {
 	s.HandleFunc("/", CreateService).Methods("POST")
 	s.HandleFunc("/", GetService).Methods("GET")
 	s.HandleFunc("/s", GetServices).Methods("GET")
+	s.HandleFunc("/update", UpdateService).Methods("POST")
 	s.HandleFunc("/all", AllServices).Methods("GET")
 	s.HandleFunc("/create", CreateService).Methods("POST")
 	s.HandleFunc("/range", ServiceInRange).Methods("GET")

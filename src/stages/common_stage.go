@@ -279,6 +279,43 @@ func QueryReviewByOrderValidate(req *http.Request) *pipeline.Stage {
 	return stage
 }
 
+func UpdateServiceValidateStage(req *http.Request) *pipeline.Stage {
+	req.ParseForm()
+	stage := pipeline.NewStage(func() (str struct {
+		Id     int64
+		Note   string
+		Name   string
+		Images []string
+	}, e error) {
+		form := req.PostForm
+		if ids, ok := form["id"]; !ok {
+			return str, errors.New("id param is missing")
+		} else {
+			if id, e := strconv.ParseInt(ids[0], 10, 64); e != nil {
+				return str, errors.New("id param cannot parse to int64")
+			} else {
+				str.Id = id
+			}
+		}
+
+		if images, ok := form["image"]; ok {
+			str.Images = images
+		}
+
+		if notes, ok := form["note"]; ok {
+			str.Note = notes[0]
+		}
+
+		if names, ok := form["name"]; ok {
+			str.Name = names[0]
+		}
+
+		return
+	})
+
+	return stage
+}
+
 func UpdateReviewValidateStage(req *http.Request) *pipeline.Stage {
 	stage := pipeline.NewStage(func() (str struct {
 		ReviewId int64
